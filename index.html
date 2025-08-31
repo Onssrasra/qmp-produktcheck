@@ -369,8 +369,8 @@
     <div class="card">
       <!-- Header -->
       <div class="header">
-        <h1>Siemens Produktdaten – Qualitätsmonitor</h1>
-        <div class="subtitle">Web-Vergleich, Vollständigkeits- & Plausibilitätsprüfung</div>
+        <h1>Produktdaten – Qualitätsmonitor</h1>
+        <div class="subtitle">Vollständigkeitsprüfung für alle Produkte & Siemens Web-Vergleich</div>
         <div class="divider"></div>
       </div>
 
@@ -707,54 +707,24 @@
 
         updateProgress(50);
         
-        const buf = await resp.arrayBuffer();
+        const result = await resp.json();
+        
+        // Konvertiere base64 zurück zu Blob
+        const buf = Buffer.from(result.file, 'base64');
         webProcessedBlob = new Blob([buf], {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
         
-        // Get real statistics from the processed Excel file
-        const statsForm = new FormData();
-        statsForm.append('file', new File([webProcessedBlob], 'Web_Vergleich_Ergebnis.xlsx'));
+        // Verwende die Statistiken direkt aus der Response
+        const stats = result.stats;
+        totalSiemensCount.textContent = stats.totalSiemens;
+        searchedValuesCount.textContent = stats.searchedValues;
+        foundWebValuesCount.textContent = stats.foundWebValues;
+        foundCount.textContent = `${stats.green} (${stats.greenPercentage}%)`;
+        diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
+        missingCount.textContent = `${stats.orange} (${stats.orangePercentage}%)`;
         
-        try {
-          const statsResp = await fetch('/api/web-search-stats', {
-            method: 'POST',
-            body: statsForm
-          });
-          
-                     if (statsResp.ok) {
-             const stats = await statsResp.json();
-             totalSiemensCount.textContent = stats.totalSiemens;
-             searchedValuesCount.textContent = stats.searchedValues;
-             foundWebValuesCount.textContent = stats.foundWebValues;
-             foundCount.textContent = `${stats.green} (${stats.greenPercentage}%)`;
-             diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
-             missingCount.textContent = `${stats.orange} (${stats.orangePercentage}%)`;
-             
-             // Debug info in console
-             if (stats.debug) {
-               console.log('Debug info:', stats.debug);
-               console.log('Found colors:', stats.debug.foundColors);
-             }
-           } else {
-             // Fallback to placeholder stats
-             totalSiemensCount.textContent = '?';
-             searchedValuesCount.textContent = '?';
-             foundWebValuesCount.textContent = '?';
-             foundCount.textContent = '? (0%)';
-             diffCount.textContent = '? (0%)';
-             missingCount.textContent = '? (0%)';
-           }
-                 } catch (statsErr) {
-           console.error('Error getting stats:', statsErr);
-           // Fallback to placeholder stats
-           totalSiemensCount.textContent = '?';
-           searchedValuesCount.textContent = '?';
-           foundWebValuesCount.textContent = '?';
-           foundCount.textContent = '? (0%)';
-           diffCount.textContent = '? (0%)';
-           missingCount.textContent = '? (0%)';
-         }
+        console.log('Web search stats:', stats);
         
         webStats.classList.remove('hidden');
         
