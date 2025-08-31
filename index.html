@@ -440,41 +440,30 @@
         </div>
         
         <!-- Web Search Stats -->
-        <div id="webStats" class="stats-grid hidden" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
-          <!-- Summary Stats -->
-          <div class="stat-card">
-            <div class="stat-number" id="totalSiemensProducts" style="color: var(--blue);">0</div>
+        <div id="webStats" class="stats-grid hidden">
+          <div class="stat-card blue">
+            <div class="stat-number" id="totalSiemensCount">0</div>
             <div class="stat-label">Gesamt Siemens-Produkte</div>
           </div>
-          
-          <div class="stat-card">
-            <div class="stat-number" id="totalSearchedValues" style="color: var(--grey-4);">0</div>
+          <div class="stat-card blue">
+            <div class="stat-number" id="searchedValuesCount">0</div>
             <div class="stat-label">Gesuchte Werte</div>
           </div>
-          
-          <div class="stat-card">
-            <div class="stat-number" id="foundWebValues" style="color: var(--text);">0</div>
-            <div class="stat-label">Gefundene Web-Werte</div>
-            <div class="stat-percentage" id="foundPercentage" style="font-size: 12px; color: var(--grey-4); margin-top: 2px;">(0%)</div>
+          <div class="stat-card blue">
+            <div class="stat-number" id="foundWebValuesCount">0</div>
+            <div class="stat-label">Gefundene Web-Werte (0%)</div>
           </div>
-          
-          <!-- Detailed Stats -->
           <div class="stat-card green">
             <div class="stat-number" id="foundCount">0</div>
-            <div class="stat-label">Übereinstimmungen</div>
-            <div class="stat-percentage" id="greenPercentage" style="font-size: 12px; color: var(--green); margin-top: 2px;">(0%)</div>
+            <div class="stat-label">Übereinstimmungen (0%)</div>
           </div>
-          
           <div class="stat-card red">
             <div class="stat-number" id="diffCount">0</div>
-            <div class="stat-label">Abweichungen</div>
-            <div class="stat-percentage" id="redPercentage" style="font-size: 12px; color: var(--db-red); margin-top: 2px;">(0%)</div>
+            <div class="stat-label">Abweichungen (0%)</div>
           </div>
-          
           <div class="stat-card orange">
             <div class="stat-number" id="missingCount">0</div>
-            <div class="stat-label">Fehlende Web-Werte</div>
-            <div class="stat-percentage" id="orangePercentage" style="font-size: 12px; color: var(--orange); margin-top: 2px;">(0%)</div>
+            <div class="stat-label">Fehlende Web-Werte (0%)</div>
           </div>
         </div>
       </div>
@@ -516,13 +505,9 @@
     const completeCount = document.getElementById('completeCount');
     const incompleteCount = document.getElementById('incompleteCount');
     const totalQualityCount = document.getElementById('totalQualityCount');
-    const totalSiemensProducts = document.getElementById('totalSiemensProducts');
-    const totalSearchedValues = document.getElementById('totalSearchedValues');
-    const foundWebValues = document.getElementById('foundWebValues');
-    const foundPercentage = document.getElementById('foundPercentage');
-    const greenPercentage = document.getElementById('greenPercentage');
-    const redPercentage = document.getElementById('redPercentage');
-    const orangePercentage = document.getElementById('orangePercentage');
+    const totalSiemensCount = document.getElementById('totalSiemensCount');
+    const searchedValuesCount = document.getElementById('searchedValuesCount');
+    const foundWebValuesCount = document.getElementById('foundWebValuesCount');
     
     // Steps
     const step1 = document.getElementById('step-1');
@@ -561,20 +546,6 @@
 
     function updateProgress(percent) {
       bar.style.width = percent + '%';
-    }
-
-    // Helper function to reset stats to placeholders
-    function resetWebStats() {
-      totalSiemensProducts.textContent = '?';
-      totalSearchedValues.textContent = '?';
-      foundWebValues.textContent = '?';
-      foundPercentage.textContent = '(?)';
-      foundCount.textContent = '?';
-      greenPercentage.textContent = '(?)';
-      diffCount.textContent = '?';
-      redPercentage.textContent = '(?)';
-      missingCount.textContent = '?';
-      orangePercentage.textContent = '(?)';
     }
 
     /* ==================== DROP ZONE ==================== */
@@ -719,7 +690,7 @@
       downloadWebBtn.disabled = true;
       webStats.classList.add('hidden');
       
-      statusEl.textContent = 'Web-Suche läuft — A2V Nummern werden gescraped...';
+      statusEl.textContent = 'Web-Suche läuft — Siemens-Produkte (A2V-Nummern) werden gesucht...';
       showProgress(true);
       updateProgress(10);
 
@@ -741,7 +712,7 @@
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
         
-        // Get enhanced statistics from the processed Excel file
+        // Get real statistics from the processed Excel file
         const statsForm = new FormData();
         statsForm.append('file', new File([webProcessedBlob], 'Web_Vergleich_Siemens.xlsx'));
         
@@ -751,35 +722,38 @@
             body: statsForm
           });
           
-          if (statsResp.ok) {
-            const stats = await statsResp.json();
-            
-            // Update all statistics
-            totalSiemensProducts.textContent = stats.totalSiemens || '0';
-            totalSearchedValues.textContent = stats.searchedValues || '0';
-            foundWebValues.textContent = stats.foundWebValues || '0';
-            foundPercentage.textContent = `(${stats.foundPercentage || 0}%)`;
-            
-            foundCount.textContent = stats.green || '0';
-            greenPercentage.textContent = `(${stats.greenPercentage || 0}%)`;
-            
-            diffCount.textContent = stats.red || '0';
-            redPercentage.textContent = `(${stats.redPercentage || 0}%)`;
-            
-            missingCount.textContent = stats.orange || '0';
-            orangePercentage.textContent = `(${stats.orangePercentage || 0}%)`;
+                     if (statsResp.ok) {
+             const stats = await statsResp.json();
+             totalSiemensCount.textContent = stats.totalSiemens;
+             searchedValuesCount.textContent = stats.searchedValues;
+             foundWebValuesCount.textContent = `${stats.foundWebValues} (${stats.foundWebValuesPercentage}%)`;
+             foundCount.textContent = `${stats.green} (${stats.greenPercentage}%)`;
+             diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
+             missingCount.textContent = `${stats.orange} (${stats.orangePercentage}%)`;
             
             // Debug info in console
             if (stats.debug) {
-              console.log('Web search debug info:', stats.debug);
+              console.log('Debug info:', stats.debug);
+              console.log('Found colors:', stats.debug.foundColors);
             }
           } else {
             // Fallback to placeholder stats
-            resetWebStats();
+            totalSiemensCount.textContent = '?';
+            searchedValuesCount.textContent = '?';
+            foundWebValuesCount.textContent = '?';
+            foundCount.textContent = '? (0%)';
+            diffCount.textContent = '? (0%)';
+            missingCount.textContent = '? (0%)';
           }
         } catch (statsErr) {
-          console.error('Error getting web search stats:', statsErr);
-          resetWebStats();
+          console.error('Error getting stats:', statsErr);
+          // Fallback to placeholder stats
+          totalSiemensCount.textContent = '?';
+          searchedValuesCount.textContent = '?';
+          foundWebValuesCount.textContent = '?';
+          foundCount.textContent = '? (0%)';
+          diffCount.textContent = '? (0%)';
+          missingCount.textContent = '? (0%)';
         }
         
         webStats.classList.remove('hidden');
