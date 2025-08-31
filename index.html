@@ -636,9 +636,9 @@
           
                      if (statsResp.ok) {
              const stats = await statsResp.json();
-             totalQualityCount.textContent = `${stats.total} (${stats.completePercentage}%)`;
-             completeCount.textContent = stats.complete;
-             incompleteCount.textContent = stats.incomplete;
+             totalQualityCount.textContent = stats.total;
+             completeCount.textContent = `${stats.complete} (${stats.completePercentage}%)`;
+             incompleteCount.textContent = `${stats.incomplete} (${stats.incompletePercentage}%)`;
              
              // Debug info in console
              if (stats.debug) {
@@ -647,16 +647,16 @@
              }
            } else {
              // Fallback to placeholder stats
-             totalQualityCount.textContent = '? (0%)';
-             completeCount.textContent = '?';
-             incompleteCount.textContent = '?';
+             totalQualityCount.textContent = '?';
+             completeCount.textContent = '? (0%)';
+             incompleteCount.textContent = '? (0%)';
            }
                  } catch (statsErr) {
            console.error('Error getting quality stats:', statsErr);
            // Fallback to placeholder stats
-           totalQualityCount.textContent = '? (0%)';
-           completeCount.textContent = '?';
-           incompleteCount.textContent = '?';
+           totalQualityCount.textContent = '?';
+           completeCount.textContent = '? (0%)';
+           incompleteCount.textContent = '? (0%)';
          }
         
         qualityStats.classList.remove('hidden');
@@ -726,7 +726,7 @@
              const stats = await statsResp.json();
              totalSiemensCount.textContent = stats.totalSiemens;
              searchedValuesCount.textContent = stats.searchedValues;
-             foundWebValuesCount.textContent = stats.foundWebValues;
+             foundWebValuesCount.textContent = `${stats.foundWebValues} (${stats.foundWebValuesPercentage}%)`;
              foundCount.textContent = `${stats.green} (${stats.greenPercentage}%)`;
              diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
              missingCount.textContent = `${stats.orange} (${stats.orangePercentage}%)`;

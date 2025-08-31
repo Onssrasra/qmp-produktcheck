@@ -539,9 +539,10 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
       green: greenCount,
       red: redCount,
       orange: orangeCount,
+      foundWebValuesPercentage: searchedValues > 0 ? Math.round((foundWebValues / searchedValues) * 100) : 0,
       greenPercentage: foundWebValues > 0 ? Math.round((greenCount / foundWebValues) * 100) : 0,
       redPercentage: foundWebValues > 0 ? Math.round((redCount / foundWebValues) * 100) : 0,
-      orangePercentage: foundWebValues > 0 ? Math.round((orangeCount / foundWebValues) * 100) : 0,
+      orangePercentage: searchedValues > 0 ? Math.round((orangeCount / searchedValues) * 100) : 0,
       debug: {
         foundColors: Array.from(foundColors),
         totalRows: lastRow,
