@@ -707,24 +707,54 @@
 
         updateProgress(50);
         
-        const result = await resp.json();
-        
-        // Konvertiere base64 zurück zu Blob
-        const buf = Buffer.from(result.file, 'base64');
+        const buf = await resp.arrayBuffer();
         webProcessedBlob = new Blob([buf], {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
         
-        // Verwende die Statistiken direkt aus der Response
-        const stats = result.stats;
-        totalSiemensCount.textContent = stats.totalSiemens;
-        searchedValuesCount.textContent = stats.searchedValues;
-        foundWebValuesCount.textContent = stats.foundWebValues;
-        foundCount.textContent = `${stats.green} (${stats.greenPercentage}%)`;
-        diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
-        missingCount.textContent = `${stats.orange} (${stats.orangePercentage}%)`;
+        // Get real statistics from the processed Excel file
+        const statsForm = new FormData();
+        statsForm.append('file', new File([webProcessedBlob], 'Web_Vergleich_Siemens.xlsx'));
         
-        console.log('Web search stats:', stats);
+        try {
+          const statsResp = await fetch('/api/web-search-stats', {
+            method: 'POST',
+            body: statsForm
+          });
+          
+          if (statsResp.ok) {
+            const stats = await statsResp.json();
+            totalSiemensCount.textContent = stats.totalSiemens;
+            searchedValuesCount.textContent = stats.searchedValues;
+            foundWebValuesCount.textContent = stats.foundWebValues;
+            foundCount.textContent = `${stats.green} (${stats.greenPercentage}%)`;
+            diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
+            missingCount.textContent = `${stats.orange} (${stats.orangePercentage}%)`;
+            
+            // Debug info in console
+            if (stats.debug) {
+              console.log('Debug info:', stats.debug);
+              console.log('Found colors:', stats.debug.foundColors);
+            }
+          } else {
+            // Fallback to placeholder stats
+            totalSiemensCount.textContent = '?';
+            searchedValuesCount.textContent = '?';
+            foundWebValuesCount.textContent = '?';
+            foundCount.textContent = '? (0%)';
+            diffCount.textContent = '? (0%)';
+            missingCount.textContent = '? (0%)';
+          }
+        } catch (statsErr) {
+          console.error('Error getting stats:', statsErr);
+          // Fallback to placeholder stats
+          totalSiemensCount.textContent = '?';
+          searchedValuesCount.textContent = '?';
+          foundWebValuesCount.textContent = '?';
+          foundCount.textContent = '? (0%)';
+          diffCount.textContent = '? (0%)';
+          missingCount.textContent = '? (0%)';
+        }
         
         webStats.classList.remove('hidden');
         

@@ -522,24 +522,18 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
       if (a2v.startsWith('A2V')) {
         siemensRows++;
         
-        // Zähle gesuchte Werte (alle Spalten die geprüft wurden)
-        let rowSearchedValues = 0;
-        let rowWebValues = 0;
-        
+        // Zähle Web-Werte in dieser Zeile (nur Zellen mit Farbmarkierungen)
         for (let c = 1; c <= ws.columnCount; c++) {
           const cell = ws.getCell(r, c);
-          // Jede Zelle in einer Siemens-Zeile wurde gesucht
-          rowSearchedValues++;
-          
           if (cell.fill && cell.fill.fgColor) {
-            rowWebValues++;
+            totalWebValues++;
           }
         }
-        
-        searchedValues += rowSearchedValues;
-        totalWebValues += rowWebValues;
       }
     }
+    
+    // Gesuchte Werte = Anzahl Siemens-Zeilen × 8 (8 Datenfelder pro Produkt)
+    searchedValues = siemensRows * 8;
     
     res.json({
       totalSiemens: siemensRows,
@@ -756,65 +750,10 @@ app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) =
       }
     }
 
-    // Berechne Statistiken direkt aus der verarbeiteten Datei
-    let greenCount = 0;  // Übereinstimmungen (grün)
-    let redCount = 0;    // Abweichungen (rot)
-    let orangeCount = 0; // Fehlende Web-Werte (orange)
-    let totalWebValues = 0; // Gefundene Web-Werte
-    let siemensRowsInResult = 0; // Anzahl Siemens-Zeilen in der Endtabelle
-    
-    for (const ws of siemensWb.worksheets) {
-      const lastRow = ws.lastRow ? ws.lastRow.number : 0;
-      for (let r = 5; r <= lastRow; r++) { // Start from row 5 (after labels)
-        // Prüfe ob es eine Siemens-Zeile ist (A2V-Nummer in Spalte Z)
-        const a2vCell = ws.getCell(`Z${r}`);
-        const a2v = (a2vCell.value || '').toString().trim().toUpperCase();
-        
-        if (a2v.startsWith('A2V')) {
-          siemensRowsInResult++;
-          
-          // Zähle Web-Werte in dieser Zeile (nur Web-Wert-Spalten)
-          for (let c = 1; c <= ws.columnCount; c++) {
-            const cell = ws.getCell(r, c);
-            if (cell.fill && cell.fill.fgColor) {
-              const color = cell.fill.fgColor.argb;
-              totalWebValues++;
-              
-              if (color === 'FFD5F4E6') { // Green - Übereinstimmungen
-                greenCount++;
-              } else if (color === 'FFFDEAEA') { // Red - Abweichungen
-                redCount++;
-              } else if (color === 'FFFFEAA7') { // Orange - Fehlende Web-Werte
-                orangeCount++;
-              }
-            }
-          }
-        }
-      }
-    }
-    
-    const totalSiemens = siemensRowsInResult; // Anzahl Siemens-Zeilen in der Endtabelle
-    const searchedValues = totalSiemens * 8; // 8 Datenfelder pro Siemens-Produkt
-    
     const out = await siemensWb.xlsx.writeBuffer();
     res.setHeader('Content-Type','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition','attachment; filename="Web_Vergleich_Siemens.xlsx"');
-    
-    // Sende Statistiken als JSON-Response statt als Datei
-    res.json({
-      file: Buffer.from(out).toString('base64'),
-      stats: {
-        totalSiemens: totalSiemens,
-        searchedValues: searchedValues,
-        foundWebValues: totalWebValues,
-        green: greenCount,
-        red: redCount,
-        orange: orangeCount,
-        greenPercentage: totalWebValues > 0 ? Math.round((greenCount / totalWebValues) * 100) : 0,
-        redPercentage: totalWebValues > 0 ? Math.round((redCount / totalWebValues) * 100) : 0,
-        orangePercentage: totalWebValues > 0 ? Math.round((orangeCount / totalWebValues) * 100) : 0
-      }
-    });
+    res.send(Buffer.from(out));
 
   } catch (err) {
     console.error(err);
