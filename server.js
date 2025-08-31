@@ -523,7 +523,7 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
               greenCount++;
             } else if (color === 'FFFDEAEA') { // Red - Abweichungen
               redCount++;
-            } else if (color === 'FFFFEAA7') { // Orange - Fehlende Web-Werte
+            } else if (color === 'FFFFEAA7') { // Orange - Produkt im Web nicht gefunden
               orangeCount++;
             }
           }
