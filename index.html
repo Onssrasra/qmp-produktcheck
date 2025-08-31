@@ -377,18 +377,18 @@
       <!-- Pipeline Steps -->
       <div class="pipeline-steps">
         <div class="step active" id="step-1">
-          <div class="step-number">1</div>
+          <div class="step-number">📁</div>
           <div class="step-title">Datei Upload</div>
         </div>
         <div class="step" id="step-2">
-          <div class="step-number">2</div>
+          <div class="step-number">✅</div>
           <div class="step-title">Qualitätsprüfung</div>
           <div class="step-desc">alle Produkte</div>
         </div>
         <div class="step" id="step-3">
-          <div class="step-number">3</div>
+          <div class="step-number">🔍</div>
           <div class="step-title">Web-Suche</div>
-          <div class="step-desc">nur Siemens A2V</div>
+          <div class="step-desc">nur Siemens Produkte</div>
         </div>
       </div>
 
@@ -422,18 +422,18 @@
           </div>
           <div class="stat-card green">
             <div class="stat-number" id="completeCount">0</div>
-            <div class="stat-label">Vollständige & richtige (0%)</div>
+            <div class="stat-label">Vollständige & richtige</div>
           </div>
           <div class="stat-card red">
             <div class="stat-number" id="incompleteCount">0</div>
-            <div class="stat-label">Unvollständige oder unplausibel (0%)</div>
+            <div class="stat-label">Unvollständige oder unplausibel</div>
           </div>
         </div>
       </div>
 
       <!-- Step 3: Web Search -->
       <div class="action-section disabled" id="web-search-section">
-        <h3>Web-Suche</h3>
+        <h3>Web-Suche (nur für Siemens Produkte)</h3>
         <div class="action-buttons">
           <button id="webSearchBtn" disabled>Web-Suche starten</button>
           <button id="downloadWebBtn" class="secondary" disabled>Excel herunterladen</button>
@@ -636,9 +636,9 @@
           
                      if (statsResp.ok) {
              const stats = await statsResp.json();
-             totalQualityCount.textContent = stats.total;
-             completeCount.textContent = `${stats.complete} (${stats.completePercentage}%)`;
-             incompleteCount.textContent = `${stats.incomplete} (${stats.incompletePercentage}%)`;
+             totalQualityCount.textContent = `${stats.total} (${stats.completePercentage}%)`;
+             completeCount.textContent = stats.complete;
+             incompleteCount.textContent = stats.incomplete;
              
              // Debug info in console
              if (stats.debug) {
@@ -647,16 +647,16 @@
              }
            } else {
              // Fallback to placeholder stats
-             totalQualityCount.textContent = '?';
-             completeCount.textContent = '? (0%)';
-             incompleteCount.textContent = '? (0%)';
+             totalQualityCount.textContent = '? (0%)';
+             completeCount.textContent = '?';
+             incompleteCount.textContent = '?';
            }
                  } catch (statsErr) {
            console.error('Error getting quality stats:', statsErr);
            // Fallback to placeholder stats
-           totalQualityCount.textContent = '?';
-           completeCount.textContent = '? (0%)';
-           incompleteCount.textContent = '? (0%)';
+           totalQualityCount.textContent = '? (0%)';
+           completeCount.textContent = '?';
+           incompleteCount.textContent = '?';
          }
         
         qualityStats.classList.remove('hidden');

@@ -368,8 +368,8 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
             }
             // Wenn DB-Wert fehlt, aber Web-Wert vorhanden → keine Markierung
           } else {
-            // Web-Wert fehlt, aber DB-Wert vorhanden → orange
-            if (hasDb) fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
+            // Web-Wert fehlt → orange (immer wenn hasWeb = false)
+            fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
           }
         }
       }
@@ -488,11 +488,10 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     // 2. Gesuchte Werte = Gesamt Siemens-Produkte × 8 (8 Spaltenpaare)
     const searchedValues = totalSiemens * 8;
     
-    // 3. Gefundene Web-Werte = Nicht-leere Zellen in Web-Wert Spalten
-    let foundWebValues = 0;
+    // 3. Gefundene Web-Werte = Übereinstimmungen + Abweichungen (Grün + Rot)
     let greenCount = 0;  // Übereinstimmungen (grün)
     let redCount = 0;    // Abweichungen (rot)
-    let orangeCount = 0; // Fehlende Web-Werte (orange)
+    let orangeCount = 0; // Produkt im Web nicht gefunden (orange)
     
     // Debug: Log all found colors
     const foundColors = new Set();
@@ -503,33 +502,25 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
       for (let c = 1; c <= ws.columnCount; c++) {
         const cell = ws.getCell(r, c);
         
-        // Prüfe ob es eine Web-Wert Spalte ist (gerade Spalten nach DB-Wert Spalten)
-        // Web-Wert Spalten sind: D, F, H, J, L, N, P, R (2, 4, 6, 8, 10, 12, 14, 16)
-        if (c % 2 === 0 && c <= 16) { // Nur die ersten 8 Web-Wert Spalten
-          const cellValue = cell.value;
+        // Prüfe Farbmarkierungen
+        if (cell.fill && cell.fill.fgColor) {
+          const color = cell.fill.fgColor.argb;
+          foundColors.add(color);
           
-          // Prüfe ob Web-Wert nicht leer ist
-          if (cellValue !== null && cellValue !== undefined && cellValue !== '') {
-            foundWebValues++;
-          }
-          
-          // Prüfe Farbmarkierungen
-          if (cell.fill && cell.fill.fgColor) {
-            const color = cell.fill.fgColor.argb;
-            foundColors.add(color);
-            
-            // Check only the specific colors used in the system
-            if (color === 'FFD5F4E6') { // Green - Übereinstimmungen
-              greenCount++;
-            } else if (color === 'FFFDEAEA') { // Red - Abweichungen
-              redCount++;
-            } else if (color === 'FFFFEAA7') { // Orange - Produkt im Web nicht gefunden
-              orangeCount++;
-            }
+          // Check only the specific colors used in the system
+          if (color === 'FFD5F4E6') { // Green - Übereinstimmungen
+            greenCount++;
+          } else if (color === 'FFFDEAEA') { // Red - Abweichungen
+            redCount++;
+          } else if (color === 'FFFFEAA7') { // Orange - Produkt im Web nicht gefunden
+            orangeCount++;
           }
         }
       }
     }
+    
+    // Gefundene Web-Werte = Grün + Rot
+    const foundWebValues = greenCount + redCount;
     
     console.log('Found colors in Excel:', Array.from(foundColors));
     console.log('Counts:', { 
@@ -749,8 +740,8 @@ app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) =
             }
             // Wenn DB-Wert fehlt, aber Web-Wert vorhanden → keine Markierung
           } else {
-            // Web-Wert fehlt, aber DB-Wert vorhanden → orange
-            if (hasDb) fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
+            // Web-Wert fehlt → orange (immer wenn hasWeb = false)
+            fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
           }
         }
       }
