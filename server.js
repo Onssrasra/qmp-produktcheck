@@ -479,79 +479,121 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     await wb.xlsx.load(req.file.buffer);
     const ws = wb.worksheets[0];
     
-    let greenCount = 0;  // Übereinstimmungen (grün)
-    let redCount = 0;    // Abweichungen (rot)
-    let orangeCount = 0; // Fehlende Web-Werte (orange)
-    
-    // Debug: Log all found colors
-    const foundColors = new Set();
-    
-    // Count colored cells in web value columns
+    // Find A2V column (should be column Z or its new position after column insertions)
+    let a2vColumn = null;
+    const headerRow = ws.getRow(3); // Header row
+    for (let c = 1; c <= headerRow.cellCount; c++) {
+      const cellValue = headerRow.getCell(c).value;
+      if (cellValue && cellValue.toString().includes('A2V')) {
+        a2vColumn = c;
+        break;
+      }
+    }
+
+    if (!a2vColumn) {
+      return res.status(400).json({ error: 'A2V-Spalte nicht gefunden' });
+    }
+
+    // Count Siemens products (A2V entries)
+    let totalSiemensProducts = 0;
     const lastRow = ws.lastRow ? ws.lastRow.number : 0;
-    for (let r = 5; r <= lastRow; r++) { // Start from row 5 (after labels)
-      for (let c = 1; c <= ws.columnCount; c++) {
-        const cell = ws.getCell(r, c);
-        if (cell.fill && cell.fill.fgColor) {
-          const color = cell.fill.fgColor.argb;
-          foundColors.add(color);
-          
-          // Check only the specific colors used in the system
-          if (color === 'FFD5F4E6') { // Green - Übereinstimmungen
-            greenCount++;
-          } else if (color === 'FFFDEAEA') { // Red - Abweichungen
-            redCount++;
-          } else if (color === 'FFFFEAA7') { // Orange - Fehlende Web-Werte
-            orangeCount++;
-          }
-        }
+    
+    for (let r = 5; r <= lastRow; r++) { // Start from row 5 (first data row after labels)
+      const a2vValue = ws.getCell(r, a2vColumn).value;
+      if (a2vValue && a2vValue.toString().trim().toUpperCase().startsWith('A2V')) {
+        totalSiemensProducts++;
       }
     }
+
+    // Count web values and their status
+    let greenCount = 0;   // Übereinstimmungen
+    let redCount = 0;     // Abweichungen  
+    let orangeCount = 0;  // Fehlende Web-Werte
+    let totalWebValues = 0; // Total found web values (green + red + orange)
     
-    console.log('Found colors in Excel:', Array.from(foundColors));
-    console.log('Counts:', { green: greenCount, red: redCount, orange: orangeCount });
+    // Define the web columns we're looking for (based on DB_WEB_PAIRS)
+    const webColumnPatterns = ['Web-Wert']; // Look for columns with this pattern
+    const webColumns = [];
     
-    let siemensRows = 0;        // Anzahl Zeilen mit A2V-Nummern
-    let searchedValues = 0;     // Gesuchte Werte (alle Zeilen die im Web gesucht wurden)
-    let totalWebValues = 0;     // Gefundene Web-Werte (alle Zellen)
-    
-    // Zähle Siemens-Zeilen und Web-Werte
-    for (let r = 5; r <= lastRow; r++) { // Start from row 5 (after labels)
-      const a2vCell = ws.getCell(`Z${r}`); // A2V-Nummer in Spalte Z
-      const a2v = (a2vCell.value || '').toString().trim().toUpperCase();
+    // Find all web columns
+    const labelRow = ws.getRow(4); // Label row with "DB-Wert" / "Web-Wert"
+    for (let c = 1; c <= labelRow.cellCount; c++) {
+      const cellValue = labelRow.getCell(c).value;
+      if (cellValue && cellValue.toString() === 'Web-Wert') {
+        webColumns.push(c);
+      }
+    }
+
+    console.log(`Found ${webColumns.length} web columns at positions:`, webColumns);
+    console.log(`Total Siemens products: ${totalSiemensProducts}`);
+
+    // Count colored cells in web columns only
+    for (let r = 5; r <= lastRow; r++) { // Start from row 5 (first data row)
+      const a2vValue = ws.getCell(r, a2vColumn).value;
       
-      if (a2v.startsWith('A2V')) {
-        siemensRows++;
-        
-        // Zähle Web-Werte in dieser Zeile (nur Zellen mit Farbmarkierungen)
-        for (let c = 1; c <= ws.columnCount; c++) {
-          const cell = ws.getCell(r, c);
-          if (cell.fill && cell.fill.fgColor) {
+      // Only count rows with A2V numbers
+      if (a2vValue && a2vValue.toString().trim().toUpperCase().startsWith('A2V')) {
+        for (const webCol of webColumns) {
+          const cell = ws.getCell(r, webCol);
+          
+          // Check if cell has a value (web value was found)
+          if (cell.value !== null && cell.value !== undefined && cell.value !== '') {
             totalWebValues++;
+            
+            // Check cell color
+            if (cell.fill && cell.fill.fgColor) {
+              const color = cell.fill.fgColor.argb;
+              
+              if (color === 'FFD5F4E6') { // Green - Übereinstimmungen
+                greenCount++;
+              } else if (color === 'FFFDEAEA') { // Red - Abweichungen
+                redCount++;
+              }
+            }
+          } else if (cell.fill && cell.fill.fgColor && cell.fill.fgColor.argb === 'FFFFEAA7') {
+            // Orange - Fehlende Web-Werte (cell is empty but marked orange)
+            orangeCount++;
+            totalWebValues++; // Count as attempted web value
           }
         }
       }
     }
+
+    // Calculate totals
+    const totalSearchedValues = totalSiemensProducts * webColumns.length; // 8 web columns per product
+    const foundWebValuesCount = greenCount + redCount + orangeCount;
     
-    // Gesuchte Werte = Anzahl Siemens-Zeilen × 8 (8 Datenfelder pro Produkt)
-    searchedValues = siemensRows * 8;
-    
-    res.json({
-      totalSiemens: siemensRows,
-      searchedValues: searchedValues,
-      foundWebValues: totalWebValues,
+    // Calculate percentages
+    const foundPercentage = totalSearchedValues > 0 ? Math.round((foundWebValuesCount / totalSearchedValues) * 100) : 0;
+    const greenPercentage = foundWebValuesCount > 0 ? Math.round((greenCount / foundWebValuesCount) * 100) : 0;
+    const redPercentage = foundWebValuesCount > 0 ? Math.round((redCount / foundWebValuesCount) * 100) : 0;
+    const orangePercentage = foundWebValuesCount > 0 ? Math.round((orangeCount / foundWebValuesCount) * 100) : 0;
+
+    console.log('Web search stats calculated:', {
+      totalSiemensProducts,
+      totalSearchedValues,
+      foundWebValuesCount,
       green: greenCount,
       red: redCount,
       orange: orangeCount,
-      greenPercentage: totalWebValues > 0 ? Math.round((greenCount / totalWebValues) * 100) : 0,
-      redPercentage: totalWebValues > 0 ? Math.round((redCount / totalWebValues) * 100) : 0,
-      orangePercentage: totalWebValues > 0 ? Math.round((orangeCount / totalWebValues) * 100) : 0,
+      percentages: { found: foundPercentage, green: greenPercentage, red: redPercentage, orange: orangePercentage }
+    });
+
+    res.json({
+      totalSiemens: totalSiemensProducts,
+      searchedValues: totalSearchedValues,
+      foundWebValues: foundWebValuesCount,
+      green: greenCount,
+      greenPercentage,
+      red: redCount,
+      redPercentage,
+      orange: orangeCount,
+      orangePercentage,
       debug: {
-        foundColors: Array.from(foundColors),
+        webColumnsFound: webColumns.length,
+        webColumns: webColumns,
         totalRows: lastRow,
-        totalColumns: ws.columnCount,
-        siemensRows: siemensRows,
-        searchedValues: searchedValues,
-        totalWebValues: totalWebValues
+        a2vColumn: a2vColumn
       }
     });
 
