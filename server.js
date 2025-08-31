@@ -511,7 +511,8 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     console.log('Counts:', { green: greenCount, red: redCount, orange: orangeCount });
     
     let siemensRows = 0;        // Anzahl Zeilen mit A2V-Nummern
-    let totalWebValues = 0;     // Gesamt Web-Werte (alle Zellen)
+    let searchedValues = 0;     // Gesuchte Werte (alle Zeilen die im Web gesucht wurden)
+    let totalWebValues = 0;     // Gefundene Web-Werte (alle Zellen)
     
     // Zähle Siemens-Zeilen und Web-Werte
     for (let r = 5; r <= lastRow; r++) { // Start from row 5 (after labels)
@@ -521,18 +522,28 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
       if (a2v.startsWith('A2V')) {
         siemensRows++;
         
-        // Zähle Web-Werte in dieser Zeile
+        // Zähle gesuchte Werte (alle Spalten die geprüft wurden)
+        let rowSearchedValues = 0;
+        let rowWebValues = 0;
+        
         for (let c = 1; c <= ws.columnCount; c++) {
           const cell = ws.getCell(r, c);
+          // Jede Zelle in einer Siemens-Zeile wurde gesucht
+          rowSearchedValues++;
+          
           if (cell.fill && cell.fill.fgColor) {
-            totalWebValues++;
+            rowWebValues++;
           }
         }
+        
+        searchedValues += rowSearchedValues;
+        totalWebValues += rowWebValues;
       }
     }
     
     res.json({
       totalSiemens: siemensRows,
+      searchedValues: searchedValues,
       foundWebValues: totalWebValues,
       green: greenCount,
       red: redCount,
@@ -545,6 +556,7 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
         totalRows: lastRow,
         totalColumns: ws.columnCount,
         siemensRows: siemensRows,
+        searchedValues: searchedValues,
         totalWebValues: totalWebValues
       }
     });

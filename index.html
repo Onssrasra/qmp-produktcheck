@@ -266,6 +266,12 @@
       gap: 12px;
       margin: 15px 0;
     }
+    
+    /* Web Search Stats - 3x2 Layout */
+    #webStats.stats-grid {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, auto);
+    }
 
     .stat-card {
       background: var(--white);
@@ -340,6 +346,12 @@
       button { min-width: auto; }
       .pipeline-steps { flex-direction: column; gap: 12px; }
       .pipeline-steps::before { display: none; }
+      
+      /* Web Search Stats - Mobile Layout */
+      #webStats.stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, auto);
+      }
     }
 
     @media (max-height: 700px) {
@@ -434,6 +446,10 @@
             <div class="stat-label">Gesamt Siemens-Produkte</div>
           </div>
           <div class="stat-card blue">
+            <div class="stat-number" id="searchedValuesCount">0</div>
+            <div class="stat-label">Gesuchte Werte</div>
+          </div>
+          <div class="stat-card blue">
             <div class="stat-number" id="foundWebValuesCount">0</div>
             <div class="stat-label">Gefundene Web-Werte</div>
           </div>
@@ -490,6 +506,7 @@
     const incompleteCount = document.getElementById('incompleteCount');
     const totalQualityCount = document.getElementById('totalQualityCount');
     const totalSiemensCount = document.getElementById('totalSiemensCount');
+    const searchedValuesCount = document.getElementById('searchedValuesCount');
     const foundWebValuesCount = document.getElementById('foundWebValuesCount');
     
     // Steps
@@ -708,6 +725,7 @@
                      if (statsResp.ok) {
              const stats = await statsResp.json();
              totalSiemensCount.textContent = stats.totalSiemens;
+             searchedValuesCount.textContent = stats.searchedValues;
              foundWebValuesCount.textContent = stats.foundWebValues;
              foundCount.textContent = `${stats.green} (${stats.greenPercentage}%)`;
              diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
@@ -721,6 +739,7 @@
            } else {
              // Fallback to placeholder stats
              totalSiemensCount.textContent = '?';
+             searchedValuesCount.textContent = '?';
              foundWebValuesCount.textContent = '?';
              foundCount.textContent = '? (0%)';
              diffCount.textContent = '? (0%)';
@@ -730,6 +749,7 @@
            console.error('Error getting stats:', statsErr);
            // Fallback to placeholder stats
            totalSiemensCount.textContent = '?';
+           searchedValuesCount.textContent = '?';
            foundWebValuesCount.textContent = '?';
            foundCount.textContent = '? (0%)';
            diffCount.textContent = '? (0%)';
