@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <title>Siemens Produktdaten — Qualitätsmonitor</title>
+      <title>DB Produktdaten — Qualitätsmonitor</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -369,8 +369,8 @@
     <div class="card">
       <!-- Header -->
       <div class="header">
-        <h1>Siemens Produktdaten – Qualitätsmonitor</h1>
-        <div class="subtitle">Web-Vergleich, Vollständigkeits- & Plausibilitätsprüfung</div>
+        <h1>Qualitätsmonitor</h1>
+        <div class="subtitle"> Vollständigkeits- & Plausibilitätsprüfung - Siemens Web-Vergleich</div>
         <div class="divider"></div>
       </div>
 
@@ -397,18 +397,19 @@
         <h3>Datei Upload</h3>
         <div id="dropzone" class="dropzone">
           <div class="dropzone-icon">📁</div>
-          <p id="dzText">
-            <strong>Datei hier ablegen</strong><br>
-            oder klicken zum Auswählen
-          </p>
+                      <p id="dzText" class="dropzone-text">
+              <strong>Datei hier ablegen</strong><br>
+              oder klicken zum Auswählen
+            </p>
           <p class="hint">Unterstützt .xlsx und .xls Dateien (max. 50 MB)</p>
         </div>
         <input type="file" id="fileInput" accept=".xlsx,.xls" hidden />
       </div>
 
+      
       <!-- Step 2: Quality Check -->
       <div class="action-section disabled" id="quality-section">
-        <h3>Vollständigkeit & Plausibilität prüfen</h3>
+        <h3> ✅ Vollständigkeit & Plausibilität prüfen</h3>
         <div class="action-buttons">
           <button id="qualityCheckBtn" disabled>Qualitätsprüfung starten</button>
           <button id="downloadQualityBtn" class="secondary" disabled>Excel herunterladen</button>
@@ -455,15 +456,15 @@
           </div>
           <div class="stat-card green">
             <div class="stat-number" id="foundCount">0</div>
-            <div class="stat-label">Übereinstimmungen (0%)</div>
+            <div class="stat-label">Übereinstimmungen</div>
           </div>
           <div class="stat-card red">
             <div class="stat-number" id="diffCount">0</div>
-            <div class="stat-label">Abweichungen (0%)</div>
+            <div class="stat-label">Abweichungen</div>
           </div>
           <div class="stat-card orange">
             <div class="stat-number" id="missingCount">0</div>
-            <div class="stat-label">Produkt im Web nicht gefunden (0%)</div>
+            <div class="stat-label"Fehlende Web-Werte</div>
           </div>
         </div>
       </div>
@@ -690,7 +691,7 @@
       downloadWebBtn.disabled = true;
       webStats.classList.add('hidden');
       
-      statusEl.textContent = 'Web-Suche läuft — Siemens-Produkte (A2V-Nummern) werden gesucht...';
+      statusEl.textContent = 'Web-Suche läuft — Siemens-Produkte werden gesucht...';
       showProgress(true);
       updateProgress(10);
 
