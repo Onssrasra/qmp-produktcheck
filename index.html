@@ -369,8 +369,8 @@
     <div class="card">
       <!-- Header -->
       <div class="header">
-        <h1>Produktdaten – Qualitätsmonitor</h1>
-        <div class="subtitle">Vollständigkeitsprüfung für alle Produkte & Siemens Web-Vergleich</div>
+        <h1>Siemens Produktdaten – Qualitätsmonitor</h1>
+        <div class="subtitle">Web-Vergleich, Vollständigkeits- & Plausibilitätsprüfung</div>
         <div class="divider"></div>
       </div>
 
@@ -388,7 +388,7 @@
         <div class="step" id="step-3">
           <div class="step-number">3</div>
           <div class="step-title">Web-Suche</div>
-          <div class="step-desc">nur Siemens Produkte</div>
+          <div class="step-desc">nur Siemens A2V</div>
         </div>
       </div>
 
@@ -422,11 +422,11 @@
           </div>
           <div class="stat-card green">
             <div class="stat-number" id="completeCount">0</div>
-            <div class="stat-label">Vollständige & richtige</div>
+            <div class="stat-label">Vollständige & richtige (0%)</div>
           </div>
           <div class="stat-card red">
             <div class="stat-number" id="incompleteCount">0</div>
-            <div class="stat-label">Unvollständige oder unplausibel</div>
+            <div class="stat-label">Unvollständige oder unplausibel (0%)</div>
           </div>
         </div>
       </div>
@@ -451,7 +451,7 @@
           </div>
           <div class="stat-card blue">
             <div class="stat-number" id="foundWebValuesCount">0</div>
-            <div class="stat-label">Gefundene Web-Werte (0%)</div>
+            <div class="stat-label">Gefundene Web-Werte</div>
           </div>
           <div class="stat-card green">
             <div class="stat-number" id="foundCount">0</div>
@@ -583,17 +583,14 @@
       selectedFile = file;
       dzText.innerHTML = `<strong>${file.name}</strong><br><span class="hint">Datei bereit zur Verarbeitung</span>`;
       
-      // Enable both sections independently
+      // Enable quality section first
       enableSection(qualitySection, true);
-      enableSection(webSearchSection, true);
       qualityCheckBtn.disabled = false;
-      webSearchBtn.disabled = false;
       
       // Update pipeline steps
       updateStep(2, 'active');
-      updateStep(3, 'active');
       
-      statusEl.textContent = 'Datei erfolgreich hochgeladen — Qualitätsprüfung oder Web-Suche starten.';
+      statusEl.textContent = 'Datei erfolgreich hochgeladen — Qualitätsprüfung starten.';
     }
 
     /* ==================== QUALITY CHECK ==================== */
@@ -669,8 +666,13 @@
         
                  downloadQualityBtn.disabled = false;
          
+         // Enable web search section
+         enableSection(webSearchSection, true);
+         webSearchBtn.disabled = false;
+         
          // Update pipeline steps
          updateStep(2, 'completed');
+         updateStep(3, 'active');
         
       } catch (err) {
         statusEl.textContent = 'Fehler bei Qualitätsprüfung: ' + err.message;
@@ -712,7 +714,7 @@
         
         // Get real statistics from the processed Excel file
         const statsForm = new FormData();
-        statsForm.append('file', new File([webProcessedBlob], 'Web_Vergleich_Siemens.xlsx'));
+        statsForm.append('file', new File([webProcessedBlob], 'Web_Vergleich_Ergebnis.xlsx'));
         
         try {
           const statsResp = await fetch('/api/web-search-stats', {
@@ -724,35 +726,35 @@
              const stats = await statsResp.json();
              totalSiemensCount.textContent = stats.totalSiemens;
              searchedValuesCount.textContent = stats.searchedValues;
-             foundWebValuesCount.textContent = `${stats.foundWebValues} (${stats.foundWebValuesPercentage}%)`;
+             foundWebValuesCount.textContent = stats.foundWebValues;
              foundCount.textContent = `${stats.green} (${stats.greenPercentage}%)`;
              diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
              missingCount.textContent = `${stats.orange} (${stats.orangePercentage}%)`;
-            
-            // Debug info in console
-            if (stats.debug) {
-              console.log('Debug info:', stats.debug);
-              console.log('Found colors:', stats.debug.foundColors);
-            }
-          } else {
-            // Fallback to placeholder stats
-            totalSiemensCount.textContent = '?';
-            searchedValuesCount.textContent = '?';
-            foundWebValuesCount.textContent = '?';
-            foundCount.textContent = '? (0%)';
-            diffCount.textContent = '? (0%)';
-            missingCount.textContent = '? (0%)';
-          }
-        } catch (statsErr) {
-          console.error('Error getting stats:', statsErr);
-          // Fallback to placeholder stats
-          totalSiemensCount.textContent = '?';
-          searchedValuesCount.textContent = '?';
-          foundWebValuesCount.textContent = '?';
-          foundCount.textContent = '? (0%)';
-          diffCount.textContent = '? (0%)';
-          missingCount.textContent = '? (0%)';
-        }
+             
+             // Debug info in console
+             if (stats.debug) {
+               console.log('Debug info:', stats.debug);
+               console.log('Found colors:', stats.debug.foundColors);
+             }
+           } else {
+             // Fallback to placeholder stats
+             totalSiemensCount.textContent = '?';
+             searchedValuesCount.textContent = '?';
+             foundWebValuesCount.textContent = '?';
+             foundCount.textContent = '? (0%)';
+             diffCount.textContent = '? (0%)';
+             missingCount.textContent = '? (0%)';
+           }
+                 } catch (statsErr) {
+           console.error('Error getting stats:', statsErr);
+           // Fallback to placeholder stats
+           totalSiemensCount.textContent = '?';
+           searchedValuesCount.textContent = '?';
+           foundWebValuesCount.textContent = '?';
+           foundCount.textContent = '? (0%)';
+           diffCount.textContent = '? (0%)';
+           missingCount.textContent = '? (0%)';
+         }
         
         webStats.classList.remove('hidden');
         
