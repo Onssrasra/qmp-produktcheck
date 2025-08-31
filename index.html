@@ -153,8 +153,9 @@
       user-select: none;
       position: relative;
       overflow: hidden;
-      margin-bottom: 20px;
+      margin: 0 auto 20px auto;
       min-height: 100px;
+      max-width: 500px;
     }
     
     .dropzone.dragover {
@@ -180,6 +181,12 @@
       font-size: 24px;
       color: var(--grey-4);
       margin-bottom: 4px;
+    }
+
+    .dropzone-text {
+      text-align: center;
+      margin: 0;
+      padding: 20px;
     }
 
     /* Action Sections */
@@ -370,7 +377,7 @@
       <!-- Header -->
       <div class="header">
         <h1>Qualitätsmonitor</h1>
-        <div class="subtitle"> Vollständigkeits- & Plausibilitätsprüfung - Siemens Web-Vergleich</div>
+        <div class="subtitle">Vollständigkeits- & Plausibilitätsprüfung - Siemens Web-Vergleich</div>
         <div class="divider"></div>
       </div>
 
@@ -394,22 +401,23 @@
 
       <!-- Step 1: Upload -->
       <div class="action-section" id="upload-section">
-        <h3> 📁 Datei Upload</h3>
-        <div id="dropzone" class="dropzone">
-          <div class="dropzone-icon">📁</div>
-                      <p id="dzText" class="dropzone-text">
+        <h3>📁 Datei Upload</h3>
+                <center>
+          <div id="dropzone" class="dropzone">
+            <div class="dropzone-icon">📁</div>
+            <p id="dzText" class="dropzone-text">
               <strong>Datei hier ablegen</strong><br>
               oder klicken zum Auswählen
             </p>
-          <p class="hint">Unterstützt .xlsx und .xls Dateien (max. 50 MB)</p>
-        </div>
+            <p class="hint">Unterstützt .xlsx und .xls Dateien (max. 50 MB)</p>
+          </div>
+        </center>
         <input type="file" id="fileInput" accept=".xlsx,.xls" hidden />
       </div>
 
-      
       <!-- Step 2: Quality Check -->
       <div class="action-section disabled" id="quality-section">
-        <h3> ✅ Vollständigkeit & Plausibilität prüfen</h3>
+        <h3>✅ Vollständigkeit & Plausibilität prüfen</h3>
         <div class="action-buttons">
           <button id="qualityCheckBtn" disabled>Qualitätsprüfung starten</button>
           <button id="downloadQualityBtn" class="secondary" disabled>Excel herunterladen</button>
@@ -434,7 +442,7 @@
 
       <!-- Step 3: Web Search -->
       <div class="action-section disabled" id="web-search-section">
-        <h3> 🔍 Web-Suche (nur für Siemens Produkte)</h3>
+        <h3>🔍 Web-Suche (nur für Siemens Produkte)</h3>
         <div class="action-buttons">
           <button id="webSearchBtn" disabled>Web-Suche starten</button>
           <button id="downloadWebBtn" class="secondary" disabled>Excel herunterladen</button>
@@ -464,7 +472,7 @@
           </div>
           <div class="stat-card orange">
             <div class="stat-number" id="missingCount">0</div>
-            <div class="stat-label">Fehlende Web-Werte</div>
+            <div class="stat-label">Produkt im Web nicht gefunden</div>
           </div>
         </div>
       </div>
