@@ -514,32 +514,36 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     let searchedValues = 0;     // Gesuchte Werte (alle Zeilen die im Web gesucht wurden)
     let totalWebValues = 0;     // Gefundene Web-Werte (alle Zellen)
     
-    // Finde A2V-Spalte dynamisch
-    let a2vColumn = null;
+    // Finde Siemens Mobility Materialnummer-Spalte dynamisch
+    let siemensColumn = null;
     const headerRow = ws.getRow(3); // Header row
+    console.log('Suche Siemens Mobility Materialnummer-Spalte in Zeile 3...');
+    
     for (let c = 1; c <= headerRow.cellCount; c++) {
       const cellValue = headerRow.getCell(c).value;
-      if (cellValue && cellValue.toString().includes('A2V')) {
-        a2vColumn = c;
+      console.log(`Spalte ${c}: "${cellValue}"`);
+      if (cellValue && cellValue.toString().includes('Siemens Mobility Materialnummer')) {
+        siemensColumn = c;
+        console.log(`Siemens Mobility Materialnummer-Spalte gefunden in Spalte ${c}: "${cellValue}"`);
         break;
       }
     }
     
-    if (!a2vColumn) {
-      console.log('A2V-Spalte nicht gefunden, verwende Spalte Z');
-      a2vColumn = 26; // Spalte Z als Fallback
+    if (!siemensColumn) {
+      console.log('Siemens Mobility Materialnummer-Spalte nicht gefunden, verwende Spalte Z');
+      siemensColumn = 26; // Spalte Z als Fallback
     }
     
-    console.log(`A2V-Spalte gefunden: ${a2vColumn}`);
+    console.log(`Verwende Siemens Mobility Materialnummer-Spalte: ${siemensColumn}`);
     
     // Zähle Siemens-Zeilen und Web-Werte
     for (let r = 5; r <= lastRow; r++) { // Start from row 5 (after labels)
-      const a2vCell = ws.getCell(r, a2vColumn);
-      const a2v = (a2vCell.value || '').toString().trim().toUpperCase();
+      const siemensCell = ws.getCell(r, siemensColumn);
+      const siemensValue = (siemensCell.value || '').toString().trim().toUpperCase();
       
-      if (a2v.startsWith('A2V')) {
+      if (siemensValue.startsWith('A2V')) {
         siemensRows++;
-        console.log(`Siemens-Zeile gefunden: ${r}, A2V: ${a2v}`);
+        console.log(`Siemens-Zeile gefunden: ${r}, A2V: ${siemensValue}`);
         
         // Zähle Web-Werte in dieser Zeile (nur Zellen mit Farbmarkierungen)
         for (let c = 1; c <= ws.columnCount; c++) {
@@ -582,7 +586,7 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
         siemensRows: siemensRows,
         searchedValues: searchedValues,
         totalWebValues: totalWebValues,
-        a2vColumn: a2vColumn
+        siemensColumn: siemensColumn
       }
     });
 
