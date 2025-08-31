@@ -514,27 +514,18 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     let searchedValues = 0;     // Gesuchte Werte (alle Zeilen die im Web gesucht wurden)
     let totalWebValues = 0;     // Gefundene Web-Werte (alle Zellen)
     
-    // Finde Siemens Mobility Materialnummer-Spalte dynamisch
-    let siemensColumn = null;
-    const headerRow = ws.getRow(3); // Header row
-    console.log('Suche Siemens Mobility Materialnummer-Spalte in Zeile 3...');
+    // Verwende Spalte Z für Siemens Mobility Materialnummer
+    const siemensColumn = 26; // Spalte Z
+    console.log(`Verwende Spalte Z (${siemensColumn}) für Siemens Mobility Materialnummer`);
     
-    for (let c = 1; c <= headerRow.cellCount; c++) {
-      const cellValue = headerRow.getCell(c).value;
-      console.log(`Spalte ${c}: "${cellValue}"`);
-      if (cellValue && cellValue.toString().includes('Siemens Mobility Materialnummer')) {
-        siemensColumn = c;
-        console.log(`Siemens Mobility Materialnummer-Spalte gefunden in Spalte ${c}: "${cellValue}"`);
-        break;
-      }
+    // Prüfe ob Spalte Z den richtigen Header hat
+    const headerCell = ws.getCell(3, siemensColumn);
+    const headerValue = headerCell.value;
+    console.log(`Spalte Z Header (Zeile 3): "${headerValue}"`);
+    
+    if (!headerValue || !headerValue.toString().includes('Siemens Mobility Materialnummer')) {
+      console.log('Warnung: Spalte Z hat nicht den erwarteten Header "Siemens Mobility Materialnummer"');
     }
-    
-    if (!siemensColumn) {
-      console.log('Siemens Mobility Materialnummer-Spalte nicht gefunden, verwende Spalte Z');
-      siemensColumn = 26; // Spalte Z als Fallback
-    }
-    
-    console.log(`Verwende Siemens Mobility Materialnummer-Spalte: ${siemensColumn}`);
     
     // Zähle Siemens-Zeilen und Web-Werte
     for (let r = 5; r <= lastRow; r++) { // Start from row 5 (after labels)
