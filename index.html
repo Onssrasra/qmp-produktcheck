@@ -1,1100 +1,185 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DB Produktdaten — Qualitätsmonitor</title>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Web-Vergleich – Analyse</title>
   <style>
-    :root {
-      --db-red: #c20015;
-      --db-red-dark: #a00012;
-      --grey-1: #f5f5f5;
-      --grey-2: #e6e6e6;
-      --grey-3: #bfbfbf;
-      --grey-4: #8c8c8c;
-      --text: #222;
-      --white: #ffffff;
-      --black: #000000;
-      --green: #22c55e;
-      --orange: #f97316;
-      --blue: #3b82f6;
-      --light-green: #86efac;
-      --light-red: #fca5a5;
-      --light-orange: #fed7aa;
-      --light-blue: #93c5fd;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: linear-gradient(135deg, var(--grey-1) 0%, var(--grey-2) 100%);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 10px 0;
-    }
-    .wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-    
-    /* Card Design */
-    .card {
-      background: var(--white);
-      border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      padding: 30px;
-      border: 1px solid var(--grey-2);
-      margin-bottom: 20px;
-    }
-    
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    
-    .header h1 {
-      margin: 0;
-      font-weight: 700;
-      font-size: 28px;
-      letter-spacing: -0.5px;
-      color: var(--db-red);
-      margin-bottom: 8px;
-    }
-
-    .header .subtitle {
-      font-size: 16px;
-      color: var(--grey-4);
-      margin-bottom: 15px;
-    }
-    
-    .divider {
-      width: 100%;
-      height: 3px;
-      background: var(--db-red);
-      border-radius: 2px;
-      margin: 0 auto;
-    }
-
-    /* Pipeline Steps */
-    .pipeline-steps {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 25px;
-      position: relative;
-    }
-
-    .pipeline-steps::before {
-      content: '';
-      position: absolute;
-      top: 16px;
-      left: 10%;
-      right: 10%;
-      height: 2px;
-      background: var(--grey-3);
-      z-index: 1;
-    }
-
-    .step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      flex: 1;
-      position: relative;
-      z-index: 2;
-    }
-
-    .step-number {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--grey-3);
-      color: var(--white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      margin-bottom: 6px;
-      font-size: 14px;
-    }
-
-    .step.active .step-number {
-      background: var(--db-red);
-    }
-
-    .step.completed .step-number {
-      background: var(--green);
-    }
-
-    .step-title {
-      font-weight: 600;
-      margin-bottom: 2px;
-      font-size: 13px;
-    }
-
-    .step-desc {
-      font-size: 10px;
-      color: var(--grey-4);
-    }
-
-    /* Dropzone */
-    .dropzone {
-      border: 2px dashed var(--grey-3);
-      border-radius: 10px;
-      padding: 20px 15px;
-      background: var(--grey-1);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      user-select: none;
-      position: relative;
-      overflow: hidden;
-      margin: 0 auto 20px auto;
-      min-height: 100px;
-      max-width: 500px;
-    }
-    
-    .dropzone.dragover {
-      border-color: var(--db-red);
-      background: var(--white);
-      transform: scale(1.02);
-      box-shadow: 0 8px 32px rgba(194, 0, 21, 0.15);
-    }
-    
-    .dropzone strong {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    
-    .hint {
-      font-size: 12px;
-      color: var(--grey-4);
-      margin-top: 4px;
-    }
-    
-    .dropzone-icon {
-      font-size: 24px;
-      color: var(--grey-4);
-      margin-bottom: 4px;
-    }
-
-    .dropzone-text {
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-    }
-
-    /* Action Sections */
-    .action-section {
-      margin-bottom: 25px;
-    }
-
-    .action-section h3 {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .action-section.disabled {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    /* Buttons */
-    button {
-      min-width: 160px;
-      padding: 12px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 10px;
-      border: 2px solid var(--db-red);
-      background: var(--db-red);
-      color: var(--white);
-      transition: all 0.3s ease;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    button:hover:not(:disabled) {
-      background: var(--db-red-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(194, 0, 21, 0.3);
-    }
-    
-    button.secondary {
-      background: var(--white);
-      color: var(--db-red);
-    }
-    
-    button.secondary:hover:not(:disabled) {
-      background: var(--grey-1);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    }
-
-    button.success {
-      background: var(--green);
-      border-color: var(--green);
-      color: var(--white);
-    }
-
-    button.success:hover:not(:disabled) {
-      background: #16a34a;
-      border-color: #16a34a;
-    }
-    
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    /* Charts Container */
-    .charts-container {
-      margin: 20px 0;
-      padding: 20px;
-      background: var(--grey-1);
-      border-radius: 12px;
-      border: 1px solid var(--grey-2);
-    }
-
-    .charts-container.hidden {
-      display: none;
-    }
-
-    .charts-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    /* Quality Charts */
-    .quality-chart {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 20px 0;
-    }
-
-    .chart-wrapper {
-      position: relative;
-      width: 300px;
-      height: 300px;
-      margin: 0 20px;
-    }
-
-    /* Web Search Charts */
-    .web-charts {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 30px;
-      justify-items: center;
-    }
-
-    .web-chart-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .chart-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 10px;
-      text-align: center;
-    }
-
-    .chart-subtitle {
-      font-size: 12px;
-      color: var(--grey-4);
-      margin-bottom: 15px;
-      text-align: center;
-    }
-
-    .flow-arrow {
-      font-size: 24px;
-      color: var(--grey-4);
-      margin: 10px 0;
-    }
-
-    /* Legend */
-    .custom-legend {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 15px;
-      font-size: 12px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 2px;
-    }
-
-    /* Status & Progress */
-    .status {
-      margin-top: 20px;
-      min-height: 20px;
-      font-size: 14px;
-      color: var(--text);
-      text-align: center;
-      font-weight: 500;
-    }
-    
-    .progress {
-      width: 100%;
-      height: 6px;
-      background: var(--grey-2);
-      border-radius: 999px;
-      overflow: hidden;
-      margin-top: 12px;
-      display: none;
-    }
-    
-    .progress > div {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--db-red), var(--db-red-dark));
-      transition: width 0.3s ease;
-      border-radius: 999px;
-    }
-
-    .hidden {
-      display: none;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-      .wrap { padding: 0 15px; }
-      .card { padding: 20px; }
-      .header h1 { font-size: 24px; }
-      .dropzone { padding: 15px; min-height: 80px; }
-      .action-buttons { flex-direction: column; align-items: stretch; }
-      button { min-width: auto; }
-      .pipeline-steps { flex-direction: column; gap: 12px; }
-      .pipeline-steps::before { display: none; }
-      
-      .chart-wrapper {
-        width: 250px;
-        height: 250px;
-        margin: 0 10px;
-      }
-      
-      .web-charts {
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-    }
-
-    @media (max-height: 700px) {
-      .card { padding: 20px; }
-      .header { margin-bottom: 20px; }
-      .pipeline-steps { margin-bottom: 20px; }
-      .action-section { margin-bottom: 20px; }
-      .dropzone { min-height: 80px; padding: 15px; }
-      
-      .chart-wrapper {
-        width: 200px;
-        height: 200px;
-      }
-    }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; color:#111; }
+    h1 { margin: 0 0 8px; }
+    .subtitle{ color:#555; margin-bottom:16px; }
+    .card{ border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin:16px 0; }
+    .row{ display:flex; flex-wrap:wrap; gap:16px; }
+    .col{ flex:1 1 360px; min-width:320px; }
+    .chart-title{ font-weight:600; margin:8px 0 4px; }
+    .chart-subtitle{ color:#6b7280; margin-bottom:8px; }
+    .legend{ margin-top:8px; display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; }
+    .legend-item{ display:flex; align-items:center; gap:8px; font-size:14px; }
+    .legend-color{ width:12px; height:12px; border-radius:2px; background:#ddd; }
+    .muted{ color:#6b7280; }
+    .uploader{ display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+    button{ padding:8px 12px; border:1px solid #e5e7eb; background:#fff; border-radius:8px; cursor:pointer; }
+    button:disabled{ opacity:.6; cursor:not-allowed; }
+    canvas{ max-width:100%; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-  <div class="wrap">
-    <!-- Main Card -->
-    <div class="card">
-      <!-- Header -->
-      <div class="header">
-        <h1>Qualitätsmonitor</h1>
-        <div class="subtitle">Vollständigkeits- & Plausibilitätsprüfung - Siemens Web-Vergleich</div>
-        <div class="divider"></div>
+  <h1>Web-Vergleich – Analyse</h1>
+  <div class="subtitle">Lade eine Excel-Datei hoch (Original-Export oder die verarbeitete Datei), um die Produktanalyse zu sehen.</div>
+
+  <div class="card">
+    <div class="uploader">
+      <input id="fileInput" type="file" accept=".xlsx,.xls" />
+      <button id="analyzeBtn">Analysieren</button>
+      <span id="status" class="muted"></span>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="chart-title">Gesamtdatensätze</div>
+        <div class="chart-subtitle" id="step1Subtitle">Produktverteilung nach Herstellern</div>
+        <canvas id="productsChart" height="220"></canvas>
+        <div class="legend" id="productsLegend"></div>
       </div>
 
-      <!-- Pipeline Steps -->
-      <div class="pipeline-steps">
-        <div class="step active" id="step-1">
-          <div class="step-number">📁</div>
-          <div class="step-title">Datei Upload</div>
-        </div>
-        <div class="step" id="step-2">
-          <div class="step-number">✅</div>
-          <div class="step-title">Qualitätsprüfung</div>
-          <div class="step-desc">alle Produkte</div>
-        </div>
-        <div class="step" id="step-3">
-          <div class="step-number">🔍</div>
-          <div class="step-title">Web-Suche</div>
-          <div class="step-desc">nur Siemens Produkte</div>
-        </div>
+      <div class="col">
+        <div class="chart-title">Siemens-Produkte</div>
+        <div class="chart-subtitle" id="step2Subtitle">Gesuchte vs. gefundene Web-Werte</div>
+        <canvas id="searchChart" height="220"></canvas>
+        <div class="legend" id="searchLegend"></div>
       </div>
+    </div>
 
-      <!-- Step 1: Upload -->
-      <div class="action-section" id="upload-section">
-        <h3>📁 Datei Upload</h3>
-        <center>
-          <div id="dropzone" class="dropzone">
-            <div class="dropzone-icon">📁</div>
-            <p id="dzText" class="dropzone-text">
-              <strong>Datei hier ablegen</strong><br>
-              oder klicken zum Auswählen
-            </p>
-            <p class="hint">Unterstützt .xlsx und .xls Dateien (max. 50 MB)</p>
-          </div>
-        </center>
-        <input type="file" id="fileInput" accept=".xlsx,.xls" hidden />
+    <div class="row">
+      <div class="col">
+        <div class="chart-title">Datenqualität</div>
+        <div class="chart-subtitle">Übereinstimmung vs. Abweichung der Web-Werte</div>
+        <canvas id="matchChart" height="220"></canvas>
+        <div class="legend" id="matchLegend"></div>
       </div>
-
-      <!-- Step 2: Quality Check -->
-      <div class="action-section disabled" id="quality-section">
-        <h3>✅ Vollständigkeit & Plausibilität prüfen</h3>
-        <div class="action-buttons">
-          <button id="qualityCheckBtn" disabled>Qualitätsprüfung starten</button>
-          <button id="downloadQualityBtn" class="secondary" disabled>Excel herunterladen</button>
-        </div>
-        
-        <!-- Quality Check Charts -->
-        <div id="qualityCharts" class="charts-container hidden">
-          <div class="charts-title">Qualitätsprüfung Ergebnisse</div>
-          <div class="quality-chart">
-            <div class="chart-wrapper">
-              <canvas id="qualityChart"></canvas>
-            </div>
-          </div>
-          <div class="custom-legend" id="qualityLegend"></div>
-        </div>
-      </div>
-
-      <!-- Step 3: Web Search -->
-      <div class="action-section disabled" id="web-search-section">
-        <h3>🔍 Web-Suche (nur für Siemens Produkte)</h3>
-        <div class="action-buttons">
-          <button id="webSearchBtn" disabled>Web-Suche starten</button>
-          <button id="downloadWebBtn" class="secondary" disabled>Excel herunterladen</button>
-        </div>
-        
-        <!-- Web Search Charts -->
-        <div id="webCharts" class="charts-container hidden">
-          <div class="charts-title">Web-Suche Ergebnisse für Siemens Produkte</div>
-          <div class="web-charts">
-            <!-- Products to Search Values -->
-            <div class="web-chart-group">
-              <div class="chart-title">Schritt 1: Datenübersicht</div>
-              <div class="chart-subtitle">Gesamtdatensätze → Siemens-Produkte</div>
-              <div class="chart-wrapper">
-                <canvas id="productsChart"></canvas>
-              </div>
-            </div>
-
-            <!-- Search Values to Web Results -->
-            <div class="web-chart-group">
-              <div class="chart-title">Schritt 2: Web-Suche</div>
-              <div class="chart-subtitle">Gesuchte Werte</div>
-              <div class="chart-wrapper">
-                <canvas id="searchChart"></canvas>
-              </div>
-            </div>
-
-            <!-- Web Results to Matches -->
-            <div class="web-chart-group">
-              <div class="chart-title">Schritt 3: Vergleich</div>
-              <div class="chart-subtitle">Gefundene Web-Werte</div>
-              <div class="chart-wrapper">
-                <canvas id="matchChart"></canvas>
-              </div>
-            </div>
-          </div>
-          <div class="custom-legend" id="webLegend"></div>
-        </div>
-      </div>
-
-      <div class="status" id="status"></div>
-      <div class="progress" id="progress"><div></div></div>
     </div>
   </div>
 
-  <script>
-    /* ==================== VARIABLEN ==================== */
-    const dropzone = document.getElementById('dropzone');
-    const dzText = document.getElementById('dzText');
-    const fileInput = document.getElementById('fileInput');
-    
-    // Buttons
-    const webSearchBtn = document.getElementById('webSearchBtn');
-    const downloadWebBtn = document.getElementById('downloadWebBtn');
-    const qualityCheckBtn = document.getElementById('qualityCheckBtn');
-    const downloadQualityBtn = document.getElementById('downloadQualityBtn');
-    
-    // UI Elements
-    const statusEl = document.getElementById('status');
-    const progressEl = document.getElementById('progress');
-    const bar = progressEl.firstElementChild;
-    
-    // Sections
-    const uploadSection = document.getElementById('upload-section');
-    const webSearchSection = document.getElementById('web-search-section');
-    const qualitySection = document.getElementById('quality-section');
-    
-    // Charts
-    const qualityCharts = document.getElementById('qualityCharts');
-    const webCharts = document.getElementById('webCharts');
-    
-    // Steps
-    const step1 = document.getElementById('step-1');
-    const step2 = document.getElementById('step-2');
-    const step3 = document.getElementById('step-3');
+<script>
+/* ===== Center-Text Plugin für Doughnuts ===== */
+const centerTextPlugin = {
+  id: 'centerTextPlugin',
+  beforeDraw(chart, args, opts) {
+    if (!opts || !opts.text) return;
+    const { ctx, chartArea: { width, height } } = chart;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = (opts.font || '600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif');
+    ctx.fillStyle = (opts.color || '#111');
+    ctx.fillText(opts.text, width / 2, height / 2);
+    ctx.restore();
+  }
+};
+Chart.register(centerTextPlugin);
 
-    let selectedFile = null;
-    let webProcessedBlob = null;
-    let qualityBlob = null;
+let productsChart, searchChart, matchChart;
 
-    // Chart instances
-    let qualityChart = null;
-    let productsChart = null;
-    let searchChart = null;
-    let matchChart = null;
-
-    // Global statistics from quality check
-    let globalStats = null;
-
-    /* ==================== HELPER FUNCTIONS ==================== */
-    function updateStep(stepNum, status) {
-      const steps = [step1, step2, step3];
-      steps.forEach((step, i) => {
-        step.classList.remove('active', 'completed');
-        if (i + 1 < stepNum || (i + 1 === stepNum && status === 'completed')) {
-          step.classList.add('completed');
-        } else if (i + 1 === stepNum && status === 'active') {
-          step.classList.add('active');
-        }
-      });
-    }
-
-    function enableSection(section, enable = true) {
-      if (enable) {
-        section.classList.remove('disabled');
-      } else {
-        section.classList.add('disabled');
+function makeDonut(el, data, labels, centerText) {
+  return new Chart(el, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data }]
+    },
+    options: {
+      responsive: true,
+      cutout: '64%',
+      plugins: {
+        legend: { display: false },
+        centerTextPlugin: centerText ? { text: centerText } : undefined,
+        tooltip: { enabled: true }
       }
     }
-
-    function showProgress(show = true) {
-      progressEl.style.display = show ? 'block' : 'none';
-      if (!show) bar.style.width = '0%';
+  });
+}
+function makeBar(el, labels, data) {
+  return new Chart(el, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false }, tooltip: { enabled: true } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
     }
+  });
+}
 
-    function updateProgress(percent) {
-      bar.style.width = percent + '%';
-    }
+function updateProductsChart(totalProducts, totalSiemens) {
+  const other = Math.max(0, totalProducts - totalSiemens);
+  const ctx = document.getElementById('productsChart').getContext('2d');
+  if (productsChart) productsChart.destroy();
+  productsChart = makeDonut(ctx, [totalSiemens, other], ['Siemens', 'Andere'], null);
 
-    /* ==================== CHART FUNCTIONS ==================== */
-    function createQualityChart(complete, incomplete, total) {
-      const ctx = document.getElementById('qualityChart').getContext('2d');
-      
-      if (qualityChart) {
-        qualityChart.destroy();
-      }
+  document.getElementById('step1Subtitle').textContent =
+    `Gesamtdatensatz: ${totalProducts} • Siemens: ${totalSiemens} • Andere: ${other}`;
 
-      const completePercentage = ((complete / total) * 100).toFixed(1);
-      const incompletePercentage = ((incomplete / total) * 100).toFixed(1);
+  document.getElementById('productsLegend').innerHTML = `
+    <div class="legend-item"><div class="legend-color" style="background:rgba(59,130,246,.8)"></div><span>Siemens-Produkte: ${totalSiemens}</span></div>
+    <div class="legend-item"><div class="legend-color" style="background:rgba(191,191,191,.8)"></div><span>Andere Produkte: ${other}</span></div>
+  `;
+}
 
-      qualityChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: [
-            `Vollständig & richtig (${completePercentage}%)`,
-            `Unvollständig/unplausibel (${incompletePercentage}%)`
-          ],
-          datasets: [{
-            data: [complete, incomplete],
-            backgroundColor: [
-              'rgba(34, 197, 94, 0.8)',
-              'rgba(194, 0, 21, 0.8)'
-            ],
-            borderColor: [
-              'rgba(34, 197, 94, 1)',
-              'rgba(194, 0, 21, 1)'
-            ],
-            borderWidth: 2,
-            hoverBackgroundColor: [
-              'rgba(34, 197, 94, 0.9)',
-              'rgba(194, 0, 21, 0.9)'
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.parsed} Datensätze`;
-                }
-              }
-            }
-          },
-          elements: {
-            arc: {
-              borderWidth: 2
-            }
-          }
-        }
-      });
+function updateSearchChart(searchedValues, foundWebValues) {
+  const missing = Math.max(0, searchedValues - foundWebValues);
+  const ctx = document.getElementById('searchChart').getContext('2d');
+  if (searchChart) searchChart.destroy();
+  searchChart = makeDonut(ctx, [foundWebValues, missing], ['Gefunden', 'Fehlend'],
+    `Gesamt: ${searchedValues}`);
 
-      // Create custom legend
-      const legendContainer = document.getElementById('qualityLegend');
-      legendContainer.innerHTML = `
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
-          <span>Vollständig & richtig: ${complete} (${completePercentage}%)</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(194, 0, 21, 0.8);"></div>
-          <span>Unvollständig/unplausibel: ${incomplete} (${incompletePercentage}%)</span>
-        </div>
-        <div class="legend-item">
-          <strong>Gesamt: ${total} Datensätze</strong>
-        </div>
-      `;
-    }
+  document.getElementById('step2Subtitle').textContent = `Gesuchte Werte insgesamt: ${searchedValues}`;
+  document.getElementById('searchLegend').innerHTML = `
+    <div class="legend-item"><div class="legend-color" style="background:rgba(34,197,94,.8)"></div><span>Gefunden: ${foundWebValues}</span></div>
+    <div class="legend-item"><div class="legend-color" style="background:rgba(249,115,22,.8)"></div><span>Fehlend: ${missing}</span></div>
+  `;
+}
 
-    function createWebCharts(stats) {
-      createProductsChart(stats.totalDatasets, stats.totalSiemens, stats.searchedValues);
-      createSearchChart(stats.searchedValues, stats.foundWebValues, stats.searchedValues - stats.foundWebValues);
-      createMatchChart(stats.foundWebValues, stats.green, stats.red);
-      
-      // Create combined legend
-      const legendContainer = document.getElementById('webLegend');
-      legendContainer.innerHTML = `
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(156, 163, 175, 0.8);"></div>
-          <span>Gesamtdatensätze: ${stats.totalDatasets}</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.8);"></div>
-          <span>Siemens-Produkte: ${stats.totalSiemens}</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(147, 197, 253, 0.8);"></div>
-          <span>Gesuchte Werte: ${stats.searchedValues}</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
-          <span>Gefundene Web-Werte: ${stats.foundWebValues} (${stats.foundWebValuesPercentage}%)</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(249, 115, 22, 0.8);"></div>
-          <span>Fehlende Web-Werte: ${stats.searchedValues - stats.foundWebValues}</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(22, 163, 74, 0.8);"></div>
-          <span>Übereinstimmungen: ${stats.green} (${stats.greenPercentage}%)</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(194, 0, 21, 0.8);"></div>
-          <span>Abweichungen: ${stats.red} (${stats.redPercentage}%)</span>
-        </div>
-      `;
-    }
+function updateMatchChart(green, red) {
+  const ctx = document.getElementById('matchChart').getContext('2d');
+  if (matchChart) matchChart.destroy();
+  matchChart = makeBar(ctx, ['Übereinstimmung (grün)', 'Abweichung (rot)'], [green, red]);
+  document.getElementById('matchLegend').innerHTML = `
+    <div class="legend-item"><div class="legend-color" style="background:rgba(16,185,129,.8)"></div><span>Grün: ${green}</span></div>
+    <div class="legend-item"><div class="legend-color" style="background:rgba(239,68,68,.8)"></div><span>Rot: ${red}</span></div>
+  `;
+}
 
-    function createProductsChart(totalDatasets, totalSiemens, searchedValues) {
-      const ctx = document.getElementById('productsChart').getContext('2d');
-      
-      if (productsChart) {
-        productsChart.destroy();
-      }
+async function postExcel(url, file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  const resp = await fetch(url, { method:'POST', body: fd });
+  if (!resp.ok) throw new Error((await resp.json()).error || 'Fehler');
+  return resp.json();
+}
 
-      const siemensPercentage = ((totalSiemens / totalDatasets) * 100).toFixed(1);
-      const otherProducts = totalDatasets - totalSiemens;
-      const otherPercentage = ((otherProducts / totalDatasets) * 100).toFixed(1);
+document.getElementById('analyzeBtn').addEventListener('click', async () => {
+  const file = document.getElementById('fileInput').files[0];
+  const status = document.getElementById('status');
+  if (!file) { status.textContent = 'Bitte Datei wählen.'; return; }
+  status.textContent = 'Analyse läuft…';
 
-      productsChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: [
-            `Siemens-Produkte (${siemensPercentage}%)`,
-            `Andere Produkte (${otherPercentage}%)`
-          ],
-          datasets: [{
-            data: [totalSiemens, otherProducts],
-            backgroundColor: [
-              'rgba(59, 130, 246, 0.8)',  // Blau für Siemens
-              'rgba(156, 163, 175, 0.8)'  // Grau für andere
-            ],
-            borderColor: [
-              'rgba(59, 130, 246, 1)',
-              'rgba(156, 163, 175, 1)'
-            ],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  if (context.dataIndex === 0) {
-                    return `${context.label}: ${context.parsed}\n→ ${searchedValues} gesuchte Werte`;
-                  }
-                  return `${context.label}: ${context.parsed}`;
-                }
-              }
-            }
-          },
-          cutout: '40%'
-        }
-      });
-    }
-
-    function createSearchChart(searchedValues, foundWebValues, missingWebValues) {
-      const ctx = document.getElementById('searchChart').getContext('2d');
-      
-      if (searchChart) {
-        searchChart.destroy();
-      }
-
-      const foundPercentage = ((foundWebValues / searchedValues) * 100).toFixed(1);
-      const missingPercentage = ((missingWebValues / searchedValues) * 100).toFixed(1);
-
-      searchChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: [
-            `Gefundene Web-Werte (${foundPercentage}%)`,
-            `Fehlende Web-Werte (${missingPercentage}%)`
-          ],
-          datasets: [{
-            data: [foundWebValues, missingWebValues],
-            backgroundColor: [
-              'rgba(34, 197, 94, 0.8)',
-              'rgba(249, 115, 22, 0.8)'
-            ],
-            borderColor: [
-              'rgba(34, 197, 94, 1)',
-              'rgba(249, 115, 22, 1)'
-            ],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.parsed}`;
-                }
-              }
-            }
-          },
-          cutout: '40%'
-        }
-      });
-    }
-
-    /* ==================== DROP ZONE ==================== */
-    dropzone.addEventListener('click', () => fileInput.click());
-
-    dropzone.addEventListener('dragover', e => {
-      e.preventDefault();
-      dropzone.classList.add('dragover');
-    });
-
-    dropzone.addEventListener('dragleave', () => {
-      dropzone.classList.remove('dragover');
-    });
-
-    dropzone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropzone.classList.remove('dragover');
-      if (e.dataTransfer.files?.length) {
-        handleFile(e.dataTransfer.files[0]);
-      }
-    });
-
-    fileInput.addEventListener('change', e => {
-      if (e.target.files?.length) {
-        handleFile(e.target.files[0]);
-      }
-    });
-
-    function handleFile(file) {
-      if (!/\.(xlsx|xls)$/i.test(file.name)) {
-        statusEl.textContent = 'Bitte nur .xlsx oder .xls Dateien!';
-        return;
-      }
-      
-      selectedFile = file;
-      dzText.innerHTML = `<strong>${file.name}</strong><br><span class="hint">Datei bereit zur Verarbeitung</span>`;
-      
-      // Enable quality section first
-      enableSection(qualitySection, true);
-      qualityCheckBtn.disabled = false;
-      
-      // Update pipeline steps
-      updateStep(2, 'active');
-      
-      statusEl.textContent = 'Datei erfolgreich hochgeladen — Qualitätsprüfung starten.';
-    }
-
-    /* ==================== QUALITY CHECK ==================== */
-    qualityCheckBtn.addEventListener('click', async () => {
-      if (!selectedFile) return;
-      
-      qualityBlob = null;
-      globalStats = null;
-      
-      statusEl.textContent = 'Qualitätsprüfung läuft — Vollständigkeit und Plausibilität werden geprüft...';
-      showProgress(true);
-      updateProgress(20);
-
-      try {
-        const form = new FormData();
-        form.append('file', selectedFile);
-        
-        const resp = await fetch('/api/check-completeness', { 
-          method: 'POST', 
-          body: form 
-        });
-        
-        if (!resp.ok) {
-          const errorData = await resp.text();
-          throw new Error(`HTTP ${resp.status}: ${errorData}`);
-        }
-
-        updateProgress(70);
-        
-        const buf = await resp.arrayBuffer();
-        qualityBlob = new Blob([buf], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        
-        // Get real statistics from the processed Excel file
-        const statsForm = new FormData();
-        statsForm.append('file', new File([qualityBlob], 'Qualitätsbericht.xlsx'));
-        
-        try {
-          const statsResp = await fetch('/api/quality-stats', {
-            method: 'POST',
-            body: statsForm
-          });
-          
-          if (statsResp.ok) {
-            const stats = await statsResp.json();
-            globalStats = stats; // Store for later use in web search
-            
-            // Create quality chart
-            createQualityChart(stats.complete, stats.incomplete, stats.total);
-            qualityCharts.classList.remove('hidden');
-            
-            // Debug info in console
-            if (stats.debug) {
-              console.log('Quality debug info:', stats.debug);
-              console.log('Found colors:', stats.debug.foundColors);
-            }
-          } else {
-            // Fallback - create chart with placeholder data
-            createQualityChart(0, 0, 0);
-            qualityCharts.classList.remove('hidden');
-          }
-        } catch (statsErr) {
-          console.error('Error getting quality stats:', statsErr);
-          // Fallback - create chart with placeholder data
-          createQualityChart(0, 0, 0);
-          qualityCharts.classList.remove('hidden');
-        }
-        
-        updateProgress(100);
-        statusEl.textContent = 'Qualitätsprüfung abgeschlossen — Qualitätsbericht verfügbar.';
-        
-        downloadQualityBtn.disabled = false;
-        
-        // Enable web search section
-        enableSection(webSearchSection, true);
-        webSearchBtn.disabled = false;
-        
-        // Update pipeline steps
-        updateStep(2, 'completed');
-        updateStep(3, 'active');
-        
-      } catch (err) {
-        statusEl.textContent = 'Fehler bei Qualitätsprüfung: ' + err.message;
-        console.error(err);
-      } finally {
-        setTimeout(() => showProgress(false), 1200);
-      }
-    });
-
-    /* ==================== WEB SEARCH ==================== */
-    webSearchBtn.addEventListener('click', async () => {
-      if (!selectedFile) return;
-      
-      webProcessedBlob = null;
-      downloadWebBtn.disabled = true;
-      webCharts.classList.add('hidden');
-      
-      statusEl.textContent = 'Web-Suche läuft — Siemens-Produkte werden gesucht...';
-      showProgress(true);
-      updateProgress(10);
-
-      try {
-        const form = new FormData();
-        form.append('file', selectedFile);
-        
-        const resp = await fetch('/api/process-excel-siemens', { 
-          method: 'POST', 
-          body: form 
-        });
-        
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
-        updateProgress(50);
-        
-        const buf = await resp.arrayBuffer();
-        webProcessedBlob = new Blob([buf], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        
-        // Get real statistics from the processed Excel file
-        const statsForm = new FormData();
-        statsForm.append('file', new File([webProcessedBlob], 'Web_Vergleich_Ergebnis.xlsx'));
-        
-        try {
-          const statsResp = await fetch('/api/web-search-stats', {
-            method: 'POST',
-            body: statsForm
-          });
-          
-          if (statsResp.ok) {
-            const stats = await statsResp.json();
-            
-            // Add total datasets from quality check if available
-            if (globalStats) {
-              stats.totalDatasets = globalStats.total;
-            }
-            
-            // Create web search charts
-            createWebCharts(stats);
-            webCharts.classList.remove('hidden');
-            
-            // Debug info in console
-            if (stats.debug) {
-              console.log('Debug info:', stats.debug);
-              console.log('Found colors:', stats.debug.foundColors);
-            }
-          } else {
-            // Fallback - create charts with placeholder data
-            const fallbackStats = {
-              totalDatasets: globalStats ? globalStats.total : 0,
-              totalSiemens: 0,
-              searchedValues: 0,
-              foundWebValues: 0,
-              foundWebValuesPercentage: '0',
-              green: 0,
-              red: 0,
-              greenPercentage: '0',
-              redPercentage: '0'
-            };
-            createWebCharts(fallbackStats);
-            webCharts.classList.remove('hidden');
-          }
-        } catch (statsErr) {
-          console.error('Error getting stats:', statsErr);
-          // Fallback - create charts with placeholder data
-          const fallbackStats = {
-            totalDatasets: globalStats ? globalStats.total : 0,
-            totalSiemens: 0,
-            searchedValues: 0,
-            foundWebValues: 0,
-            foundWebValuesPercentage: '0',
-            green: 0,
-            red: 0,
-            greenPercentage: '0',
-            redPercentage: '0'
-          };
-          createWebCharts(fallbackStats);
-          webCharts.classList.remove('hidden');
-        }
-        
-        updateProgress(100);
-        statusEl.textContent = 'Web-Suche abgeschlossen — Ergebnis herunterladen oder zur Qualitätsprüfung.';
-        
-        downloadWebBtn.disabled = false;
-        
-        // Update pipeline steps
-        updateStep(3, 'completed');
-        
-      } catch (err) {
-        statusEl.textContent = 'Fehler bei Web-Suche: ' + err.message;
-        console.error(err);
-      } finally {
-        setTimeout(() => showProgress(false), 1200);
-      }
-    });
-
-    /* ==================== DOWNLOADS ==================== */
-    downloadWebBtn.addEventListener('click', () => {
-      if (!webProcessedBlob) return;
-      downloadBlob(webProcessedBlob, 'Web_Vergleich_Siemens.xlsx');
-    });
-
-    downloadQualityBtn.addEventListener('click', () => {
-      if (!qualityBlob) return;
-      downloadBlob(qualityBlob, 'Qualitätsbericht.xlsx');
-    });
-
-    function downloadBlob(blob, filename) {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.append(a);
-      a.click();
-      URL.revokeObjectURL(a.href);
-      a.remove();
-    }
-  </script>
+  try {
+    const stats = await postExcel('/api/web-search-stats', file);
+    // Schritt 1
+    updateProductsChart(stats.totalProducts || 0, stats.totalSiemens || 0);
+    // Schritt 2
+    updateSearchChart(stats.searchedValues || 0, stats.foundWebValues || 0);
+    // Schritt 3
+    updateMatchChart(stats.green || 0, stats.red || 0);
+    status.textContent = 'Fertig.';
+  } catch (e) {
+    status.textContent = 'Fehler: ' + (e?.message || e);
+  }
+});
+</script>
 </body>
 </html>
