@@ -267,7 +267,7 @@
       box-shadow: none;
     }
 
-    /* Baumdiagramm mit einheitlichen Boxen wie Qualitätsprüfung */
+    /* Baumdiagramm mit SVG-Linien - 4 Ebenen */
     .tree-container {
       margin: 20px 0;
     }
@@ -275,7 +275,7 @@
     .tree-diagram {
       position: relative;
       width: 100%;
-      height: 350px;
+      height: 400px;
       margin-top: 20px;
     }
     
@@ -287,31 +287,27 @@
     }
     
     .tree-node-content {
-      width: 180px;
-      height: auto;
-      min-height: 80px;
-      border: 2px solid var(--grey-2);
+      width: 200px;
+      height: 100px;
+      border: 2px solid var(--grey-3);
       border-radius: 10px;
-      background: var(--white);
+      background: white;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 15px;
-      transition: all 0.3s ease;
     }
     
     .tree-node-number {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: bold;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     
     .tree-node-label {
-      font-size: 12px;
-      color: var(--grey-4);
-      font-weight: 500;
+      font-size: 11px;
+      line-height: 1.2;
     }
     
     /* Farben für verschiedene Node-Typen */
@@ -320,7 +316,7 @@
     .tree-node-content.red .tree-node-number { color: var(--db-red); }
     .tree-node-content.orange .tree-node-number { color: var(--orange); }
     
-    /* Positionierung der Nodes mit 10px Abständen */
+    /* Positionierung der Nodes */
     .tree-node.level-1 {
       top: 0px;
       left: 50%;
@@ -328,31 +324,31 @@
     }
     
     .tree-node.level-2 {
-      top: 90px;  /* 80px Höhe + 10px Abstand */
+      top: 140px;
       left: 50%;
       transform: translateX(-50%);
     }
     
     .tree-node.level-3-left {
-      top: 180px;  /* 90px + 80px + 10px */
+      top: 220px;
       left: 30%;
       transform: translateX(-50%);
     }
     
     .tree-node.level-3-right {
-      top: 180px;  /* 90px + 80px + 10px */
+      top: 220px;
       left: 70%;
       transform: translateX(-50%);
     }
     
     .tree-node.level-4-left {
-      top: 270px;  /* 180px + 80px + 10px */
+      top: 300px;
       left: 25%;
       transform: translateX(-50%);
     }
     
     .tree-node.level-4-right {
-      top: 270px;  /* 180px + 80px + 10px */
+      top: 300px;
       left: 35%;
       transform: translateX(-50%);
     }
@@ -360,36 +356,37 @@
     /* Responsive Design */
     @media (max-width: 768px) {
       .tree-diagram {
-        height: 300px;
+        height: 280px;
       }
       
       .tree-node-content {
         width: 160px;
-        min-height: 70px;
-        padding: 12px;
+        height: 80px;
       }
       
       .tree-node-number {
-        font-size: 24px;
+        font-size: 20px;
       }
       
       .tree-node-label {
-        font-size: 11px;
+        font-size: 10px;
       }
       
       /* Angepasste Positionierung für Mobile */
-      .tree-node.level-2 {
-        top: 80px;
+      .tree-node.level-3-left {
+        left: 30%;
       }
       
-      .tree-node.level-3-left,
       .tree-node.level-3-right {
-        top: 160px;
+        left: 70%;
       }
       
-      .tree-node.level-4-left,
+      .tree-node.level-4-left {
+        left: 25%;
+      }
+      
       .tree-node.level-4-right {
-        top: 240px;
+        left: 35%;
       }
     }
     
@@ -400,8 +397,7 @@
       
       .tree-node-content {
         width: 140px;
-        min-height: 60px;
-        padding: 10px;
+        height: 70px;
       }
       
       /* Vertikale Anordnung für sehr kleine Bildschirme */
@@ -411,11 +407,11 @@
       }
       
       .tree-node.level-3-left {
-        top: 160px;
+        top: 190px;
       }
       
       .tree-node.level-3-right {
-        top: 230px;
+        top: 270px;
       }
       
       .tree-node.level-4-left,
@@ -424,11 +420,11 @@
       }
       
       .tree-node.level-4-left {
-        top: 300px;
+        top: 350px;
       }
       
       .tree-node.level-4-right {
-        top: 370px;
+        top: 430px;
       }
     }
 
@@ -618,15 +614,15 @@
         <div id="webStats" class="tree-container hidden">
           <div class="tree-diagram">
             <!-- SVG Linien für Verbindungen -->
-            <svg width="100%" height="350" style="position: absolute; z-index: 0;">
+            <svg width="100%" height="400" style="position: absolute; z-index: 0;">
               <!-- Verbindung von Level 1 zu Level 2 -->
-              <line x1="50%" y1="80" x2="50%" y2="90" stroke="var(--grey-3)" stroke-width="2"/>
+              <line x1="50%" y1="100" x2="50%" y2="180" stroke="var(--grey-3)" stroke-width="2"/>
               <!-- Verbindung von Level 2 zu Level 3 -->
-              <line x1="50%" y1="170" x2="30%" y2="180" stroke="var(--grey-3)" stroke-width="2"/>
-              <line x1="50%" y1="170" x2="70%" y2="180" stroke="var(--grey-3)" stroke-width="2"/>
+              <line x1="50%" y1="180" x2="30%" y2="280" stroke="var(--grey-3)" stroke-width="2"/>
+              <line x1="50%" y1="180" x2="70%" y2="280" stroke="var(--grey-3)" stroke-width="2"/>
               <!-- Verbindung von "Gefundene Web-Werte" zu Level 4 -->
-              <line x1="30%" y1="260" x2="25%" y2="270" stroke="var(--grey-3)" stroke-width="2"/>
-              <line x1="30%" y1="260" x2="35%" y2="270" stroke="var(--grey-3)" stroke-width="2"/>
+              <line x1="30%" y1="280" x2="25%" y2="380" stroke="var(--grey-3)" stroke-width="2"/>
+              <line x1="30%" y1="280" x2="35%" y2="380" stroke="var(--grey-3)" stroke-width="2"/>
             </svg>
 
             <!-- Level 1: Gesamt Siemens-Produkte -->
