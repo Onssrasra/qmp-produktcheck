@@ -267,7 +267,7 @@
       box-shadow: none;
     }
 
-    /* Tree Structure for Web Search Stats */
+    /* Vertikales Baumdiagramm für Web Search Stats */
     .tree-container {
       margin: 20px 0;
     }
@@ -280,11 +280,17 @@
       font-weight: 600;
     }
     
-    .tree-flow {
+    .vertical-tree {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
+      gap: 10px;
+    }
+    
+    .tree-level {
+      display: flex;
+      justify-content: center;
+      width: 100%;
     }
     
     .tree-node {
@@ -292,54 +298,74 @@
       justify-content: center;
     }
     
-    .tree-arrow {
-      font-size: 20px;
+    .tree-branch {
+      display: flex;
+      gap: 60px;
+      justify-content: center;
+    }
+    
+    .tree-arrow-down {
+      font-size: 16px;
       color: var(--grey-4);
       text-align: center;
-      margin: 5px 0;
+      margin: 2px 0;
+      font-family: monospace;
     }
     
-    .tree-branches {
+    /* Einheitliche Box-Größe für alle Stat-Cards */
+    .tree-container .stat-card {
+      width: 200px;
+      height: 100px;
       display: flex;
+      flex-direction: column;
       justify-content: center;
-      gap: 100px;
-      margin: 5px 0;
+      align-items: center;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
     
-    .tree-level-3 {
-      display: flex;
-      gap: 80px;
-      justify-content: center;
+    .tree-container .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 4px;
     }
     
-    .tree-level-4 {
-      display: flex;
-      gap: 80px;
-      justify-content: center;
+    .tree-container .stat-label {
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.2;
     }
     
-    /* Responsive Tree */
+    /* Responsive Design */
     @media (max-width: 768px) {
-      .tree-branches {
-        gap: 60px;
+      .tree-branch {
+        gap: 40px;
       }
       
-      .tree-level-3,
-      .tree-level-4 {
-        gap: 50px;
+      .tree-container .stat-card {
+        width: 160px;
+        height: 80px;
+      }
+      
+      .tree-container .stat-number {
+        font-size: 20px;
+      }
+      
+      .tree-container .stat-label {
+        font-size: 10px;
       }
     }
     
     @media (max-width: 480px) {
-      .tree-branches {
-        gap: 40px;
-      }
-      
-      .tree-level-3,
-      .tree-level-4 {
-        gap: 30px;
+      .tree-branch {
+        gap: 20px;
         flex-direction: column;
         align-items: center;
+      }
+      
+      .tree-container .stat-card {
+        width: 180px;
+        height: 90px;
       }
     }
 
@@ -529,69 +555,72 @@
         <div id="webStats" class="tree-container hidden">
           <h4>Web-Suche Statistiken</h4>
           
-          <!-- Baum-Struktur -->
-          <div class="tree-flow">
+          <!-- Vertikales Baumdiagramm -->
+          <div class="vertical-tree">
             <!-- Level 1: Gesamt Siemens-Produkte -->
-            <div class="tree-node root">
-              <div class="stat-card blue">
-                <div class="stat-number" id="totalSiemensCount">0</div>
-                <div class="stat-label">Gesamt Siemens-Produkte</div>
+            <div class="tree-level">
+              <div class="tree-node">
+                <div class="stat-card blue">
+                  <div class="stat-number" id="totalSiemensCount">0</div>
+                  <div class="stat-label">Gesamt Siemens-Produkte</div>
+                </div>
               </div>
             </div>
             
             <!-- Pfeil nach unten -->
-            <div class="tree-arrow">↓</div>
+            <div class="tree-arrow-down">│</div>
+            <div class="tree-arrow-down">▼</div>
             
             <!-- Level 2: Gesuchte Werte -->
-            <div class="tree-node">
-              <div class="stat-card blue">
-                <div class="stat-number" id="searchedValuesCount">0</div>
-                <div class="stat-label">Gesuchte Werte</div>
-              </div>
-            </div>
-            
-            <!-- Pfeile zu Level 3 -->
-            <div class="tree-branches">
-              <div class="tree-arrow">↙</div>
-              <div class="tree-arrow">↘</div>
-            </div>
-            
-            <!-- Level 3: Gefundene Web-Werte & Fehlende -->
-            <div class="tree-level-3">
+            <div class="tree-level">
               <div class="tree-node">
                 <div class="stat-card blue">
-                  <div class="stat-number" id="foundWebValuesCount">0</div>
-                  <div class="stat-label">Gefundene Web-Werte</div>
-                </div>
-              </div>
-              
-              <div class="tree-node">
-                <div class="stat-card orange">
-                  <div class="stat-number" id="missingCount">0</div>
-                  <div class="stat-label">Produkt im Web nicht gefunden</div>
+                  <div class="stat-number" id="searchedValuesCount">0</div>
+                  <div class="stat-label">Gesuchte Werte</div>
                 </div>
               </div>
             </div>
             
-            <!-- Pfeile zu Level 4 -->
-            <div class="tree-branches">
-              <div class="tree-arrow">↙</div>
-              <div class="tree-arrow">↘</div>
+            <!-- Pfeil nach unten -->
+            <div class="tree-arrow-down">│</div>
+            <div class="tree-arrow-down">▼</div>
+            
+            <!-- Level 3: Gefundene & Fehlende Web-Werte -->
+            <div class="tree-level">
+              <div class="tree-branch">
+                <div class="tree-node">
+                  <div class="stat-card blue">
+                    <div class="stat-number" id="foundWebValuesCount">0</div>
+                    <div class="stat-label">Gefundene Web-Werte</div>
+                  </div>
+                </div>
+                <div class="tree-node">
+                  <div class="stat-card orange">
+                    <div class="stat-number" id="missingCount">0</div>
+                    <div class="stat-label">Fehlende Web-Werte</div>
+                  </div>
+                </div>
+              </div>
             </div>
+            
+            <!-- Pfeil nur von "Gefundene Web-Werte" -->
+            <div class="tree-arrow-down">│</div>
+            <div class="tree-arrow-down">▼</div>
             
             <!-- Level 4: Übereinstimmungen & Abweichungen -->
-            <div class="tree-level-4">
-              <div class="tree-node">
-                <div class="stat-card green">
-                  <div class="stat-number" id="foundCount">0</div>
-                  <div class="stat-label">Übereinstimmungen</div>
+            <div class="tree-level">
+              <div class="tree-branch">
+                <div class="tree-node">
+                  <div class="stat-card green">
+                    <div class="stat-number" id="foundCount">0</div>
+                    <div class="stat-label">Übereinstimmungen</div>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="tree-node">
-                <div class="stat-card red">
-                  <div class="stat-number" id="diffCount">0</div>
-                  <div class="stat-label">Abweichungen</div>
+                <div class="tree-node">
+                  <div class="stat-card red">
+                    <div class="stat-number" id="diffCount">0</div>
+                    <div class="stat-label">Abweichungen</div>
+                  </div>
                 </div>
               </div>
             </div>
