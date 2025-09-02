@@ -141,7 +141,7 @@
     .dropzone {
       border: 2px dashed var(--grey-3);
       border-radius: 10px;
-      padding: 20px 15px;
+      padding: 15px 10px;
       background: var(--grey-1);
       cursor: pointer;
       transition: all 0.3s ease;
@@ -149,13 +149,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
       user-select: none;
       position: relative;
       overflow: hidden;
-      margin: 0 auto 20px auto;
-      min-height: 100px;
-      max-width: 500px;
+      margin: 0 auto 15px auto;
+      min-height: 80px;
+      max-width: 400px;
     }
     
     .dropzone.dragover {
@@ -178,15 +178,16 @@
     }
     
     .dropzone-icon {
-      font-size: 24px;
+      font-size: 20px;
       color: var(--grey-4);
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .dropzone-text {
       text-align: center;
       margin: 0;
-      padding: 20px;
+      padding: 10px;
+      font-size: 14px;
     }
 
     /* Action Sections */
@@ -264,6 +265,82 @@
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
+    }
+
+    /* Tree Structure for Web Search Stats */
+    .tree-container {
+      margin: 20px 0;
+    }
+    
+    .tree-container h4 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .tree-flow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .tree-node {
+      display: flex;
+      justify-content: center;
+    }
+    
+    .tree-arrow {
+      font-size: 20px;
+      color: var(--grey-4);
+      text-align: center;
+      margin: 5px 0;
+    }
+    
+    .tree-branches {
+      display: flex;
+      justify-content: center;
+      gap: 100px;
+      margin: 5px 0;
+    }
+    
+    .tree-level-3 {
+      display: flex;
+      gap: 80px;
+      justify-content: center;
+    }
+    
+    .tree-level-4 {
+      display: flex;
+      gap: 80px;
+      justify-content: center;
+    }
+    
+    /* Responsive Tree */
+    @media (max-width: 768px) {
+      .tree-branches {
+        gap: 60px;
+      }
+      
+      .tree-level-3,
+      .tree-level-4 {
+        gap: 50px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .tree-branches {
+        gap: 40px;
+      }
+      
+      .tree-level-3,
+      .tree-level-4 {
+        gap: 30px;
+        flex-direction: column;
+        align-items: center;
+      }
     }
 
     /* Stats Cards */
@@ -449,30 +526,75 @@
         </div>
         
         <!-- Web Search Stats -->
-        <div id="webStats" class="stats-grid hidden">
-          <div class="stat-card blue">
-            <div class="stat-number" id="totalSiemensCount">0</div>
-            <div class="stat-label">Gesamt Siemens-Produkte</div>
-          </div>
-          <div class="stat-card blue">
-            <div class="stat-number" id="searchedValuesCount">0</div>
-            <div class="stat-label">Gesuchte Werte</div>
-          </div>
-          <div class="stat-card blue">
-            <div class="stat-number" id="foundWebValuesCount">0</div>
-            <div class="stat-label">Gefundene Web-Werte</div>
-          </div>
-          <div class="stat-card green">
-            <div class="stat-number" id="foundCount">0</div>
-            <div class="stat-label">Übereinstimmungen</div>
-          </div>
-          <div class="stat-card red">
-            <div class="stat-number" id="diffCount">0</div>
-            <div class="stat-label">Abweichungen</div>
-          </div>
-          <div class="stat-card orange">
-            <div class="stat-number" id="missingCount">0</div>
-            <div class="stat-label">Fehlende Web-Werte</div>
+        <div id="webStats" class="tree-container hidden">
+          <h4>Web-Suche Statistiken</h4>
+          
+          <!-- Baum-Struktur -->
+          <div class="tree-flow">
+            <!-- Level 1: Gesamt Siemens-Produkte -->
+            <div class="tree-node root">
+              <div class="stat-card blue">
+                <div class="stat-number" id="totalSiemensCount">0</div>
+                <div class="stat-label">Gesamt Siemens-Produkte</div>
+              </div>
+            </div>
+            
+            <!-- Pfeil nach unten -->
+            <div class="tree-arrow">↓</div>
+            
+            <!-- Level 2: Gesuchte Werte -->
+            <div class="tree-node">
+              <div class="stat-card blue">
+                <div class="stat-number" id="searchedValuesCount">0</div>
+                <div class="stat-label">Gesuchte Werte</div>
+              </div>
+            </div>
+            
+            <!-- Pfeile zu Level 3 -->
+            <div class="tree-branches">
+              <div class="tree-arrow">↙</div>
+              <div class="tree-arrow">↘</div>
+            </div>
+            
+            <!-- Level 3: Gefundene Web-Werte & Fehlende -->
+            <div class="tree-level-3">
+              <div class="tree-node">
+                <div class="stat-card blue">
+                  <div class="stat-number" id="foundWebValuesCount">0</div>
+                  <div class="stat-label">Gefundene Web-Werte</div>
+                </div>
+              </div>
+              
+              <div class="tree-node">
+                <div class="stat-card orange">
+                  <div class="stat-number" id="missingCount">0</div>
+                  <div class="stat-label">Produkt im Web nicht gefunden</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Pfeile zu Level 4 -->
+            <div class="tree-branches">
+              <div class="tree-arrow">↙</div>
+              <div class="tree-arrow">↘</div>
+            </div>
+            
+            <!-- Level 4: Übereinstimmungen & Abweichungen -->
+            <div class="tree-level-4">
+              <div class="tree-node">
+                <div class="stat-card green">
+                  <div class="stat-number" id="foundCount">0</div>
+                  <div class="stat-label">Übereinstimmungen</div>
+                </div>
+              </div>
+              
+              <div class="tree-node">
+                <div class="stat-card red">
+                  <div class="stat-number" id="diffCount">0</div>
+                  <div class="stat-label">Abweichungen</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
