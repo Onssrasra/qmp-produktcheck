@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DB Produktdaten – Qualitätsmonitor</title>
+      <title>DB Produktdaten — Qualitätsmonitor</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -29,11 +29,11 @@
       background: linear-gradient(135deg, var(--grey-1) 0%, var(--grey-2) 100%);
       color: var(--text);
       min-height: 100vh;
-      padding: 10px;
+      padding: 10px 0;
     }
     .wrap {
-      max-width: 100%;
-      margin: 0;
+      max-width: 1000px;
+      margin: 0 auto;
       padding: 0 20px;
     }
     
@@ -67,81 +67,81 @@
       margin-bottom: 15px;
     }
     
-    .divider {
-      width: 100%;
-      height: 3px;
-      background: var(--db-red);
-      border-radius: 2px;
-      margin: 0 auto;
-    }
+          .divider {
+        width: 100%;
+        height: 3px;
+        background: var(--db-red);
+        border-radius: 2px;
+        margin: 0 auto;
+      }
 
-    /* Pipeline Steps */
-    .pipeline-steps {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 25px;
-      position: relative;
-    }
+      /* Pipeline Steps */
+      .pipeline-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 25px;
+        position: relative;
+      }
 
-    .pipeline-steps::before {
-      content: '';
-      position: absolute;
-      top: 16px;
-      left: 10%;
-      right: 10%;
-      height: 2px;
-      background: var(--grey-3);
-      z-index: 1;
-    }
+      .pipeline-steps::before {
+        content: '';
+        position: absolute;
+        top: 16px;
+        left: 10%;
+        right: 10%;
+        height: 2px;
+        background: var(--grey-3);
+        z-index: 1;
+      }
 
-    .step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      flex: 1;
-      position: relative;
-      z-index: 2;
-    }
+      .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        flex: 1;
+        position: relative;
+        z-index: 2;
+      }
 
-    .step-number {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: var(--grey-3);
-      color: var(--white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      margin-bottom: 6px;
-      font-size: 14px;
-    }
+      .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--grey-3);
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
 
-    .step.active .step-number {
-      background: var(--db-red);
-    }
+      .step.active .step-number {
+        background: var(--db-red);
+      }
 
-    .step.completed .step-number {
-      background: var(--green);
-    }
+      .step.completed .step-number {
+        background: var(--green);
+      }
 
-    .step-title {
-      font-weight: 600;
-      margin-bottom: 2px;
-      font-size: 13px;
-    }
+      .step-title {
+        font-weight: 600;
+        margin-bottom: 2px;
+        font-size: 13px;
+      }
 
-    .step-desc {
-      font-size: 10px;
-      color: var(--grey-4);
-    }
+      .step-desc {
+        font-size: 10px;
+        color: var(--grey-4);
+      }
 
     /* Dropzone - kompakter */
     .dropzone {
       border: 2px dashed var(--grey-3);
       border-radius: 10px;
-      padding: 20px 15px;
+      padding: 15px 10px;
       background: var(--grey-1);
       cursor: pointer;
       transition: all 0.3s ease;
@@ -149,13 +149,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
       user-select: none;
       position: relative;
       overflow: hidden;
-      margin: 0 auto 20px auto;
-      min-height: 100px;
-      max-width: 500px;
+      margin: 0 auto 15px auto;
+      min-height: 80px;
+      max-width: 400px;
     }
     
     .dropzone.dragover {
@@ -178,15 +178,16 @@
     }
     
     .dropzone-icon {
-      font-size: 24px;
+      font-size: 20px;
       color: var(--grey-4);
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .dropzone-text {
       text-align: center;
       margin: 0;
-      padding: 20px;
+      padding: 10px;
+      font-size: 14px;
     }
 
     /* Action Sections */
@@ -266,12 +267,208 @@
       box-shadow: none;
     }
 
-    /* Stats Cards for Quality Check */
+    /* Baumdiagramm mit orange Verbindungslinien */
+    .tree-container {
+      margin: 20px 0;
+    }
+    
+    .tree {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+    }
+    
+    .tree-node {
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .tree-node-content {
+      width: 200px;
+      height: 100px;
+      border: 2px solid orange;
+      border-radius: 10px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+    }
+    
+    .tree-node-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .tree-node-label {
+      font-size: 11px;
+      line-height: 1.2;
+    }
+    
+    /* Farben für verschiedene Node-Typen */
+    .tree-node-content.blue .tree-node-number { color: var(--blue); }
+    .tree-node-content.black .tree-node-number { color: var(--text); }
+    .tree-node-content.green .tree-node-number { color: var(--green); }
+    .tree-node-content.red .tree-node-number { color: var(--db-red); }
+    .tree-node-content.orange .tree-node-number { color: var(--orange); }
+    
+    /* Level 2 Container - horizontale Anordnung */
+    .level-2-container {
+      display: flex;
+      gap: 100px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    
+    /* Level 3 Container - horizontale Anordnung */
+    .level-3-container {
+      display: flex;
+      gap: 60px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    
+    /* Verbindungslinien mit Pseudo-Elementen */
+    .tree-node.level-0::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 20px;
+      background: orange;
+    }
+    
+    .tree-node.level-1::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 20px;
+      background: orange;
+    }
+    
+    /* Verzweigung von Level 1 zu Level 2 */
+    .tree-node.level-1::before {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 2px;
+      background: orange;
+    }
+    
+    /* Verbindungslinien für Level 2 Nodes */
+    .tree-node.level-2:first-child::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 20px;
+      background: orange;
+    }
+    
+    .tree-node.level-2:last-child::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 20px;
+      background: orange;
+    }
+    
+    /* Verzweigung von "Gefundene Web-Werte" zu Level 3 */
+    .tree-node.level-2:first-child::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 2px;
+      background: orange;
+    }
+    
+    /* Verbindungslinien für Level 3 Nodes */
+    .tree-node.level-3::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 20px;
+      background: orange;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .level-2-container {
+        gap: 60px;
+      }
+      
+      .level-3-container {
+        gap: 40px;
+      }
+      
+      .tree-node-content {
+        width: 160px;
+        height: 80px;
+      }
+      
+      .tree-node-number {
+        font-size: 20px;
+      }
+      
+      .tree-node-label {
+        font-size: 10px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .level-2-container {
+        flex-direction: column;
+        gap: 40px;
+        align-items: center;
+      }
+      
+      .level-3-container {
+        gap: 30px;
+      }
+      
+      .tree-node-content {
+        width: 180px;
+        height: 90px;
+      }
+    }
+
+    /* Stats Cards */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 12px;
       margin: 15px 0;
+    }
+    
+    /* Web Search Stats - 3x2 Layout */
+    #webStats.stats-grid {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, auto);
     }
 
     .stat-card {
@@ -303,223 +500,6 @@
       font-size: 12px;
       color: var(--grey-4);
       font-weight: 500;
-    }
-
-    /* Tree Structure for Web Search Stats */
-    .tree-container {
-      display: flex;
-      justify-content: center;
-      margin: 30px 0;
-      padding: 20px;
-    }
-
-    .tree {
-      position: relative;
-    }
-
-    .tree-node {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
-      margin: 20px 0;
-    }
-
-    .tree-node-content {
-      background: var(--white);
-      border: 2px solid;
-      border-radius: 10px;
-      padding: 12px 16px;
-      text-align: center;
-      min-width: 140px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease;
-    }
-
-    .tree-node-content:hover {
-      transform: translateY(-2px);
-    }
-
-    .tree-node-content.blue {
-      border-color: var(--blue);
-    }
-
-    .tree-node-content.black {
-      border-color: var(--black);
-    }
-
-    .tree-node-content.green {
-      border-color: var(--green);
-    }
-
-    .tree-node-content.red {
-      border-color: var(--db-red);
-    }
-
-    .tree-node-content.orange {
-      border-color: var(--orange);
-    }
-
-    .tree-node-number {
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-
-    .tree-node-content.blue .tree-node-number {
-      color: var(--blue);
-    }
-
-    .tree-node-content.black .tree-node-number {
-      color: var(--black);
-    }
-
-    .tree-node-content.green .tree-node-number {
-      color: var(--green);
-    }
-
-    .tree-node-content.red .tree-node-number {
-      color: var(--db-red);
-    }
-
-    .tree-node-content.orange .tree-node-number {
-      color: var(--orange);
-    }
-
-    .tree-node-label {
-      font-size: 11px;
-      color: var(--grey-4);
-      font-weight: 500;
-      line-height: 1.2;
-    }
-
-    .tree-children {
-      display: flex;
-      gap: 60px;
-      margin-top: 40px;
-    }
-
-    /* Tree Lines */
-    .tree-line {
-      position: absolute;
-      background: var(--grey-3);
-      z-index: -1;
-    }
-
-    .tree-line.vertical {
-      width: 2px;
-    }
-
-    .tree-line.horizontal {
-      height: 2px;
-    }
-
-    /* Specific tree structure layout */
-    .level-0 { /* Gesamt Siemens-Produkte */
-      margin-bottom: 40px;
-    }
-
-    .level-1 { /* Gesuchte Werte */
-      margin-bottom: 40px;
-      position: relative;
-    }
-
-    .level-1::before {
-      content: '';
-      position: absolute;
-      top: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 40px;
-      background: var(--grey-3);
-    }
-
-    .level-2-container {
-      display: flex;
-      gap: 120px;
-      justify-content: center;
-      position: relative;
-    }
-
-    .level-2-container::before {
-      content: '';
-      position: absolute;
-      top: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 40px;
-      background: var(--grey-3);
-    }
-
-    .level-2-container::after {
-      content: '';
-      position: absolute;
-      top: -40px;
-      left: 25%;
-      right: 25%;
-      height: 2px;
-      background: var(--grey-3);
-    }
-
-    .level-2 {
-      position: relative;
-    }
-
-    .level-2::before {
-      content: '';
-      position: absolute;
-      top: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 40px;
-      background: var(--grey-3);
-    }
-
-    .level-3-container {
-      display: flex;
-      gap: 80px;
-      justify-content: center;
-      margin-top: 40px;
-      position: relative;
-    }
-
-    .level-3-container::before {
-      content: '';
-      position: absolute;
-      top: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 40px;
-      background: var(--grey-3);
-    }
-
-    .level-3-container::after {
-      content: '';
-      position: absolute;
-      top: -40px;
-      left: 25%;
-      right: 25%;
-      height: 2px;
-      background: var(--grey-3);
-    }
-
-    .level-3 {
-      position: relative;
-    }
-
-    .level-3::before {
-      content: '';
-      position: absolute;
-      top: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 40px;
-      background: var(--grey-3);
     }
 
     /* Status & Progress */
@@ -565,13 +545,11 @@
       .pipeline-steps { flex-direction: column; gap: 12px; }
       .pipeline-steps::before { display: none; }
       
-      /* Mobile tree adjustments */
-      .tree-children { gap: 30px; flex-wrap: wrap; justify-content: center; }
-      .level-2-container { gap: 60px; flex-wrap: wrap; }
-      .level-3-container { gap: 40px; flex-wrap: wrap; }
-      .tree-node-content { min-width: 120px; padding: 10px 12px; }
-      .tree-node-number { font-size: 18px; }
-      .tree-node-label { font-size: 10px; }
+      /* Web Search Stats - Mobile Layout */
+      #webStats.stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, auto);
+      }
     }
 
     @media (max-height: 700px) {
@@ -580,7 +558,6 @@
       .pipeline-steps { margin-bottom: 20px; }
       .action-section { margin-bottom: 20px; }
       .dropzone { min-height: 80px; padding: 15px; }
-      .tree-container { margin: 20px 0; }
     }
   </style>
 </head>
@@ -598,7 +575,7 @@
       <!-- Pipeline Steps -->
       <div class="pipeline-steps">
         <div class="step active" id="step-1">
-          <div class="step-number">📄</div>
+          <div class="step-number">📁</div>
           <div class="step-title">Datei Upload</div>
         </div>
         <div class="step" id="step-2">
@@ -615,8 +592,8 @@
 
       <!-- Step 1: Upload -->
       <div class="action-section" id="upload-section">
-        <h3>📄 Datei Upload</h3>
-        <center>
+        <h3>📁 Datei Upload</h3>
+                <center>
           <div id="dropzone" class="dropzone">
             <div class="dropzone-icon">📁</div>
             <p id="dzText" class="dropzone-text">
@@ -839,7 +816,7 @@
       // Update pipeline steps
       updateStep(2, 'active');
       
-      statusEl.textContent = 'Datei erfolgreich hochgeladen – Qualitätsprüfung starten.';
+      statusEl.textContent = 'Datei erfolgreich hochgeladen — Qualitätsprüfung starten.';
     }
 
     /* ==================== QUALITY CHECK ==================== */
@@ -848,7 +825,7 @@
       
       qualityBlob = null;
       
-      statusEl.textContent = 'Qualitätsprüfung läuft – Vollständigkeit und Plausibilität werden geprüft...';
+      statusEl.textContent = 'Qualitätsprüfung läuft — Vollständigkeit und Plausibilität werden geprüft...';
       showProgress(true);
       updateProgress(20);
 
@@ -883,27 +860,45 @@
             body: statsForm
           });
           
-          if (statsResp.ok) {
-            const stats = await statsResp.json();
-            totalQualityCount.textContent = stats.total;
-            completeCount.textContent = `${stats.complete} (${stats.completePercentage}%)`;
-            incompleteCount.textContent = '? (0%)';
-        }
+                     if (statsResp.ok) {
+             const stats = await statsResp.json();
+             totalQualityCount.textContent = stats.total;
+             completeCount.textContent = `${stats.complete} (${stats.completePercentage}%)`;
+             incompleteCount.textContent = `${stats.incomplete} (${stats.incompletePercentage}%)`;
+             
+             // Debug info in console
+             if (stats.debug) {
+               console.log('Quality debug info:', stats.debug);
+               console.log('Found colors:', stats.debug.foundColors);
+             }
+           } else {
+             // Fallback to placeholder stats
+             totalQualityCount.textContent = '?';
+             completeCount.textContent = '? (0%)';
+             incompleteCount.textContent = '? (0%)';
+           }
+                 } catch (statsErr) {
+           console.error('Error getting quality stats:', statsErr);
+           // Fallback to placeholder stats
+           totalQualityCount.textContent = '?';
+           completeCount.textContent = '? (0%)';
+           incompleteCount.textContent = '? (0%)';
+         }
         
         qualityStats.classList.remove('hidden');
         
         updateProgress(100);
-        statusEl.textContent = 'Qualitätsprüfung abgeschlossen – Qualitätsbericht verfügbar.';
+        statusEl.textContent = 'Qualitätsprüfung abgeschlossen — Qualitätsbericht verfügbar.';
         
-        downloadQualityBtn.disabled = false;
-        
-        // Enable web search section
-        enableSection(webSearchSection, true);
-        webSearchBtn.disabled = false;
-        
-        // Update pipeline steps
-        updateStep(2, 'completed');
-        updateStep(3, 'active');
+                 downloadQualityBtn.disabled = false;
+         
+         // Enable web search section
+         enableSection(webSearchSection, true);
+         webSearchBtn.disabled = false;
+         
+         // Update pipeline steps
+         updateStep(2, 'completed');
+         updateStep(3, 'active');
         
       } catch (err) {
         statusEl.textContent = 'Fehler bei Qualitätsprüfung: ' + err.message;
@@ -921,7 +916,7 @@
       downloadWebBtn.disabled = true;
       webStats.classList.add('hidden');
       
-      statusEl.textContent = 'Web-Suche läuft – Siemens-Produkte werden gesucht...';
+      statusEl.textContent = 'Web-Suche läuft — Siemens-Produkte werden gesucht...';
       showProgress(true);
       updateProgress(10);
 
@@ -953,44 +948,44 @@
             body: statsForm
           });
           
-          if (statsResp.ok) {
-            const stats = await statsResp.json();
-            totalSiemensCount.textContent = stats.totalSiemens;
-            searchedValuesCount.textContent = stats.searchedValues;
-            foundWebValuesCount.textContent = `${stats.foundWebValues} (${stats.foundWebValuesPercentage}%)`;
-            foundCount.textContent = `${stats.green} (${stats.greenPercentage}%)`;
-            diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
-            missingCount.textContent = `${stats.orange} (${stats.orangePercentage}%)`;
-            
-            // Debug info in console
-            if (stats.debug) {
-              console.log('Debug info:', stats.debug);
-              console.log('Found colors:', stats.debug.foundColors);
-            }
-          } else {
-            // Fallback to placeholder stats
-            totalSiemensCount.textContent = '?';
-            searchedValuesCount.textContent = '?';
-            foundWebValuesCount.textContent = '?';
-            foundCount.textContent = '? (0%)';
-            diffCount.textContent = '? (0%)';
-            missingCount.textContent = '? (0%)';
-          }
-        } catch (statsErr) {
-          console.error('Error getting stats:', statsErr);
-          // Fallback to placeholder stats
-          totalSiemensCount.textContent = '?';
-          searchedValuesCount.textContent = '?';
-          foundWebValuesCount.textContent = '?';
-          foundCount.textContent = '? (0%)';
-          diffCount.textContent = '? (0%)';
-          missingCount.textContent = '? (0%)';
-        }
+                     if (statsResp.ok) {
+             const stats = await statsResp.json();
+             totalSiemensCount.textContent = stats.totalSiemens;
+             searchedValuesCount.textContent = stats.searchedValues;
+             foundWebValuesCount.textContent = `${stats.foundWebValues} (${stats.foundWebValuesPercentage}%)`;
+             foundCount.textContent = `${stats.green} (${stats.greenPercentage}%)`;
+             diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
+             missingCount.textContent = `${stats.orange} (${stats.orangePercentage}%)`;
+             
+             // Debug info in console
+             if (stats.debug) {
+               console.log('Debug info:', stats.debug);
+               console.log('Found colors:', stats.debug.foundColors);
+             }
+           } else {
+             // Fallback to placeholder stats
+             totalSiemensCount.textContent = '?';
+             searchedValuesCount.textContent = '?';
+             foundWebValuesCount.textContent = '?';
+             foundCount.textContent = '? (0%)';
+             diffCount.textContent = '? (0%)';
+             missingCount.textContent = '? (0%)';
+           }
+                 } catch (statsErr) {
+           console.error('Error getting stats:', statsErr);
+           // Fallback to placeholder stats
+           totalSiemensCount.textContent = '?';
+           searchedValuesCount.textContent = '?';
+           foundWebValuesCount.textContent = '?';
+           foundCount.textContent = '? (0%)';
+           diffCount.textContent = '? (0%)';
+           missingCount.textContent = '? (0%)';
+         }
         
         webStats.classList.remove('hidden');
         
         updateProgress(100);
-        statusEl.textContent = 'Web-Suche abgeschlossen – Ergebnis herunterladen oder zur Qualitätsprüfung.';
+        statusEl.textContent = 'Web-Suche abgeschlossen — Ergebnis herunterladen oder zur Qualitätsprüfung.';
         
         downloadWebBtn.disabled = false;
         
@@ -1028,4 +1023,4 @@
     }
   </script>
 </body>
-</html> 
+</html>
