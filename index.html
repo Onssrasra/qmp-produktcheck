@@ -267,24 +267,24 @@
       box-shadow: none;
     }
 
-    /* Vertikales Baumdiagramm für Web Search Stats */
+    /* Kompaktes vertikales Baumdiagramm für Web Search Stats */
     .tree-container {
       margin: 20px 0;
     }
     
     .tree-container h4 {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       color: var(--text);
       font-size: 16px;
       font-weight: 600;
     }
     
-    .vertical-tree {
+    .compact-tree {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
     
     .tree-level {
@@ -300,59 +300,79 @@
     
     .tree-branch {
       display: flex;
-      gap: 60px;
+      gap: 40px;
       justify-content: center;
     }
     
-    .tree-arrow-down {
-      font-size: 16px;
+    .tree-arrow {
+      font-size: 18px;
       color: var(--grey-4);
       text-align: center;
       margin: 2px 0;
-      font-family: monospace;
+    }
+    
+    .tree-arrows {
+      display: flex;
+      gap: 80px;
+      justify-content: center;
+      margin: 2px 0;
     }
     
     /* Einheitliche Box-Größe für alle Stat-Cards */
     .tree-container .stat-card {
-      width: 200px;
-      height: 100px;
+      width: 180px;
+      height: 90px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
     
     .tree-container .stat-number {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
     
     .tree-container .stat-label {
-      font-size: 11px;
+      font-size: 10px;
       text-align: center;
       line-height: 1.2;
+    }
+    
+    /* Graue Karte für "Gefundene Web-Werte" */
+    .stat-card.grey {
+      border-color: var(--grey-3);
+      background: var(--grey-1);
+    }
+    
+    .stat-card.grey .stat-number {
+      color: var(--grey-4);
     }
     
     /* Responsive Design */
     @media (max-width: 768px) {
       .tree-branch {
-        gap: 40px;
+        gap: 30px;
+      }
+      
+      .tree-arrows {
+        gap: 60px;
       }
       
       .tree-container .stat-card {
-        width: 160px;
-        height: 80px;
+        width: 150px;
+        height: 75px;
       }
       
       .tree-container .stat-number {
-        font-size: 20px;
+        font-size: 18px;
       }
       
       .tree-container .stat-label {
-        font-size: 10px;
+        font-size: 9px;
       }
     }
     
@@ -363,9 +383,13 @@
         align-items: center;
       }
       
+      .tree-arrows {
+        gap: 40px;
+      }
+      
       .tree-container .stat-card {
-        width: 180px;
-        height: 90px;
+        width: 160px;
+        height: 80px;
       }
     }
 
@@ -555,8 +579,8 @@
         <div id="webStats" class="tree-container hidden">
           <h4>Web-Suche Statistiken</h4>
           
-          <!-- Vertikales Baumdiagramm -->
-          <div class="vertical-tree">
+          <!-- Kompaktes vertikales Baumdiagramm -->
+          <div class="compact-tree">
             <!-- Level 1: Gesamt Siemens-Produkte -->
             <div class="tree-level">
               <div class="tree-node">
@@ -568,8 +592,7 @@
             </div>
             
             <!-- Pfeil nach unten -->
-            <div class="tree-arrow-down">│</div>
-            <div class="tree-arrow-down">▼</div>
+            <div class="tree-arrow">↓</div>
             
             <!-- Level 2: Gesuchte Werte -->
             <div class="tree-level">
@@ -581,15 +604,17 @@
               </div>
             </div>
             
-            <!-- Pfeil nach unten -->
-            <div class="tree-arrow-down">│</div>
-            <div class="tree-arrow-down">▼</div>
+            <!-- Zwei Pfeile nach unten -->
+            <div class="tree-arrows">
+              <div class="tree-arrow">↙</div>
+              <div class="tree-arrow">↘</div>
+            </div>
             
             <!-- Level 3: Gefundene & Fehlende Web-Werte -->
             <div class="tree-level">
               <div class="tree-branch">
                 <div class="tree-node">
-                  <div class="stat-card blue">
+                  <div class="stat-card grey">
                     <div class="stat-number" id="foundWebValuesCount">0</div>
                     <div class="stat-label">Gefundene Web-Werte</div>
                   </div>
@@ -603,9 +628,11 @@
               </div>
             </div>
             
-            <!-- Pfeil nur von "Gefundene Web-Werte" -->
-            <div class="tree-arrow-down">│</div>
-            <div class="tree-arrow-down">▼</div>
+            <!-- Zwei Pfeile von "Gefundene Web-Werte" -->
+            <div class="tree-arrows">
+              <div class="tree-arrow">↙</div>
+              <div class="tree-arrow">↘</div>
+            </div>
             
             <!-- Level 4: Übereinstimmungen & Abweichungen -->
             <div class="tree-level">
