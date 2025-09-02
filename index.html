@@ -267,6 +267,160 @@
       box-shadow: none;
     }
 
+    /* Kreisdiagramm für Web-Suche Statistiken */
+    .stats-container {
+      margin: 20px 0;
+    }
+    
+    .stats-container h4 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .pie-chart-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      margin-bottom: 20px;
+    }
+    
+    .pie-chart {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .main-pie {
+      background: conic-gradient(
+        var(--blue) 0deg var(--found-angle),
+        var(--orange) var(--found-angle) 360deg
+      );
+    }
+    
+    .sub-pie {
+      background: conic-gradient(
+        var(--green) 0deg var(--matches-angle),
+        var(--db-red) var(--matches-angle) 360deg
+      );
+    }
+    
+    .pie-segment {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+    
+    .segment-label {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      line-height: 1.2;
+    }
+    
+    .sub-pie-container {
+      position: relative;
+    }
+    
+    .sub-pie-container::before {
+      content: 'Details';
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--grey-4);
+      font-weight: 500;
+    }
+    
+    .chart-legend {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text);
+    }
+    
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+    }
+    
+    .legend-color.found { background: var(--blue); }
+    .legend-color.missing { background: var(--orange); }
+    .legend-color.matches { background: var(--green); }
+    .legend-color.deviations { background: var(--db-red); }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .pie-chart-container {
+        flex-direction: column;
+        gap: 30px;
+      }
+      
+      .pie-chart {
+        width: 160px;
+        height: 160px;
+      }
+      
+      .segment-label {
+        font-size: 10px;
+        padding: 3px 6px;
+      }
+      
+      .chart-legend {
+        gap: 15px;
+      }
+      
+      .legend-item {
+        font-size: 11px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .pie-chart {
+        width: 140px;
+        height: 140px;
+      }
+      
+      .segment-label {
+        font-size: 9px;
+        padding: 2px 4px;
+      }
+      
+      .chart-legend {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+    }
+
     /* Baumdiagramm mit SVG-Linien - 4 Ebenen */
     .tree-container {
       margin: 20px 0;
@@ -610,65 +764,51 @@
           <button id="downloadWebBtn" class="secondary" disabled>Excel herunterladen</button>
         </div>
         
-        <!-- Web Search Stats as Tree -->
-        <div id="webStats" class="tree-container hidden">
-          <div class="tree-diagram">
-            <!-- SVG Linien für Verbindungen -->
-            <svg width="100%" height="400" style="position: absolute; z-index: 0;">
-              <!-- Verbindung von Level 1 zu Level 2 -->
-              <line x1="50%" y1="100" x2="50%" y2="180" stroke="var(--grey-3)" stroke-width="2"/>
-              <!-- Verbindung von Level 2 zu Level 3 -->
-              <line x1="50%" y1="180" x2="30%" y2="280" stroke="var(--grey-3)" stroke-width="2"/>
-              <line x1="50%" y1="180" x2="70%" y2="280" stroke="var(--grey-3)" stroke-width="2"/>
-              <!-- Verbindung von "Gefundene Web-Werte" zu Level 4 -->
-              <line x1="30%" y1="280" x2="25%" y2="380" stroke="var(--grey-3)" stroke-width="2"/>
-              <line x1="30%" y1="280" x2="35%" y2="380" stroke="var(--grey-3)" stroke-width="2"/>
-            </svg>
-
-            <!-- Level 1: Gesamt Siemens-Produkte -->
-            <div class="tree-node level-1">
-              <div class="tree-node-content blue">
-                <div class="tree-node-number" id="totalSiemensCount">0</div>
-                <div class="tree-node-label">Gesamt Siemens-Produkte</div>
+        <!-- Web Search Stats as Pie Chart -->
+        <div id="webStats" class="stats-container hidden">
+          <h4>Web-Suche Statistiken</h4>
+          
+          <!-- Haupt-Kreisdiagramm: Gesuchte Werte -->
+          <div class="pie-chart-container">
+            <div class="pie-chart main-pie">
+              <div class="pie-segment found" id="foundSegment">
+                <div class="segment-label">Gefunden: <span id="foundWebValuesCount">0</span> (<span id="foundPercentage">0</span>%)</div>
               </div>
-            </div>
-
-            <!-- Level 2: Gesuchte Werte -->
-            <div class="tree-node level-2">
-              <div class="tree-node-content blue">
-                <div class="tree-node-number" id="searchedValuesCount">0</div>
-                <div class="tree-node-label">Gesuchte Werte</div>
-              </div>
-            </div>
-
-            <!-- Level 3: Gefundene und Fehlende Web-Werte -->
-            <div class="tree-node level-3-left">
-              <div class="tree-node-content blue">
-                <div class="tree-node-number" id="foundWebValuesCount">0</div>
-                <div class="tree-node-label">Gefundene Web-Werte</div>
+              <div class="pie-segment missing" id="missingSegment">
+                <div class="segment-label">Fehlend: <span id="missingCount">0</span> (<span id="missingPercentage">0</span>%)</div>
               </div>
             </div>
             
-            <div class="tree-node level-3-right">
-              <div class="tree-node-content orange">
-                <div class="tree-node-number" id="missingCount">0</div>
-                <div class="tree-node-label">Fehlende Web-Werte</div>
+            <!-- Unter-Kreisdiagramm: Gefundene Web-Werte Details -->
+            <div class="sub-pie-container">
+              <div class="pie-chart sub-pie">
+                <div class="pie-segment matches" id="matchesSegment">
+                  <div class="segment-label">Übereinstimmungen: <span id="foundCount">0</span> (<span id="matchesPercentage">0</span>%)</div>
+                </div>
+                <div class="pie-segment deviations" id="deviationsSegment">
+                  <div class="segment-label">Abweichungen: <span id="diffCount">0</span> (<span id="deviationsPercentage">0</span>%)</div>
+                </div>
               </div>
             </div>
-
-            <!-- Level 4: Übereinstimmungen und Abweichungen -->
-            <div class="tree-node level-4-left">
-              <div class="tree-node-content green">
-                <div class="tree-node-number" id="foundCount">0</div>
-                <div class="tree-node-label">Übereinstimmungen</div>
-              </div>
+          </div>
+          
+          <!-- Legende -->
+          <div class="chart-legend">
+            <div class="legend-item">
+              <div class="legend-color found"></div>
+              <span>Gefundene Web-Werte</span>
             </div>
-            
-            <div class="tree-node level-4-right">
-              <div class="tree-node-content red">
-                <div class="tree-node-number" id="diffCount">0</div>
-                <div class="tree-node-label">Abweichungen</div>
-              </div>
+            <div class="legend-item">
+              <div class="legend-color missing"></div>
+              <span>Fehlende Web-Werte</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color matches"></div>
+              <span>Übereinstimmungen</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color deviations"></div>
+              <span>Abweichungen</span>
             </div>
           </div>
         </div>
@@ -735,6 +875,38 @@
           step.classList.add('active');
         }
       });
+    }
+
+    function updatePieChart(stats) {
+      // Calculate angles for main pie chart (found vs missing)
+      const foundPercentage = stats.foundWebValuesPercentage || 0;
+      const missingPercentage = stats.orangePercentage || 0;
+      
+      const foundAngle = (foundPercentage / 100) * 360;
+      const missingAngle = (missingPercentage / 100) * 360;
+      
+      // Calculate angles for sub pie chart (matches vs deviations)
+      const matchesPercentage = stats.greenPercentage || 0;
+      const deviationsPercentage = stats.redPercentage || 0;
+      
+      const matchesAngle = (matchesPercentage / 100) * 360;
+      const deviationsAngle = (deviationsPercentage / 100) * 360;
+      
+      // Update CSS custom properties
+      document.documentElement.style.setProperty('--found-angle', `${foundAngle}deg`);
+      document.documentElement.style.setProperty('--missing-angle', `${missingAngle}deg`);
+      document.documentElement.style.setProperty('--matches-angle', `${matchesAngle}deg`);
+      document.documentElement.style.setProperty('--deviations-angle', `${deviationsAngle}deg`);
+      
+      // Update segment labels
+      document.getElementById('foundWebValuesCount').textContent = stats.foundWebValues || 0;
+      document.getElementById('foundPercentage').textContent = foundPercentage;
+      document.getElementById('missingCount').textContent = stats.orange || 0;
+      document.getElementById('missingPercentage').textContent = missingPercentage;
+      document.getElementById('foundCount').textContent = stats.green || 0;
+      document.getElementById('matchesPercentage').textContent = matchesPercentage;
+      document.getElementById('diffCount').textContent = stats.red || 0;
+      document.getElementById('deviationsPercentage').textContent = deviationsPercentage;
     }
 
     function enableSection(section, enable = true) {
@@ -846,7 +1018,8 @@
              completeCount.textContent = `${stats.complete} (${stats.completePercentage}%)`;
              incompleteCount.textContent = `${stats.incomplete} (${stats.incompletePercentage}%)`;
              
-             // Debug info in console
+             // Update pie chart segments
+             updatePieChart(stats);
              if (stats.debug) {
                console.log('Quality debug info:', stats.debug);
                console.log('Found colors:', stats.debug.foundColors);
@@ -937,7 +1110,8 @@
              diffCount.textContent = `${stats.red} (${stats.redPercentage}%)`;
              missingCount.textContent = `${stats.orange} (${stats.orangePercentage}%)`;
              
-             // Debug info in console
+             // Update pie chart segments
+             updatePieChart(stats);
              if (stats.debug) {
                console.log('Debug info:', stats.debug);
                console.log('Found colors:', stats.debug.foundColors);
