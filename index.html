@@ -512,8 +512,8 @@
           <div class="web-charts">
             <!-- Products to Search Values -->
             <div class="web-chart-group">
-              <div class="chart-title">Schritt 1: Produkt-Analyse</div>
-              <div class="chart-subtitle">Alle Siemens-Produkte</div>
+              <div class="chart-title">Schritt 1: Produktanalyse aller Siemens-Produkte</div>
+              <div class="chart-subtitle">Gesamtdatensatz → Siemens-Produkte</div>
               <div class="chart-wrapper">
                 <canvas id="productsChart"></canvas>
               </div>
@@ -522,7 +522,7 @@
             <!-- Search Values to Web Results -->
             <div class="web-chart-group">
               <div class="chart-title">Schritt 2: Web-Suche</div>
-              <div class="chart-subtitle">Gesuchte Werte</div>
+              <div class="chart-subtitle">Gesuchte Werte → Gefundene/Fehlende Web-Werte</div>
               <div class="chart-wrapper">
                 <canvas id="searchChart"></canvas>
               </div>
@@ -693,13 +693,17 @@
     }
 
     function createWebCharts(stats) {
-      createProductsChart(stats.totalSiemens, stats.searchedValues);
+      createProductsChart(stats.totalProducts, stats.totalSiemens);
       createSearchChart(stats.searchedValues, stats.foundWebValues, stats.searchedValues - stats.foundWebValues);
       createMatchChart(stats.foundWebValues, stats.green, stats.red);
       
       // Create combined legend
       const legendContainer = document.getElementById('webLegend');
       legendContainer.innerHTML = `
+        <div class="legend-item">
+          <div class="legend-color" style="background-color: rgba(108, 113, 196, 0.8);"></div>
+          <span>Gesamtdatensatz: ${stats.totalProducts}</span>
+        </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.8);"></div>
           <span>Siemens-Produkte: ${stats.totalSiemens}</span>
@@ -727,22 +731,34 @@
       `;
     }
 
-    function createProductsChart(totalSiemens, searchedValues) {
+    function createProductsChart(totalProducts, totalSiemens) {
       const ctx = document.getElementById('productsChart').getContext('2d');
       
       if (productsChart) {
         productsChart.destroy();
       }
 
-      // Show total products as outer ring, searched values as inner
+      const otherProducts = totalProducts - totalSiemens;
+      const siemensPercentage = ((totalSiemens / totalProducts) * 100).toFixed(1);
+      const otherPercentage = ((otherProducts / totalProducts) * 100).toFixed(1);
+
       productsChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: [`${totalSiemens} Siemens-Produkte`],
+          labels: [
+            `Siemens-Produkte (${siemensPercentage}%)`,
+            `Andere Produkte (${otherPercentage}%)`
+          ],
           datasets: [{
-            data: [totalSiemens],
-            backgroundColor: ['rgba(59, 130, 246, 0.8)'],
-            borderColor: ['rgba(59, 130, 246, 1)'],
+            data: [totalSiemens, otherProducts],
+            backgroundColor: [
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(108, 113, 196, 0.8)'
+            ],
+            borderColor: [
+              'rgba(59, 130, 246, 1)',
+              'rgba(108, 113, 196, 1)'
+            ],
             borderWidth: 2
           }]
         },
@@ -753,7 +769,9 @@
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: () => `${totalSiemens} Siemens-Produkte\n→ ${searchedValues} gesuchte Werte`
+                label: function(context) {
+                  return `${context.label}: ${context.parsed}`;
+                }
               }
             }
           },
