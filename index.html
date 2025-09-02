@@ -267,23 +267,23 @@
       box-shadow: none;
     }
 
-    /* Baumdiagramm mit grauen Verbindungslinien - 4 Ebenen */
+    /* Baumdiagramm mit SVG-Linien - 4 Ebenen */
     .tree-container {
       margin: 20px 0;
     }
     
-    .tree {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
+    .tree-diagram {
       position: relative;
+      width: 100%;
+      height: 320px;
+      margin-top: 20px;
     }
     
     .tree-node {
-      position: relative;
+      position: absolute;
       display: flex;
       justify-content: center;
+      z-index: 1;
     }
     
     .tree-node-content {
@@ -297,7 +297,6 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      position: relative;
     }
     
     .tree-node-number {
@@ -317,113 +316,47 @@
     .tree-node-content.red .tree-node-number { color: var(--db-red); }
     .tree-node-content.orange .tree-node-number { color: var(--orange); }
     
-    /* Level 3 Container - horizontale Anordnung */
-    .level-3-container {
-      display: flex;
-      gap: 100px;
-      justify-content: center;
-      align-items: flex-start;
-    }
-    
-    /* Level 4 Container - horizontale Anordnung (nur unter "Gefundene Web-Werte") */
-    .level-4-container {
-      display: flex;
-      gap: 60px;
-      justify-content: center;
-      margin-top: 20px;
-      position: relative;
-    }
-    
-    /* Verbindungslinien mit Pseudo-Elementen - GRAU */
-    .tree-node.level-1::after {
-      content: '';
-      position: absolute;
-      bottom: -20px;
+    /* Positionierung der Nodes */
+    .tree-node.level-1 {
+      top: 0px;
       left: 50%;
       transform: translateX(-50%);
-      width: 2px;
-      height: 20px;
-      background: var(--grey-3);
     }
     
-    .tree-node.level-2::after {
-      content: '';
-      position: absolute;
-      bottom: -20px;
+    .tree-node.level-2 {
+      top: 120px;
       left: 50%;
       transform: translateX(-50%);
-      width: 2px;
-      height: 20px;
-      background: var(--grey-3);
     }
     
-    /* Verzweigung von Level 2 zu Level 3 */
-    .tree-node.level-2::before {
-      content: '';
-      position: absolute;
-      bottom: -20px;
-      left: 50%;
+    .tree-node.level-3-left {
+      top: 190px;
+      left: 35%;
       transform: translateX(-50%);
-      width: 100px;
-      height: 2px;
-      background: var(--grey-3);
     }
     
-    /* Verbindungslinien für Level 3 Nodes */
-    .tree-node.level-3:first-child::before {
-      content: '';
-      position: absolute;
-      top: -20px;
-      left: 50%;
+    .tree-node.level-3-right {
+      top: 190px;
+      left: 65%;
       transform: translateX(-50%);
-      width: 2px;
-      height: 20px;
-      background: var(--grey-3);
     }
     
-    .tree-node.level-3:last-child::before {
-      content: '';
-      position: absolute;
-      top: -20px;
-      left: 50%;
+    .tree-node.level-4-left {
+      top: 260px;
+      left: 30%;
       transform: translateX(-50%);
-      width: 2px;
-      height: 20px;
-      background: var(--grey-3);
     }
     
-    /* Verzweigung von "Gefundene Web-Werte" zu Level 4 */
-    .tree-node.level-3:first-child::after {
-      content: '';
-      position: absolute;
-      bottom: -20px;
-      left: 50%;
+    .tree-node.level-4-right {
+      top: 260px;
+      left: 40%;
       transform: translateX(-50%);
-      width: 60px;
-      height: 2px;
-      background: var(--grey-3);
-    }
-    
-    /* Verbindungslinien für Level 4 Nodes */
-    .tree-node.level-4::before {
-      content: '';
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 20px;
-      background: var(--grey-3);
     }
     
     /* Responsive Design */
     @media (max-width: 768px) {
-      .level-3-container {
-        gap: 60px;
-      }
-      
-      .level-4-container {
-        gap: 40px;
+      .tree-diagram {
+        height: 280px;
       }
       
       .tree-node-content {
@@ -438,22 +371,60 @@
       .tree-node-label {
         font-size: 10px;
       }
+      
+      /* Angepasste Positionierung für Mobile */
+      .tree-node.level-3-left {
+        left: 30%;
+      }
+      
+      .tree-node.level-3-right {
+        left: 70%;
+      }
+      
+      .tree-node.level-4-left {
+        left: 25%;
+      }
+      
+      .tree-node.level-4-right {
+        left: 35%;
+      }
     }
     
     @media (max-width: 480px) {
-      .level-3-container {
-        flex-direction: column;
-        gap: 40px;
-        align-items: center;
-      }
-      
-      .level-4-container {
-        gap: 30px;
+      .tree-diagram {
+        height: 400px;
       }
       
       .tree-node-content {
-        width: 180px;
-        height: 90px;
+        width: 140px;
+        height: 70px;
+      }
+      
+      /* Vertikale Anordnung für sehr kleine Bildschirme */
+      .tree-node.level-3-left,
+      .tree-node.level-3-right {
+        left: 50%;
+      }
+      
+      .tree-node.level-3-left {
+        top: 190px;
+      }
+      
+      .tree-node.level-3-right {
+        top: 270px;
+      }
+      
+      .tree-node.level-4-left,
+      .tree-node.level-4-right {
+        left: 50%;
+      }
+      
+      .tree-node.level-4-left {
+        top: 350px;
+      }
+      
+      .tree-node.level-4-right {
+        top: 430px;
       }
     }
 
@@ -641,7 +612,19 @@
         
         <!-- Web Search Stats as Tree -->
         <div id="webStats" class="tree-container hidden">
-          <div class="tree">
+          <div class="tree-diagram">
+            <!-- SVG Linien für Verbindungen -->
+            <svg width="100%" height="320" style="position: absolute; z-index: 0;">
+              <!-- Verbindung von Level 1 zu Level 2 -->
+              <line x1="50%" y1="50" x2="50%" y2="120" stroke="var(--grey-3)" stroke-width="2"/>
+              <!-- Verbindung von Level 2 zu Level 3 -->
+              <line x1="50%" y1="120" x2="35%" y2="190" stroke="var(--grey-3)" stroke-width="2"/>
+              <line x1="50%" y1="120" x2="65%" y2="190" stroke="var(--grey-3)" stroke-width="2"/>
+              <!-- Verbindung von "Gefundene Web-Werte" zu Level 4 -->
+              <line x1="35%" y1="190" x2="30%" y2="260" stroke="var(--grey-3)" stroke-width="2"/>
+              <line x1="35%" y1="190" x2="40%" y2="260" stroke="var(--grey-3)" stroke-width="2"/>
+            </svg>
+
             <!-- Level 1: Gesamt Siemens-Produkte -->
             <div class="tree-node level-1">
               <div class="tree-node-content blue">
@@ -659,36 +642,32 @@
             </div>
 
             <!-- Level 3: Gefundene und Fehlende Web-Werte -->
-            <div class="level-3-container">
-              <div class="tree-node level-3">
-                <div class="tree-node-content blue">
-                  <div class="tree-node-number" id="foundWebValuesCount">0</div>
-                  <div class="tree-node-label">Gefundene Web-Werte</div>
-                </div>
+            <div class="tree-node level-3-left">
+              <div class="tree-node-content blue">
+                <div class="tree-node-number" id="foundWebValuesCount">0</div>
+                <div class="tree-node-label">Gefundene Web-Werte</div>
               </div>
-              
-              <div class="tree-node level-3">
-                <div class="tree-node-content orange">
-                  <div class="tree-node-number" id="missingCount">0</div>
-                  <div class="tree-node-label">Fehlende Web-Werte</div>
-                </div>
+            </div>
+            
+            <div class="tree-node level-3-right">
+              <div class="tree-node-content orange">
+                <div class="tree-node-number" id="missingCount">0</div>
+                <div class="tree-node-label">Fehlende Web-Werte</div>
               </div>
             </div>
 
-            <!-- Level 4: Übereinstimmungen und Abweichungen (nur von "Gefundene Web-Werte") -->
-            <div class="level-4-container">
-              <div class="tree-node level-4">
-                <div class="tree-node-content green">
-                  <div class="tree-node-number" id="foundCount">0</div>
-                  <div class="tree-node-label">Übereinstimmungen</div>
-                </div>
+            <!-- Level 4: Übereinstimmungen und Abweichungen -->
+            <div class="tree-node level-4-left">
+              <div class="tree-node-content green">
+                <div class="tree-node-number" id="foundCount">0</div>
+                <div class="tree-node-label">Übereinstimmungen</div>
               </div>
-              
-              <div class="tree-node level-4">
-                <div class="tree-node-content red">
-                  <div class="tree-node-number" id="diffCount">0</div>
-                  <div class="tree-node-label">Abweichungen</div>
-                </div>
+            </div>
+            
+            <div class="tree-node level-4-right">
+              <div class="tree-node-content red">
+                <div class="tree-node-number" id="diffCount">0</div>
+                <div class="tree-node-label">Abweichungen</div>
               </div>
             </div>
           </div>
