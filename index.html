@@ -267,7 +267,7 @@
       box-shadow: none;
     }
 
-    /* Baumdiagramm mit orange Verbindungslinien */
+    /* Baumdiagramm mit grauen Verbindungslinien - 4 Ebenen */
     .tree-container {
       margin: 20px 0;
     }
@@ -289,7 +289,7 @@
     .tree-node-content {
       width: 200px;
       height: 100px;
-      border: 2px solid orange;
+      border: 2px solid var(--grey-3);
       border-radius: 10px;
       background: white;
       display: flex;
@@ -313,39 +313,28 @@
     
     /* Farben für verschiedene Node-Typen */
     .tree-node-content.blue .tree-node-number { color: var(--blue); }
-    .tree-node-content.black .tree-node-number { color: var(--text); }
     .tree-node-content.green .tree-node-number { color: var(--green); }
     .tree-node-content.red .tree-node-number { color: var(--db-red); }
     .tree-node-content.orange .tree-node-number { color: var(--orange); }
     
-    /* Level 2 Container - horizontale Anordnung */
-    .level-2-container {
+    /* Level 3 Container - horizontale Anordnung */
+    .level-3-container {
       display: flex;
       gap: 100px;
       justify-content: center;
       align-items: flex-start;
     }
     
-    /* Level 3 Container - horizontale Anordnung */
-    .level-3-container {
+    /* Level 4 Container - horizontale Anordnung (nur unter "Gefundene Web-Werte") */
+    .level-4-container {
       display: flex;
       gap: 60px;
       justify-content: center;
       margin-top: 20px;
+      position: relative;
     }
     
-    /* Verbindungslinien mit Pseudo-Elementen */
-    .tree-node.level-0::after {
-      content: '';
-      position: absolute;
-      bottom: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 20px;
-      background: orange;
-    }
-    
+    /* Verbindungslinien mit Pseudo-Elementen - GRAU */
     .tree-node.level-1::after {
       content: '';
       position: absolute;
@@ -354,11 +343,22 @@
       transform: translateX(-50%);
       width: 2px;
       height: 20px;
-      background: orange;
+      background: var(--grey-3);
     }
     
-    /* Verzweigung von Level 1 zu Level 2 */
-    .tree-node.level-1::before {
+    .tree-node.level-2::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 20px;
+      background: var(--grey-3);
+    }
+    
+    /* Verzweigung von Level 2 zu Level 3 */
+    .tree-node.level-2::before {
       content: '';
       position: absolute;
       bottom: -20px;
@@ -366,11 +366,11 @@
       transform: translateX(-50%);
       width: 100px;
       height: 2px;
-      background: orange;
+      background: var(--grey-3);
     }
     
-    /* Verbindungslinien für Level 2 Nodes */
-    .tree-node.level-2:first-child::before {
+    /* Verbindungslinien für Level 3 Nodes */
+    .tree-node.level-3:first-child::before {
       content: '';
       position: absolute;
       top: -20px;
@@ -378,10 +378,10 @@
       transform: translateX(-50%);
       width: 2px;
       height: 20px;
-      background: orange;
+      background: var(--grey-3);
     }
     
-    .tree-node.level-2:last-child::before {
+    .tree-node.level-3:last-child::before {
       content: '';
       position: absolute;
       top: -20px;
@@ -389,11 +389,11 @@
       transform: translateX(-50%);
       width: 2px;
       height: 20px;
-      background: orange;
+      background: var(--grey-3);
     }
     
-    /* Verzweigung von "Gefundene Web-Werte" zu Level 3 */
-    .tree-node.level-2:first-child::after {
+    /* Verzweigung von "Gefundene Web-Werte" zu Level 4 */
+    .tree-node.level-3:first-child::after {
       content: '';
       position: absolute;
       bottom: -20px;
@@ -401,11 +401,11 @@
       transform: translateX(-50%);
       width: 60px;
       height: 2px;
-      background: orange;
+      background: var(--grey-3);
     }
     
-    /* Verbindungslinien für Level 3 Nodes */
-    .tree-node.level-3::before {
+    /* Verbindungslinien für Level 4 Nodes */
+    .tree-node.level-4::before {
       content: '';
       position: absolute;
       top: -20px;
@@ -413,16 +413,16 @@
       transform: translateX(-50%);
       width: 2px;
       height: 20px;
-      background: orange;
+      background: var(--grey-3);
     }
     
     /* Responsive Design */
     @media (max-width: 768px) {
-      .level-2-container {
+      .level-3-container {
         gap: 60px;
       }
       
-      .level-3-container {
+      .level-4-container {
         gap: 40px;
       }
       
@@ -441,13 +441,13 @@
     }
     
     @media (max-width: 480px) {
-      .level-2-container {
+      .level-3-container {
         flex-direction: column;
         gap: 40px;
         align-items: center;
       }
       
-      .level-3-container {
+      .level-4-container {
         gap: 30px;
       }
       
@@ -642,51 +642,52 @@
         <!-- Web Search Stats as Tree -->
         <div id="webStats" class="tree-container hidden">
           <div class="tree">
-            <!-- Level 0: Gesamt Siemens-Produkte -->
-            <div class="tree-node level-0">
+            <!-- Level 1: Gesamt Siemens-Produkte -->
+            <div class="tree-node level-1">
               <div class="tree-node-content blue">
                 <div class="tree-node-number" id="totalSiemensCount">0</div>
                 <div class="tree-node-label">Gesamt Siemens-Produkte</div>
               </div>
             </div>
 
-            <!-- Level 1: Gesuchte Werte -->
-            <div class="tree-node level-1">
+            <!-- Level 2: Gesuchte Werte -->
+            <div class="tree-node level-2">
               <div class="tree-node-content blue">
                 <div class="tree-node-number" id="searchedValuesCount">0</div>
                 <div class="tree-node-label">Gesuchte Werte</div>
               </div>
             </div>
 
-            <!-- Level 2: Gefundene Web-Werte und Fehlende Web-Werte -->
-            <div class="level-2-container">
-              <div class="tree-node level-2">
-                <div class="tree-node-content black">
+            <!-- Level 3: Gefundene und Fehlende Web-Werte -->
+            <div class="level-3-container">
+              <div class="tree-node level-3">
+                <div class="tree-node-content blue">
                   <div class="tree-node-number" id="foundWebValuesCount">0</div>
                   <div class="tree-node-label">Gefundene Web-Werte</div>
                 </div>
-
-                <!-- Level 3: Übereinstimmungen und Abweichungen -->
-                <div class="level-3-container">
-                  <div class="tree-node level-3">
-                    <div class="tree-node-content green">
-                      <div class="tree-node-number" id="foundCount">0</div>
-                      <div class="tree-node-label">Übereinstimmungen</div>
-                    </div>
-                  </div>
-                  <div class="tree-node level-3">
-                    <div class="tree-node-content red">
-                      <div class="tree-node-number" id="diffCount">0</div>
-                      <div class="tree-node-label">Abweichungen</div>
-                    </div>
-                  </div>
-                </div>
               </div>
-
-              <div class="tree-node level-2">
+              
+              <div class="tree-node level-3">
                 <div class="tree-node-content orange">
                   <div class="tree-node-number" id="missingCount">0</div>
                   <div class="tree-node-label">Fehlende Web-Werte</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Level 4: Übereinstimmungen und Abweichungen (nur von "Gefundene Web-Werte") -->
+            <div class="level-4-container">
+              <div class="tree-node level-4">
+                <div class="tree-node-content green">
+                  <div class="tree-node-number" id="foundCount">0</div>
+                  <div class="tree-node-label">Übereinstimmungen</div>
+                </div>
+              </div>
+              
+              <div class="tree-node level-4">
+                <div class="tree-node-content red">
+                  <div class="tree-node-number" id="diffCount">0</div>
+                  <div class="tree-node-label">Abweichungen</div>
                 </div>
               </div>
             </div>
