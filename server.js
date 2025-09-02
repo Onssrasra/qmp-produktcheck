@@ -37,12 +37,12 @@ const DB_WEB_PAIRS = [
   { original: 'W', dbCol: null, webCol: null, label: 'Höhe' }
 ];
 
-// Ampelbewertung Spalte - wird am Ende hinzugefügt
-const AMPEL_COLUMN = 'AJ'; // Nach der letzten Spalte
-
 const HEADER_ROW = 3;      // Spaltennamen
 const LABEL_ROW = 4;       // "DB-Wert" / "Web-Wert"
 const FIRST_DATA_ROW = 5;  // erste Datenzeile
+
+// -------- Ampel: benötigte Original-Spalten --------
+const AMPEL_REQUIRED_ORIGINALS = ['E','N','S','U','V','W'];
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
@@ -133,43 +133,7 @@ function applyLabelCellFormatting(ws, addr, isWebCell = false) {
   cell.alignment = { horizontal: 'center', vertical: 'middle' };
 }
 
-// -------- Ampelbewertung Funktion ----------
-function calculateAmpelbewertung(ws, row, structure) {
-  // Prüfe die 6 relevanten Felder: Her.-Artikelnummer, Fert./Prüfhinweis, Nettogewicht, Länge, Breite, Höhe
-  const relevantPairs = [
-    { original: 'E', label: 'Herstellartikelnummer' },
-    { original: 'N', label: 'Fert./Prüfhinweis' },
-    { original: 'S', label: 'Nettogewicht' },
-    { original: 'U', label: 'Länge' },
-    { original: 'V', label: 'Breite' },
-    { original: 'W', label: 'Höhe' }
-  ];
-  
-  let allGreen = true;
-  
-  for (const pair of relevantPairs) {
-    // Finde die entsprechende Web-Spalte
-    const webPair = structure.pairs.find(p => p.original === pair.original);
-    if (!webPair) continue;
-    
-    const webCell = ws.getCell(`${webPair.webCol}${row}`);
-    
-    // Prüfe ob die Zelle grün markiert ist
-    if (webCell.fill && webCell.fill.fgColor) {
-      const color = webCell.fill.fgColor.argb;
-      if (color !== 'FFD5F4E6') { // Nicht grün
-        allGreen = false;
-        break;
-      }
-    } else {
-      // Keine Farbe = nicht grün
-      allGreen = false;
-      break;
-    }
-  }
-  
-  return allGreen ? 'green' : 'red';
-}
+// -------- Vergleichslogik ----------
 function hasValue(v){ return v!==null && v!==undefined && v!=='' && String(v).trim()!==''; }
 function eqText(a,b){
   if (a==null||b==null) return false;
@@ -332,27 +296,24 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
       // 3.6 NEU: Header in Zeile 2 und 3 pro Paar zusammenfassen (C2:D2, C3:D3, F2:G2, F3:G3, ...)
       mergePairHeaders(ws, structure.pairs);
 
-      // 3.7 Ampelbewertung-Spalte hinzufügen
-      const lastCol = ws.lastColumn?.number || ws.columnCount || 0;
-      const ampelColIndex = lastCol + 1;
-      const ampelColLetter = getColumnLetter(ampelColIndex);
-      
-      // Ampelbewertung Header
-      ws.getCell(`${ampelColLetter}2`).value = 'AJ';
-      ws.getCell(`${ampelColLetter}3`).value = 'Ampelbewertung';
-      ws.getCell(`${ampelColLetter}4`).value = 'DB-Wert';
-      applyLabelCellFormatting(ws, `${ampelColLetter}4`, false);
-      
-      // Header zusammenfassen mit vorheriger Spalte
-      try { ws.unMergeCells(`${getColumnLetter(ampelColIndex-1)}2:${ampelColLetter}2`); } catch {}
-      try { ws.unMergeCells(`${getColumnLetter(ampelColIndex-1)}3:${ampelColLetter}3`); } catch {}
-      ws.mergeCells(`${getColumnLetter(ampelColIndex-1)}2:${ampelColLetter}2`);
-      ws.mergeCells(`${getColumnLetter(ampelColIndex-1)}3:${ampelColLetter}3`);
+      // === NEU: Ampel-Spalte anhängen ===
+      const ampInsertIndex = ws.columnCount + 1;
+      ws.spliceColumns(ampInsertIndex, 0, [null]);
+      const ampCol = getColumnLetter(ampInsertIndex);
+      ws.getCell(`${ampCol}2`).value = 'AMP';
+      ws.getCell(`${ampCol}3`).value = 'Ampelbewertung';
+      ws.getCell(`${ampCol}${LABEL_ROW}`).value = 'Status';
+      applyLabelCellFormatting(ws, `${ampCol}${LABEL_ROW}`, false);
+      ws.getCell(`${ampCol}2`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      ws.getCell(`${ampCol}3`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
-      // 3.8 Web-Daten eintragen / vergleichen
+      // 3.7 Web-Daten eintragen / vergleichen
       const prodRows = rowsPerSheet.get(ws) || [];
       for (const originalRow of prodRows) {
         const currentRow = originalRow + 1; // wegen eingefügter Label-Zeile
+
+        // Ampel-Accumulator für diese Zeile
+        const requiredOk = { E:false, N:false, S:false, U:false, V:false, W:false };
 
         // neue Z-Spalte (A2V) bestimmen
         let zCol = ORIGINAL_COLS.Z;
@@ -422,17 +383,23 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
             if (hasDb) {
               fillColor(ws, `${pair.webCol}${currentRow}`, isEqual ? 'green' : 'red');
             }
-            // Wenn DB-Wert fehlt, aber Web-Wert vorhanden → keine Markierung
           } else {
-            // Web-Wert fehlt → orange (immer wenn hasWeb = false)
+            // Web-Wert fehlt → orange
             fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
           }
+
+          // Für Ampelzustand relevante Spalten tracken
+          if (AMPEL_REQUIRED_ORIGINALS.includes(pair.original)) {
+            // „grün“ nur, wenn ein Web-Wert existiert und Gleichheit vorliegt (DB vorhanden + Match)
+            requiredOk[pair.original] = !!(hasWeb && isEqual);
+          }
         }
-        
-        // Ampelbewertung berechnen und eintragen
-        const ampelStatus = calculateAmpelbewertung(ws, currentRow, structure);
-        ws.getCell(`${ampelColLetter}${currentRow}`).value = ampelStatus === 'green' ? '✓' : '✗';
-        fillColor(ws, `${ampelColLetter}${currentRow}`, ampelStatus);
+
+        // Ampelwert setzen (nachdem alle relevanten Spalten geprüft wurden)
+        const allGreen = AMPEL_REQUIRED_ORIGINALS.every(k => requiredOk[k]);
+        ws.getCell(`${ampCol}${currentRow}`).value = allGreen ? 'OK' : 'Abweichung';
+        fillColor(ws, `${ampCol}${currentRow}`, allGreen ? 'green' : 'red');
+        ws.getCell(`${ampCol}${currentRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
       }
     }
 
@@ -583,94 +550,6 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     // Gefundene Web-Werte = Grün + Rot
     const foundWebValues = greenCount + redCount;
     
-    // Schätze die Gesamtanzahl der Produkte basierend auf der ursprünglichen Datei
-    // Da wir nur Siemens-Produkte haben, nehmen wir an, dass etwa 20% Siemens-Produkte sind
-    const estimatedTotalProducts = Math.round(totalSiemens / 0.2);
-    
-    console.log('Found colors in Excel:', Array.from(foundColors));
-    console.log('Counts:', { 
-      totalProducts: estimatedTotalProducts,
-      totalSiemens, 
-      searchedValues, 
-      foundWebValues, 
-      green: greenCount, 
-      red: redCount, 
-      orange: orangeCount 
-    });
-    
-    res.json({
-      totalProducts: estimatedTotalProducts,
-      totalSiemens: totalSiemens,
-      searchedValues: searchedValues,
-      foundWebValues: foundWebValues,
-      green: greenCount,
-      red: redCount,
-      orange: orangeCount,
-      foundWebValuesPercentage: searchedValues > 0 ? Math.round((foundWebValues / searchedValues) * 100) : 0,
-      greenPercentage: foundWebValues > 0 ? Math.round((greenCount / foundWebValues) * 100) : 0,
-      redPercentage: foundWebValues > 0 ? Math.round((redCount / foundWebValues) * 100) : 0,
-      orangePercentage: searchedValues > 0 ? Math.round((orangeCount / searchedValues) * 100) : 0,
-      debug: {
-        foundColors: Array.from(foundColors),
-        totalRows: lastRow,
-        totalColumns: ws.columnCount,
-        totalSiemens: totalSiemens,
-        searchedValues: searchedValues,
-        foundWebValues: foundWebValues
-      }
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Neue Route für optimierte Web-Suche (nur Siemens-Produkte)
-    
-    // Berechnung basierend auf Web_Vergleich_Siemens.xlsx Struktur
-    const lastRow = ws.lastRow ? ws.lastRow.number : 0;
-    
-    // 1. Gesamt Siemens-Produkte = Anzahl Zeilen minus 4 (Header-Zeilen)
-    const totalSiemens = lastRow - 4;
-    
-    // 2. Gesuchte Werte = Gesamt Siemens-Produkte × 8 (8 Spaltenpaare)
-    const searchedValues = totalSiemens * 8;
-    
-    // 3. Gefundene Web-Werte = Übereinstimmungen + Abweichungen (Grün + Rot)
-    let greenCount = 0;  // Übereinstimmungen (grün)
-    let redCount = 0;    // Abweichungen (rot)
-    let orangeCount = 0; // Produkt im Web nicht gefunden (orange)
-    
-    // Debug: Log all found colors
-    const foundColors = new Set();
-    
-    // Durchlaufe alle Datenzeilen (ab Zeile 5)
-    for (let r = 5; r <= lastRow; r++) {
-      // Durchlaufe alle Spalten
-      for (let c = 1; c <= ws.columnCount; c++) {
-        const cell = ws.getCell(r, c);
-        
-        // Prüfe Farbmarkierungen
-        if (cell.fill && cell.fill.fgColor) {
-          const color = cell.fill.fgColor.argb;
-          foundColors.add(color);
-          
-          // Check only the specific colors used in the system
-          if (color === 'FFD5F4E6') { // Green - Übereinstimmungen
-            greenCount++;
-          } else if (color === 'FFFDEAEA') { // Red - Abweichungen
-            redCount++;
-          } else if (color === 'FFFFEAA7') { // Orange - Produkt im Web nicht gefunden
-            orangeCount++;
-          }
-        }
-      }
-    }
-    
-    // Gefundene Web-Werte = Grün + Rot
-    const foundWebValues = greenCount + redCount;
-    
     console.log('Found colors in Excel:', Array.from(foundColors));
     console.log('Counts:', { 
       totalSiemens, 
@@ -682,7 +561,6 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     });
     
     res.json({
-      totalProducts: totalSiemens, // Für Frontend-Kompatibilität
       totalSiemens: totalSiemens,
       searchedValues: searchedValues,
       foundWebValues: foundWebValues,
@@ -816,27 +694,24 @@ app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) =
       // 4.6 Header in Zeile 2 und 3 pro Paar zusammenfassen
       mergePairHeaders(ws, structure.pairs);
 
-      // 4.7 Ampelbewertung-Spalte hinzufügen
-      const lastCol = ws.lastColumn?.number || ws.columnCount || 0;
-      const ampelColIndex = lastCol + 1;
-      const ampelColLetter = getColumnLetter(ampelColIndex);
-      
-      // Ampelbewertung Header
-      ws.getCell(`${ampelColLetter}2`).value = 'AJ';
-      ws.getCell(`${ampelColLetter}3`).value = 'Ampelbewertung';
-      ws.getCell(`${ampelColLetter}4`).value = 'DB-Wert';
-      applyLabelCellFormatting(ws, `${ampelColLetter}4`, false);
-      
-      // Header zusammenfassen mit vorheriger Spalte
-      try { ws.unMergeCells(`${getColumnLetter(ampelColIndex-1)}2:${ampelColLetter}2`); } catch {}
-      try { ws.unMergeCells(`${getColumnLetter(ampelColIndex-1)}3:${ampelColLetter}3`); } catch {}
-      ws.mergeCells(`${getColumnLetter(ampelColIndex-1)}2:${ampelColLetter}2`);
-      ws.mergeCells(`${getColumnLetter(ampelColIndex-1)}3:${ampelColLetter}3`);
+      // === NEU: Ampel-Spalte anhängen ===
+      const ampInsertIndex = ws.columnCount + 1;
+      ws.spliceColumns(ampInsertIndex, 0, [null]);
+      const ampCol = getColumnLetter(ampInsertIndex);
+      ws.getCell(`${ampCol}2`).value = 'AMP';
+      ws.getCell(`${ampCol}3`).value = 'Ampelbewertung';
+      ws.getCell(`${ampCol}${LABEL_ROW}`).value = 'Status';
+      applyLabelCellFormatting(ws, `${ampCol}${LABEL_ROW}`, false);
+      ws.getCell(`${ampCol}2`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      ws.getCell(`${ampCol}3`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
-      // 4.8 Web-Daten eintragen / vergleichen
+      // 4.7 Web-Daten eintragen / vergleichen
       const siemensRows = siemensRowsPerSheet.get(wb.worksheets.find(w => w.name === ws.name)) || [];
       for (let i = 0; i < siemensRows.length; i++) {
         const currentRow = 5 + i; // Start ab Zeile 5 (nach Labels)
+
+        // Ampel-Accumulator für diese Zeile
+        const requiredOk = { E:false, N:false, S:false, U:false, V:false, W:false };
 
         // neue Z-Spalte (A2V) bestimmen
         let zCol = ORIGINAL_COLS.Z;
@@ -906,17 +781,22 @@ app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) =
             if (hasDb) {
               fillColor(ws, `${pair.webCol}${currentRow}`, isEqual ? 'green' : 'red');
             }
-            // Wenn DB-Wert fehlt, aber Web-Wert vorhanden → keine Markierung
           } else {
-            // Web-Wert fehlt → orange (immer wenn hasWeb = false)
+            // Web-Wert fehlt → orange
             fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
           }
+
+          // Für Ampelzustand relevante Spalten tracken
+          if (AMPEL_REQUIRED_ORIGINALS.includes(pair.original)) {
+            requiredOk[pair.original] = !!(hasWeb && isEqual);
+          }
         }
-        
-        // Ampelbewertung berechnen und eintragen
-        const ampelStatus = calculateAmpelbewertung(ws, currentRow, structure);
-        ws.getCell(`${ampelColLetter}${currentRow}`).value = ampelStatus === 'green' ? '✓' : '✗';
-        fillColor(ws, `${ampelColLetter}${currentRow}`, ampelStatus);
+
+        // Ampelwert setzen
+        const allGreen = AMPEL_REQUIRED_ORIGINALS.every(k => requiredOk[k]);
+        ws.getCell(`${ampCol}${currentRow}`).value = allGreen ? 'OK' : 'Abweichung';
+        fillColor(ws, `${ampCol}${currentRow}`, allGreen ? 'green' : 'red');
+        ws.getCell(`${ampCol}${currentRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
       }
     }
 
