@@ -169,4 +169,96 @@
   }
 });
 
+app.listen(PORT, () => console.log(`Server running at http://0.0.0.0:${PORT}`)); 'Nicht gefunden')
+                          ? web['Weitere Artikelnummer']
+                          : a2v;
+                isEqual = eqPart(dbValue || a2v, webValue);
+              }
+              break;
+            case 'N': // Fert./Prüfhinweis
+              if (web.Materialklassifizierung && web.Materialklassifizierung !== 'Nicht gefunden') {
+                const code = normalizeNCode(mapMaterialClassificationToExcel(web.Materialklassifizierung));
+                if (code) { webValue = code; isEqual = eqN(dbValue || '', code); }
+              }
+              break;
+            case 'P': // Werkstoff
+              webValue = (web.Werkstoff && web.Werkstoff !== 'Nicht gefunden') ? web.Werkstoff : null;
+              isEqual  = webValue ? eqText(dbValue || '', webValue) : false;
+              break;
+            case 'S': // Nettogewicht
+              if (web.Gewicht && web.Gewicht !== 'Nicht gefunden') {
+                const { value } = parseWeight(web.Gewicht);
+                if (value != null) { webValue = value; isEqual = eqWeight(dbValue, web.Gewicht); }
+              }
+              break;
+            case 'U': // Länge
+              if (web.Abmessung && web.Abmessung !== 'Nicht gefunden') {
+                const d = parseDimensionsToLBH(web.Abmessung);
+                if (d.L != null) { webValue = d.L; isEqual = eqDimension(dbValue, web.Abmessung, 'L'); }
+              }
+              break;
+            case 'V': // Breite
+              if (web.Abmessung && web.Abmessung !== 'Nicht gefunden') {
+                const d = parseDimensionsToLBH(web.Abmessung);
+                if (d.B != null) { webValue = d.B; isEqual = eqDimension(dbValue, web.Abmessung, 'B'); }
+              }
+              break;
+            case 'W': // Höhe
+              if (web.Abmessung && web.Abmessung !== 'Nicht gefunden') {
+                const d = parseDimensionsToLBH(web.Abmessung);
+                if (d.H != null) { webValue = d.H; isEqual = eqDimension(dbValue, web.Abmessung, 'H'); }
+              }
+              break;
+          }
+
+          const hasDb = hasValue(dbValue);
+          const hasWeb = webValue !== null;
+
+          if (hasWeb) {
+            ws.getCell(`${pair.webCol}${currentRow}`).value = webValue;
+            // Nur markieren wenn DB-Wert vorhanden ist
+            if (hasDb) {
+              fillColor(ws, `${pair.webCol}${currentRow}`, isEqual ? 'green' : 'red');
+            }
+          } else {
+            // Web-Wert fehlt → orange
+            fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
+          }
+
+          // Für Ampelzustand relevante Spalten tracken
+          if (AMPEL_REQUIRED_ORIGINALS.includes(pair.original)) {
+            if (hasWeb && isEqual) {
+              columnStatus[pair.original] = 'green';
+            } else if (hasWeb && !isEqual) {
+              columnStatus[pair.original] = 'red';
+            } else {
+              // Orange (Web-Wert fehlt) zählt als OK für Ampel
+              columnStatus[pair.original] = 'orange';
+            }
+          }
+        }
+
+        // Ampelwert setzen: ROT wenn mindestens eine Pflichtspalte rot, sonst GRÜN
+        // (Orange zählt als OK)
+        const hasRedColumn = Object.values(columnStatus).includes('red');
+        const ampelColor = hasRedColumn ? 'red' : 'green';
+        
+        // ANPASSUNG: Keine Texte mehr in den Datenzeilen → nur farbliche Markierung
+        ws.getCell(`${ampCol}${currentRow}`).value = ''; // Kein Text
+        fillColor(ws, `${ampCol}${currentRow}`, ampelColor);
+        ws.getCell(`${ampCol}${currentRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
+      }
+    }
+
+    const out = await siemensWb.xlsx.writeBuffer();
+    res.setHeader('Content-Type','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition','attachment; filename="Web_Vergleich_Siemens.xlsx"');
+    res.send(Buffer.from(out));
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`Server running at http://0.0.0.0:${PORT}`));
