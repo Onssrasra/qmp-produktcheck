@@ -352,9 +352,19 @@
       font-size: 12px;
     }
 
+    .chart-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 15px;
+      font-size: 12px;
+      text-align: center;
+    }
+
     .legend-item {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
     }
 
@@ -517,6 +527,7 @@
               <div class="chart-wrapper">
                 <canvas id="productsChart"></canvas>
               </div>
+              <div class="chart-legend" id="step1Legend"></div>
             </div>
 
             <!-- Step 2: Web Search -->
@@ -526,6 +537,7 @@
               <div class="chart-wrapper">
                 <canvas id="searchChart"></canvas>
               </div>
+              <div class="chart-legend" id="step2Legend"></div>
             </div>
 
             <!-- Step 3: Comparison -->
@@ -535,9 +547,9 @@
               <div class="chart-wrapper">
                 <canvas id="matchChart"></canvas>
               </div>
+              <div class="chart-legend" id="step3Legend"></div>
             </div>
           </div>
-          <div class="custom-legend" id="webLegend"></div>
         </div>
       </div>
 
@@ -698,32 +710,51 @@
       createWebSearchChart(stats.searchedValues, stats.foundWebValues, stats.searchedValues - stats.foundWebValues);
       createComparisonChart(stats.foundWebValues, stats.green, stats.red);
       
-      // Create combined legend
-      const legendContainer = document.getElementById('webLegend');
+      // Create individual legends for each chart
+      createStep1Legend(stats.totalDataSets, stats.totalSiemens);
+      createStep2Legend(stats.foundWebValues, stats.searchedValues - stats.foundWebValues, stats.foundWebValuesPercentage);
+      createStep3Legend(stats.green, stats.red, stats.greenPercentage, stats.redPercentage);
+    }
+
+    function createStep1Legend(totalDataSets, totalSiemens) {
+      const legendContainer = document.getElementById('step1Legend');
       legendContainer.innerHTML = `
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(147, 197, 253, 0.4);"></div>
-          <span>Gesamtdatensätze: ${stats.totalDataSets}</span>
+          <span>Gesamtdatensätze: ${totalDataSets}</span>
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.8);"></div>
-          <span>Gesamt Siemens-Produkte: ${stats.totalSiemens}</span>
+          <span>Gesamt Siemens-Produkte: ${totalSiemens}</span>
         </div>
+      `;
+    }
+
+    function createStep2Legend(foundWebValues, missingWebValues, foundPercentage) {
+      const legendContainer = document.getElementById('step2Legend');
+      const missingPercentage = (100 - foundPercentage);
+      legendContainer.innerHTML = `
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(156, 163, 175, 0.8);"></div>
-          <span>Gefundene Web-Werte: ${stats.foundWebValues} (${stats.foundWebValuesPercentage}%)</span>
+          <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.8);"></div>
+          <span>Gefundene Web-Werte: ${foundWebValues} (${foundPercentage}%)</span>
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(249, 115, 22, 0.8);"></div>
-          <span>Fehlende Web-Werte: ${stats.searchedValues - stats.foundWebValues} (${(100 - stats.foundWebValuesPercentage)}%)</span>
+          <span>Fehlende Web-Werte: ${missingWebValues} (${missingPercentage}%)</span>
         </div>
+      `;
+    }
+
+    function createStep3Legend(green, red, greenPercentage, redPercentage) {
+      const legendContainer = document.getElementById('step3Legend');
+      legendContainer.innerHTML = `
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
-          <span>Übereinstimmungen: ${stats.green} (${stats.greenPercentage}%)</span>
+          <span>Übereinstimmungen: ${green} (${greenPercentage}%)</span>
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(239, 68, 68, 0.8);"></div>
-          <span>Abweichungen: ${stats.red} (${stats.redPercentage}%)</span>
+          <span>Abweichungen: ${red} (${redPercentage}%)</span>
         </div>
       `;
     }
@@ -799,11 +830,11 @@
           datasets: [{
             data: [foundWebValues, missingWebValues],
             backgroundColor: [
-              'rgba(156, 163, 175, 0.8)',  // Grau für gefundene Web-Werte
+              'rgba(59, 130, 246, 0.8)',   // Blau für gefundene Web-Werte (wie Siemens-Produkte)
               'rgba(249, 115, 22, 0.8)'    // Orange für fehlende Web-Werte
             ],
             borderColor: [
-              'rgba(156, 163, 175, 1)',
+              'rgba(59, 130, 246, 1)',
               'rgba(249, 115, 22, 1)'
             ],
             borderWidth: 2
