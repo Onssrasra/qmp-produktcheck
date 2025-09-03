@@ -316,10 +316,23 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
               isEqual  = webValue ? eqText(dbValue || '', webValue) : false;
               break;
             case 'E': // Herstellartikelnummer
-              webValue = (web['Weitere Artikelnummer'] && web['Weitere Artikelnummer'] !== 'Nicht gefunden')
-                        ? web['Weitere Artikelnummer']
-                        : a2v;
-              isEqual  = eqPart(dbValue || a2v, webValue);
+              // Neue Logik basierend auf DB-Wert
+              if (dbValue && String(dbValue).trim().toUpperCase().startsWith('A2V')) {
+                // Fall 1: DB-Wert fängt mit A2V an → verwende A2V-Nummer
+                webValue = a2v;
+                isEqual = eqPart(dbValue, a2v);
+              } else {
+                // Fall 2: DB-Wert fängt nicht mit A2V an
+                if (web['Weitere Artikelnummer'] && web['Weitere Artikelnummer'] !== 'Nicht gefunden') {
+                  // 2.1: Web hat "Weitere Artikelnummer" → verwende diese
+                  webValue = web['Weitere Artikelnummer'];
+                  isEqual = eqPart(dbValue || '', webValue);
+                } else {
+                  // 2.2: Web hat keine "Weitere Artikelnummer" → verwende A2V als Fallback
+                  webValue = a2v;
+                  isEqual = eqPart(dbValue || '', a2v);
+                }
+              }
               break;
             case 'N': // Fert./Prüfhinweis
               if (web.Materialklassifizierung && web.Materialklassifizierung !== 'Nicht gefunden') {
@@ -695,10 +708,23 @@ app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) =
               isEqual  = webValue ? eqText(dbValue || '', webValue) : false;
               break;
             case 'E': // Herstellartikelnummer
-              webValue = (web['Weitere Artikelnummer'] && web['Weitere Artikelnummer'] !== 'Nicht gefunden')
-                        ? web['Weitere Artikelnummer']
-                        : a2v;
-              isEqual  = eqPart(dbValue || a2v, webValue);
+              // Neue Logik basierend auf DB-Wert
+              if (dbValue && String(dbValue).trim().toUpperCase().startsWith('A2V')) {
+                // Fall 1: DB-Wert fängt mit A2V an → verwende A2V-Nummer
+                webValue = a2v;
+                isEqual = eqPart(dbValue, a2v);
+              } else {
+                // Fall 2: DB-Wert fängt nicht mit A2V an
+                if (web['Weitere Artikelnummer'] && web['Weitere Artikelnummer'] !== 'Nicht gefunden') {
+                  // 2.1: Web hat "Weitere Artikelnummer" → verwende diese
+                  webValue = web['Weitere Artikelnummer'];
+                  isEqual = eqPart(dbValue || '', webValue);
+                } else {
+                  // 2.2: Web hat keine "Weitere Artikelnummer" → verwende A2V als Fallback
+                  webValue = a2v;
+                  isEqual = eqPart(dbValue || '', a2v);
+                }
+              }
               break;
             case 'N': // Fert./Prüfhinweis
               if (web.Materialklassifizierung && web.Materialklassifizierung !== 'Nicht gefunden') {
