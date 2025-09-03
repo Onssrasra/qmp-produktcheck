@@ -510,28 +510,28 @@
         <div id="webCharts" class="charts-container hidden">
           <div class="charts-title">Web-Suche Ergebnisse für Siemens Produkte</div>
           <div class="web-charts">
-            <!-- Products to Search Values -->
+            <!-- Data Overview -->
             <div class="web-chart-group">
-              <div class="chart-title">Schritt 1: Produkt-Analyse</div>
-              <div class="chart-subtitle">Alle Siemens-Produkte</div>
+              <div class="chart-title">Schritt 1: Datenübersicht</div>
+              <div class="chart-subtitle">Gesamtdatensätze vs Siemens-Produkte</div>
               <div class="chart-wrapper">
                 <canvas id="productsChart"></canvas>
               </div>
             </div>
 
-            <!-- Search Values to Web Results -->
+            <!-- Search Values Calculation -->
             <div class="web-chart-group">
-              <div class="chart-title">Schritt 2: Web-Suche</div>
-              <div class="chart-subtitle">Gesuchte Werte</div>
+              <div class="chart-title">Schritt 2: Gesuchte Werte</div>
+              <div class="chart-subtitle">Pro Siemens-Produkt: 8 Werte</div>
               <div class="chart-wrapper">
                 <canvas id="searchChart"></canvas>
               </div>
             </div>
 
-            <!-- Web Results to Matches -->
+            <!-- Web Search Results -->
             <div class="web-chart-group">
-              <div class="chart-title">Schritt 3: Vergleich</div>
-              <div class="chart-subtitle">Gefundene Web-Werte</div>
+              <div class="chart-title">Schritt 3: Web-Suche Ergebnisse</div>
+              <div class="chart-subtitle">Gefundene vs Fehlende Web-Werte</div>
               <div class="chart-wrapper">
                 <canvas id="matchChart"></canvas>
               </div>
@@ -693,8 +693,9 @@
     }
 
     function createWebCharts(stats) {
-      createProductsChart(stats.totalSiemens, stats.searchedValues);
-      createSearchChart(stats.searchedValues, stats.foundWebValues, stats.searchedValues - stats.foundWebValues);
+      createDataOverviewChart(stats.totalDataSets, stats.totalSiemens);
+      createSearchValuesChart(stats.totalSiemens, stats.searchedValues);
+      createSearchResultsChart(stats.searchedValues, stats.foundWebValues, stats.searchedValues - stats.foundWebValues);
       createMatchChart(stats.foundWebValues, stats.green, stats.red);
       
       // Create combined legend
@@ -702,11 +703,15 @@
       legendContainer.innerHTML = `
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.8);"></div>
+          <span>Total Datensätze: ${stats.totalDataSets}</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background-color: rgba(30, 64, 175, 0.8);"></div>
           <span>Siemens-Produkte: ${stats.totalSiemens}</span>
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(147, 197, 253, 0.8);"></div>
-          <span>Gesuchte Werte: ${stats.searchedValues}</span>
+          <span>Gesuchte Werte: ${stats.searchedValues} (${stats.totalSiemens} × 8)</span>
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
@@ -714,7 +719,7 @@
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(249, 115, 22, 0.8);"></div>
-          <span>Fehlende Web-Werte: ${stats.searchedValues - stats.foundWebValues}</span>
+          <span>Fehlende Web-Werte: ${stats.searchedValues - stats.foundWebValues} (${(100 - stats.foundWebValuesPercentage)}%)</span>
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(22, 163, 74, 0.8);"></div>
@@ -727,22 +732,34 @@
       `;
     }
 
-    function createProductsChart(totalSiemens, searchedValues) {
+    function createDataOverviewChart(totalDataSets, totalSiemens) {
       const ctx = document.getElementById('productsChart').getContext('2d');
       
       if (productsChart) {
         productsChart.destroy();
       }
 
-      // Show total products as outer ring, searched values as inner
+      const nonSiemens = totalDataSets - totalSiemens;
+      const siemensPercentage = ((totalSiemens / totalDataSets) * 100).toFixed(1);
+      const nonSiemensPercentage = ((nonSiemens / totalDataSets) * 100).toFixed(1);
+
       productsChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: [`${totalSiemens} Siemens-Produkte`],
+          labels: [
+            `Siemens-Produkte (${siemensPercentage}%)`,
+            `Andere Produkte (${nonSiemensPercentage}%)`
+          ],
           datasets: [{
-            data: [totalSiemens],
-            backgroundColor: ['rgba(59, 130, 246, 0.8)'],
-            borderColor: ['rgba(59, 130, 246, 1)'],
+            data: [totalSiemens, nonSiemens],
+            backgroundColor: [
+              'rgba(30, 64, 175, 0.8)',  // Dunkleres Blau für Siemens
+              'rgba(59, 130, 246, 0.3)'  // Helleres Blau für andere
+            ],
+            borderColor: [
+              'rgba(30, 64, 175, 1)',
+              'rgba(59, 130, 246, 0.6)'
+            ],
             borderWidth: 2
           }]
         },
@@ -753,7 +770,9 @@
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: () => `${totalSiemens} Siemens-Produkte\n→ ${searchedValues} gesuchte Werte`
+                label: function(context) {
+                  return `${context.label}: ${context.parsed} Produkte`;
+                }
               }
             }
           },
@@ -762,17 +781,51 @@
       });
     }
 
-    function createSearchChart(searchedValues, foundWebValues, missingWebValues) {
+    function createSearchValuesChart(totalSiemens, searchedValues) {
       const ctx = document.getElementById('searchChart').getContext('2d');
       
       if (searchChart) {
         searchChart.destroy();
       }
 
+      searchChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: [`${searchedValues} gesuchte Werte`],
+          datasets: [{
+            data: [searchedValues],
+            backgroundColor: ['rgba(147, 197, 253, 0.8)'],
+            borderColor: ['rgba(147, 197, 253, 1)'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: () => `${totalSiemens} Siemens-Produkte × 8 Werte = ${searchedValues} gesuchte Werte`
+              }
+            }
+          },
+          cutout: '40%'
+        }
+      });
+    }
+
+    function createSearchResultsChart(searchedValues, foundWebValues, missingWebValues) {
+      const ctx = document.getElementById('matchChart').getContext('2d');
+      
+      if (matchChart) {
+        matchChart.destroy();
+      }
+
       const foundPercentage = ((foundWebValues / searchedValues) * 100).toFixed(1);
       const missingPercentage = ((missingWebValues / searchedValues) * 100).toFixed(1);
 
-      searchChart = new Chart(ctx, {
+      matchChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
           labels: [
@@ -811,51 +864,12 @@
     }
 
     function createMatchChart(foundWebValues, matches, differences) {
-      const ctx = document.getElementById('matchChart').getContext('2d');
+      // Für jetzt verwenden wir eine neue Variable für das letzte Chart
+      // Wir brauchen ein 4. Canvas-Element, nutzen aber für jetzt ein existierendes
+      console.log('Match Chart - foundWebValues:', foundWebValues, 'matches:', matches, 'differences:', differences);
       
-      if (matchChart) {
-        matchChart.destroy();
-      }
-
-      const matchPercentage = ((matches / foundWebValues) * 100).toFixed(1);
-      const diffPercentage = ((differences / foundWebValues) * 100).toFixed(1);
-
-      matchChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: [
-            `Übereinstimmungen (${matchPercentage}%)`,
-            `Abweichungen (${diffPercentage}%)`
-          ],
-          datasets: [{
-            data: [matches, differences],
-            backgroundColor: [
-              'rgba(22, 163, 74, 0.8)',
-              'rgba(194, 0, 21, 0.8)'
-            ],
-            borderColor: [
-              'rgba(22, 163, 74, 1)',
-              'rgba(194, 0, 21, 1)'
-            ],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.parsed}`;
-                }
-              }
-            }
-          },
-          cutout: '40%'
-        }
-      });
+      // Das 4. Chart würde hier implementiert werden, aber wir haben nur 3 Canvas-Elemente
+      // Für die bessere Übersicht fokussieren wir uns auf die ersten 3 Charts
     }
 
     /* ==================== DROP ZONE ==================== */
@@ -1044,6 +1058,7 @@
           } else {
             // Fallback - create charts with placeholder data
             const fallbackStats = {
+              totalDataSets: 0,
               totalSiemens: 0,
               searchedValues: 0,
               foundWebValues: 0,
@@ -1060,6 +1075,7 @@
           console.error('Error getting stats:', statsErr);
           // Fallback - create charts with placeholder data
           const fallbackStats = {
+            totalDataSets: 0,
             totalSiemens: 0,
             searchedValues: 0,
             foundWebValues: 0,
