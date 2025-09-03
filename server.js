@@ -41,9 +41,6 @@ const HEADER_ROW = 3;      // Spaltennamen
 const LABEL_ROW = 4;       // "DB-Wert" / "Web-Wert"
 const FIRST_DATA_ROW = 5;  // erste Datenzeile
 
-// -------- Ampel: benötigte Original-Spalten --------
-const AMPEL_REQUIRED_ORIGINALS = ['E','N','S','U','V','W'];
-
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
@@ -247,18 +244,28 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
     // 1) A2V-Nummern aus Spalte Z (ursprünglich) einsammeln, bevor wir umbauen
     const tasks = [];
     const rowsPerSheet = new Map(); // ws -> [rowIndex,...]
+    let totalSiemensProducts = 0;
+    
     for (const ws of wb.worksheets) {
       const indices = [];
       const last = ws.lastRow?.number || 0;
       for (let r = FIRST_DATA_ROW - 1; r <= last; r++) { // -1, weil wir gleich eine Zeile 4 einfügen
         const a2v = (ws.getCell(`${ORIGINAL_COLS.Z}${r}`).value || '').toString().trim().toUpperCase();
-        if (a2v.startsWith('A2V')) { indices.push(r); tasks.push(a2v); }
+        if (a2v.startsWith('A2V')) { 
+          indices.push(r); 
+          tasks.push(a2v); 
+          totalSiemensProducts++;
+        }
       }
       rowsPerSheet.set(ws, indices);
     }
+    
+    console.log(`Found ${totalSiemensProducts} Siemens products with A2V numbers`);
 
     // 2) Scrapen
+    console.log(`Starting web search for ${tasks.length} Siemens products...`);
     const resultsMap = await scraper.scrapeMany(tasks, SCRAPE_CONCURRENCY);
+    console.log(`Web search completed. Found data for ${resultsMap.size} products.`);
 
     // 3) Umbau pro Worksheet
     for (const ws of wb.worksheets) {
@@ -296,29 +303,21 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
       // 3.6 NEU: Header in Zeile 2 und 3 pro Paar zusammenfassen (C2:D2, C3:D3, F2:G2, F3:G3, ...)
       mergePairHeaders(ws, structure.pairs);
 
-      // === NEU: Ampel-Spalte anhängen ===
-      const ampInsertIndex = ws.columnCount + 1;
-      ws.spliceColumns(ampInsertIndex, 0, [null]);
-      const ampCol = getColumnLetter(ampInsertIndex);
-      ws.getCell(`${ampCol}2`).value = 'AMP';
-      ws.getCell(`${ampCol}3`).value = 'Ampelbewertung';
-      ws.getCell(`${ampCol}${LABEL_ROW}`).value = 'Status';
-      applyLabelCellFormatting(ws, `${ampCol}${LABEL_ROW}`, false);
-      ws.getCell(`${ampCol}2`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-      ws.getCell(`${ampCol}3`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-
-      // 3.7 Web-Daten eintragen / vergleichen
+      // 3.7 Web-Daten eintragen / vergleichen (nur für Siemens-Produkte)
       const prodRows = rowsPerSheet.get(ws) || [];
       for (const originalRow of prodRows) {
         const currentRow = originalRow + 1; // wegen eingefügter Label-Zeile
-
-        // Ampel-Accumulator für diese Zeile
-        const requiredOk = { E:false, N:false, S:false, U:false, V:false, W:false };
 
         // neue Z-Spalte (A2V) bestimmen
         let zCol = ORIGINAL_COLS.Z;
         if (structure.otherCols.has(ORIGINAL_COLS.Z)) zCol = structure.otherCols.get(ORIGINAL_COLS.Z);
         const a2v = (ws.getCell(`${zCol}${currentRow}`).value || '').toString().trim().toUpperCase();
+        
+        // Nur Siemens-Produkte (A2V Nummern) verarbeiten
+        if (!a2v.startsWith('A2V')) {
+          continue; // Skip non-Siemens products
+        }
+        
         const web = resultsMap.get(a2v) || {};
 
         // je Paar
@@ -383,23 +382,12 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
             if (hasDb) {
               fillColor(ws, `${pair.webCol}${currentRow}`, isEqual ? 'green' : 'red');
             }
+            // Wenn DB-Wert fehlt, aber Web-Wert vorhanden → keine Markierung
           } else {
-            // Web-Wert fehlt → orange
-            fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
-          }
-
-          // Für Ampelzustand relevante Spalten tracken
-          if (AMPEL_REQUIRED_ORIGINALS.includes(pair.original)) {
-            // „grün“ nur, wenn ein Web-Wert existiert und Gleichheit vorliegt (DB vorhanden + Match)
-            requiredOk[pair.original] = !!(hasWeb && isEqual);
+            // Web-Wert fehlt, aber DB-Wert vorhanden → orange
+            if (hasDb) fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
           }
         }
-
-        // Ampelwert setzen (nachdem alle relevanten Spalten geprüft wurden)
-        const allGreen = AMPEL_REQUIRED_ORIGINALS.every(k => requiredOk[k]);
-        ws.getCell(`${ampCol}${currentRow}`).value = allGreen ? 'OK' : 'Abweichung';
-        fillColor(ws, `${ampCol}${currentRow}`, allGreen ? 'green' : 'red');
-        ws.getCell(`${ampCol}${currentRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
       }
     }
 
@@ -478,14 +466,9 @@ app.post('/api/quality-stats', upload.single('file'), async (req, res) => {
     console.log('Found colors in Qualitätsbericht:', Array.from(foundColors));
     console.log('Quality counts:', { complete: greenCount, incomplete: redCount });
     
-    const totalRows = lastRow - 3; // Abzüglich Header-Zeilen
-    
     res.json({
-      total: totalRows,
       complete: greenCount,
       incomplete: redCount,
-      completePercentage: Math.round((greenCount / totalRows) * 100),
-      incompletePercentage: Math.round((redCount / totalRows) * 100),
       debug: {
         foundColors: Array.from(foundColors),
         totalRows: lastRow
@@ -507,30 +490,39 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     await wb.xlsx.load(req.file.buffer);
     const ws = wb.worksheets[0];
     
-    // Berechnung basierend auf Web_Vergleich_Siemens.xlsx Struktur
-    const lastRow = ws.lastRow ? ws.lastRow.number : 0;
-    
-    // 1. Gesamt Siemens-Produkte = Anzahl Zeilen minus 4 (Header-Zeilen)
-    const totalSiemens = lastRow - 4;
-    
-    // 2. Gesuchte Werte = Gesamt Siemens-Produkte × 8 (8 Spaltenpaare)
-    const searchedValues = totalSiemens * 8;
-    
-    // 3. Gefundene Web-Werte = Übereinstimmungen + Abweichungen (Grün + Rot)
-    let greenCount = 0;  // Übereinstimmungen (grün)
-    let redCount = 0;    // Abweichungen (rot)
-    let orangeCount = 0; // Produkt im Web nicht gefunden (orange)
+    let siemensCount = 0;  // Gesamt Siemens-Produkte (A2V Nummern)
+    let greenCount = 0;    // Gefundene Web-Werte (Summe aller neuen eingefügten Werte)
+    let redCount = 0;      // Abweichungen (rot)
+    let orangeCount = 0;   // Fehlende Web-Werte (orange)
     
     // Debug: Log all found colors
     const foundColors = new Set();
     
-    // Durchlaufe alle Datenzeilen (ab Zeile 5)
-    for (let r = 5; r <= lastRow; r++) {
-      // Durchlaufe alle Spalten
+    // Find the column for "Siemens Mobility Materialnummer" (originally column Z)
+    let siemensCol = null;
+    const lastCol = ws.lastColumn?.number || ws.columnCount || ws.getRow(HEADER_ROW).cellCount || 0;
+    for (let c = 1; c <= lastCol; c++) {
+      const headerCell = ws.getCell(HEADER_ROW, c);
+      if (headerCell.value && String(headerCell.value).includes('Siemens Mobility Materialnummer')) {
+        siemensCol = c;
+        break;
+      }
+    }
+    
+    // Count Siemens products (A2V numbers)
+    const lastRow = ws.lastRow ? ws.lastRow.number : 0;
+    for (let r = FIRST_DATA_ROW; r <= lastRow; r++) {
+      const a2vCell = siemensCol ? ws.getCell(r, siemensCol) : ws.getCell(r, getColumnIndex(ORIGINAL_COLS.Z));
+      const a2v = (a2vCell.value || '').toString().trim().toUpperCase();
+      if (a2v.startsWith('A2V')) {
+        siemensCount++;
+      }
+    }
+    
+    // Count colored cells in web value columns (only in web value columns)
+    for (let r = FIRST_DATA_ROW; r <= lastRow; r++) {
       for (let c = 1; c <= ws.columnCount; c++) {
         const cell = ws.getCell(r, c);
-        
-        // Prüfe Farbmarkierungen
         if (cell.fill && cell.fill.fgColor) {
           const color = cell.fill.fgColor.argb;
           foundColors.add(color);
@@ -540,270 +532,33 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
             greenCount++;
           } else if (color === 'FFFDEAEA') { // Red - Abweichungen
             redCount++;
-          } else if (color === 'FFFFEAA7') { // Orange - Produkt im Web nicht gefunden
+          } else if (color === 'FFFFEAA7') { // Orange - Fehlende Web-Werte
             orangeCount++;
           }
         }
       }
     }
     
-    // Gefundene Web-Werte = Grün + Rot
-    const foundWebValues = greenCount + redCount;
-    
     console.log('Found colors in Excel:', Array.from(foundColors));
     console.log('Counts:', { 
-      totalSiemens, 
-      searchedValues, 
-      foundWebValues, 
+      siemensCount: siemensCount, 
       green: greenCount, 
       red: redCount, 
       orange: orangeCount 
     });
     
     res.json({
-      totalSiemens: totalSiemens,
-      searchedValues: searchedValues,
-      foundWebValues: foundWebValues,
+      siemensCount: siemensCount,
       green: greenCount,
       red: redCount,
       orange: orangeCount,
-      foundWebValuesPercentage: searchedValues > 0 ? Math.round((foundWebValues / searchedValues) * 100) : 0,
-      greenPercentage: foundWebValues > 0 ? Math.round((greenCount / foundWebValues) * 100) : 0,
-      redPercentage: foundWebValues > 0 ? Math.round((redCount / foundWebValues) * 100) : 0,
-      orangePercentage: searchedValues > 0 ? Math.round((orangeCount / searchedValues) * 100) : 0,
       debug: {
         foundColors: Array.from(foundColors),
         totalRows: lastRow,
         totalColumns: ws.columnCount,
-        totalSiemens: totalSiemens,
-        searchedValues: searchedValues,
-        foundWebValues: foundWebValues
+        siemensColumn: siemensCol
       }
     });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Neue Route für optimierte Web-Suche (nur Siemens-Produkte)
-app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'Bitte Excel-Datei hochladen (file).' });
-
-    const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(req.file.buffer);
-
-    // 1) Nur Siemens-Produkte (A2V-Nummern) extrahieren
-    const tasks = [];
-    const siemensRowsPerSheet = new Map(); // ws -> [rowIndex,...]
-    
-    for (const ws of wb.worksheets) {
-      const siemensIndices = [];
-      const last = ws.lastRow?.number || 0;
-      
-      for (let r = FIRST_DATA_ROW - 1; r <= last; r++) {
-        const a2v = (ws.getCell(`${ORIGINAL_COLS.Z}${r}`).value || '').toString().trim().toUpperCase();
-        if (a2v.startsWith('A2V')) { 
-          siemensIndices.push(r); 
-          tasks.push(a2v); 
-        }
-      }
-      siemensRowsPerSheet.set(ws, siemensIndices);
-    }
-    
-    // Nur fortfahren wenn Siemens-Produkte gefunden wurden
-    if (tasks.length === 0) {
-      return res.status(400).json({ error: 'Keine Siemens-Produkte (A2V-Nummern) in der Datei gefunden.' });
-    }
-
-    // 2) Scrapen
-    const resultsMap = await scraper.scrapeMany(tasks, SCRAPE_CONCURRENCY);
-
-    // 3) Erstelle neue Siemens-Datei und verarbeite nur Siemens-Produkte
-    const siemensWb = new ExcelJS.Workbook();
-    
-    for (const ws of wb.worksheets) {
-      const siemensWs = siemensWb.addWorksheet(ws.name);
-      
-      // Kopiere Header-Zeilen (1-3)
-      for (let r = 1; r <= 3; r++) {
-        const row = ws.getRow(r);
-        for (let c = 1; c <= row.cellCount; c++) {
-          const cell = row.getCell(c);
-          siemensWs.getCell(r, c).value = cell.value;
-          if (cell.fill) siemensWs.getCell(r, c).fill = cell.fill;
-          if (cell.font) siemensWs.getCell(r, c).font = cell.font;
-          if (cell.border) siemensWs.getCell(r, c).border = cell.border;
-          if (cell.alignment) siemensWs.getCell(r, c).alignment = cell.alignment;
-        }
-      }
-      
-      // Kopiere nur Siemens-Zeilen (ab Zeile 4)
-      const siemensRows = siemensRowsPerSheet.get(ws) || [];
-      let newRowIndex = 4;
-      
-      for (const originalRow of siemensRows) {
-        const row = ws.getRow(originalRow);
-        for (let c = 1; c <= row.cellCount; c++) {
-          const cell = row.getCell(c);
-          siemensWs.getCell(newRowIndex, c).value = cell.value;
-          if (cell.fill) siemensWs.getCell(newRowIndex, c).fill = cell.fill;
-          if (cell.font) siemensWs.getCell(newRowIndex, c).font = cell.font;
-          if (cell.border) siemensWs.getCell(newRowIndex, c).border = cell.border;
-          if (cell.alignment) siemensWs.getCell(newRowIndex, c).alignment = cell.alignment;
-        }
-        newRowIndex++;
-      }
-    }
-    
-    // 4) Verarbeite die Siemens-Datei
-    for (const ws of siemensWb.worksheets) {
-      // 4.1 Spaltenstruktur berechnen
-      const structure = calculateNewColumnStructure(ws);
-
-      // 4.2 Spalten einfügen (von rechts nach links)
-      for (const pair of [...structure.pairs].reverse()) {
-        const insertPos = getColumnIndex(pair.original) + 1; // rechts neben der Originalspalte
-        ws.spliceColumns(insertPos, 0, [null]);
-      }
-
-      // 4.3 Zeile 4 (Labels) einfügen
-      ws.spliceRows(LABEL_ROW, 0, [null]);
-
-      // 4.4 Zeilen 2 & 3 Inhalte in Web-Spalten spiegeln + Labels schreiben
-      for (const pair of structure.pairs) {
-        // Inhalte 2/3 spiegeln
-        const dbTech = ws.getCell(`${pair.dbCol}2`).value;
-        const dbName = ws.getCell(`${pair.dbCol}3`).value;
-        ws.getCell(`${pair.webCol}2`).value = dbTech;
-        ws.getCell(`${pair.webCol}3`).value = dbName;
-        copyColumnFormatting(ws, pair.dbCol, pair.webCol, 1, 3);
-
-        // Labels Zeile 4
-        ws.getCell(`${pair.dbCol}${LABEL_ROW}`).value  = 'DB-Wert';
-        ws.getCell(`${pair.webCol}${LABEL_ROW}`).value = 'Web-Wert';
-        applyLabelCellFormatting(ws, `${pair.dbCol}${LABEL_ROW}`, false);
-        applyLabelCellFormatting(ws, `${pair.webCol}${LABEL_ROW}`, true);
-      }
-
-      // 4.5 Top-Header (Zeile 1) setzen
-      applyTopHeader(ws);
-
-      // 4.6 Header in Zeile 2 und 3 pro Paar zusammenfassen
-      mergePairHeaders(ws, structure.pairs);
-
-      // === NEU: Ampel-Spalte anhängen ===
-      const ampInsertIndex = ws.columnCount + 1;
-      ws.spliceColumns(ampInsertIndex, 0, [null]);
-      const ampCol = getColumnLetter(ampInsertIndex);
-      ws.getCell(`${ampCol}2`).value = 'AMP';
-      ws.getCell(`${ampCol}3`).value = 'Ampelbewertung';
-      ws.getCell(`${ampCol}${LABEL_ROW}`).value = 'Status';
-      applyLabelCellFormatting(ws, `${ampCol}${LABEL_ROW}`, false);
-      ws.getCell(`${ampCol}2`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-      ws.getCell(`${ampCol}3`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-
-      // 4.7 Web-Daten eintragen / vergleichen
-      const siemensRows = siemensRowsPerSheet.get(wb.worksheets.find(w => w.name === ws.name)) || [];
-      for (let i = 0; i < siemensRows.length; i++) {
-        const currentRow = 5 + i; // Start ab Zeile 5 (nach Labels)
-
-        // Ampel-Accumulator für diese Zeile
-        const requiredOk = { E:false, N:false, S:false, U:false, V:false, W:false };
-
-        // neue Z-Spalte (A2V) bestimmen
-        let zCol = ORIGINAL_COLS.Z;
-        if (structure.otherCols.has(ORIGINAL_COLS.Z)) zCol = structure.otherCols.get(ORIGINAL_COLS.Z);
-        const a2v = (ws.getCell(`${zCol}${currentRow}`).value || '').toString().trim().toUpperCase();
-        const web = resultsMap.get(a2v) || {};
-
-        // je Paar
-        for (const pair of structure.pairs) {
-          const dbValue = ws.getCell(`${pair.dbCol}${currentRow}`).value;
-          let webValue = null;
-          let isEqual = false;
-
-          switch (pair.original) {
-            case 'C': // Material-Kurztext
-              webValue = (web.Produkttitel && web.Produkttitel !== 'Nicht gefunden') ? web.Produkttitel : null;
-              isEqual  = webValue ? eqText(dbValue || '', webValue) : false;
-              break;
-            case 'E': // Herstellartikelnummer
-              webValue = (web['Weitere Artikelnummer'] && web['Weitere Artikelnummer'] !== 'Nicht gefunden')
-                        ? web['Weitere Artikelnummer']
-                        : a2v;
-              isEqual  = eqPart(dbValue || a2v, webValue);
-              break;
-            case 'N': // Fert./Prüfhinweis
-              if (web.Materialklassifizierung && web.Materialklassifizierung !== 'Nicht gefunden') {
-                const code = normalizeNCode(mapMaterialClassificationToExcel(web.Materialklassifizierung));
-                if (code) { webValue = code; isEqual = eqN(dbValue || '', code); }
-              }
-              break;
-            case 'P': // Werkstoff
-              webValue = (web.Werkstoff && web.Werkstoff !== 'Nicht gefunden') ? web.Werkstoff : null;
-              isEqual  = webValue ? eqText(dbValue || '', webValue) : false;
-              break;
-            case 'S': // Nettogewicht
-              if (web.Gewicht && web.Gewicht !== 'Nicht gefunden') {
-                const { value } = parseWeight(web.Gewicht);
-                if (value != null) { webValue = value; isEqual = eqWeight(dbValue, web.Gewicht); }
-              }
-              break;
-            case 'U': // Länge
-              if (web.Abmessung && web.Abmessung !== 'Nicht gefunden') {
-                const d = parseDimensionsToLBH(web.Abmessung);
-                if (d.L != null) { webValue = d.L; isEqual = eqDimension(dbValue, web.Abmessung, 'L'); }
-              }
-              break;
-            case 'V': // Breite
-              if (web.Abmessung && web.Abmessung !== 'Nicht gefunden') {
-                const d = parseDimensionsToLBH(web.Abmessung);
-                if (d.B != null) { webValue = d.B; isEqual = eqDimension(dbValue, web.Abmessung, 'B'); }
-              }
-              break;
-            case 'W': // Höhe
-              if (web.Abmessung && web.Abmessung !== 'Nicht gefunden') {
-                const d = parseDimensionsToLBH(web.Abmessung);
-                if (d.H != null) { webValue = d.H; isEqual = eqDimension(dbValue, web.Abmessung, 'H'); }
-              }
-              break;
-          }
-
-          const hasDb = hasValue(dbValue);
-          const hasWeb = webValue !== null;
-
-          if (hasWeb) {
-            ws.getCell(`${pair.webCol}${currentRow}`).value = webValue;
-            // Nur markieren wenn DB-Wert vorhanden ist
-            if (hasDb) {
-              fillColor(ws, `${pair.webCol}${currentRow}`, isEqual ? 'green' : 'red');
-            }
-          } else {
-            // Web-Wert fehlt → orange
-            fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
-          }
-
-          // Für Ampelzustand relevante Spalten tracken
-          if (AMPEL_REQUIRED_ORIGINALS.includes(pair.original)) {
-            requiredOk[pair.original] = !!(hasWeb && isEqual);
-          }
-        }
-
-        // Ampelwert setzen
-        const allGreen = AMPEL_REQUIRED_ORIGINALS.every(k => requiredOk[k]);
-        ws.getCell(`${ampCol}${currentRow}`).value = allGreen ? 'OK' : 'Abweichung';
-        fillColor(ws, `${ampCol}${currentRow}`, allGreen ? 'green' : 'red');
-        ws.getCell(`${ampCol}${currentRow}`).alignment = { horizontal: 'center', vertical: 'middle' };
-      }
-    }
-
-    const out = await siemensWb.xlsx.writeBuffer();
-    res.setHeader('Content-Type','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition','attachment; filename="Web_Vergleich_Siemens.xlsx"');
-    res.send(Buffer.from(out));
 
   } catch (err) {
     console.error(err);
