@@ -510,28 +510,28 @@
         <div id="webCharts" class="charts-container hidden">
           <div class="charts-title">Web-Suche Ergebnisse für Siemens Produkte</div>
           <div class="web-charts">
-            <!-- Data Overview -->
+            <!-- Step 1: Product Analysis -->
             <div class="web-chart-group">
-              <div class="chart-title">Schritt 1: Datenübersicht</div>
-              <div class="chart-subtitle">Gesamtdatensätze vs Siemens-Produkte</div>
+              <div class="chart-title">Schritt 1: Produktanalyse</div>
+              <div class="chart-subtitle">Siemens Produkte Extraction</div>
               <div class="chart-wrapper">
                 <canvas id="productsChart"></canvas>
               </div>
             </div>
 
-            <!-- Search Values Calculation -->
+            <!-- Step 2: Web Search -->
             <div class="web-chart-group">
-              <div class="chart-title">Schritt 2: Gesuchte Werte</div>
-              <div class="chart-subtitle">Pro Siemens-Produkt: 8 Werte</div>
+              <div class="chart-title">Schritt 2: Websuche</div>
+              <div class="chart-subtitle">Gesuchte Werte: 8 Werte pro Produkt</div>
               <div class="chart-wrapper">
                 <canvas id="searchChart"></canvas>
               </div>
             </div>
 
-            <!-- Web Search Results -->
+            <!-- Step 3: Comparison -->
             <div class="web-chart-group">
-              <div class="chart-title">Schritt 3: Web-Suche Ergebnisse</div>
-              <div class="chart-subtitle">Gefundene vs Fehlende Web-Werte</div>
+              <div class="chart-title">Schritt 3: Vergleich</div>
+              <div class="chart-subtitle">Gefundene Web-Wert vs. DB-Wert</div>
               <div class="chart-wrapper">
                 <canvas id="matchChart"></canvas>
               </div>
@@ -580,6 +580,7 @@
     let selectedFile = null;
     let webProcessedBlob = null;
     let qualityBlob = null;
+    let qualityStats = null; // Store quality stats for web search
 
     // Chart instances
     let qualityChart = null;
@@ -694,27 +695,22 @@
 
     function createWebCharts(stats) {
       createDataOverviewChart(stats.totalDataSets, stats.totalSiemens);
-      createSearchValuesChart(stats.totalSiemens, stats.searchedValues);
-      createSearchResultsChart(stats.searchedValues, stats.foundWebValues, stats.searchedValues - stats.foundWebValues);
-      createMatchChart(stats.foundWebValues, stats.green, stats.red);
+      createWebSearchChart(stats.searchedValues, stats.foundWebValues, stats.searchedValues - stats.foundWebValues);
+      createComparisonChart(stats.foundWebValues, stats.green, stats.red);
       
       // Create combined legend
       const legendContainer = document.getElementById('webLegend');
       legendContainer.innerHTML = `
         <div class="legend-item">
+          <div class="legend-color" style="background-color: rgba(147, 197, 253, 0.4);"></div>
+          <span>Gesamtdatensätze: ${stats.totalDataSets}</span>
+        </div>
+        <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.8);"></div>
-          <span>Total Datensätze: ${stats.totalDataSets}</span>
+          <span>Gesamt Siemens-Produkte: ${stats.totalSiemens}</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(30, 64, 175, 0.8);"></div>
-          <span>Siemens-Produkte: ${stats.totalSiemens}</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(147, 197, 253, 0.8);"></div>
-          <span>Gesuchte Werte: ${stats.searchedValues} (${stats.totalSiemens} × 8)</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
+          <div class="legend-color" style="background-color: rgba(156, 163, 175, 0.8);"></div>
           <span>Gefundene Web-Werte: ${stats.foundWebValues} (${stats.foundWebValuesPercentage}%)</span>
         </div>
         <div class="legend-item">
@@ -722,11 +718,11 @@
           <span>Fehlende Web-Werte: ${stats.searchedValues - stats.foundWebValues} (${(100 - stats.foundWebValuesPercentage)}%)</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(22, 163, 74, 0.8);"></div>
+          <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
           <span>Übereinstimmungen: ${stats.green} (${stats.greenPercentage}%)</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(194, 0, 21, 0.8);"></div>
+          <div class="legend-color" style="background-color: rgba(239, 68, 68, 0.8);"></div>
           <span>Abweichungen: ${stats.red} (${stats.redPercentage}%)</span>
         </div>
       `;
@@ -739,26 +735,25 @@
         productsChart.destroy();
       }
 
-      const nonSiemens = totalDataSets - totalSiemens;
       const siemensPercentage = ((totalSiemens / totalDataSets) * 100).toFixed(1);
-      const nonSiemensPercentage = ((nonSiemens / totalDataSets) * 100).toFixed(1);
+      const totalPercentage = '100';
 
       productsChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
           labels: [
-            `Siemens-Produkte (${siemensPercentage}%)`,
-            `Andere Produkte (${nonSiemensPercentage}%)`
+            `Gesamt Siemens-Produkte (${siemensPercentage}%)`,
+            `Gesamtdatensätze (${totalPercentage}%)`
           ],
           datasets: [{
-            data: [totalSiemens, nonSiemens],
+            data: [totalSiemens, totalDataSets],
             backgroundColor: [
-              'rgba(30, 64, 175, 0.8)',  // Dunkleres Blau für Siemens
-              'rgba(59, 130, 246, 0.3)'  // Helleres Blau für andere
+              'rgba(59, 130, 246, 0.8)',  // Blau für Siemens-Produkte
+              'rgba(147, 197, 253, 0.4)'  // Hellblau für Gesamtdatensätze
             ],
             borderColor: [
-              'rgba(30, 64, 175, 1)',
-              'rgba(59, 130, 246, 0.6)'
+              'rgba(59, 130, 246, 1)',
+              'rgba(147, 197, 253, 0.8)'
             ],
             borderWidth: 2
           }]
@@ -771,7 +766,10 @@
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  return `${context.label}: ${context.parsed} Produkte`;
+                  const label = context.dataIndex === 0 ? 
+                    `Gesamt Siemens-Produkte: ${totalSiemens}` : 
+                    `Gesamtdatensätze: ${totalDataSets}`;
+                  return label;
                 }
               }
             }
@@ -781,51 +779,17 @@
       });
     }
 
-    function createSearchValuesChart(totalSiemens, searchedValues) {
+    function createWebSearchChart(searchedValues, foundWebValues, missingWebValues) {
       const ctx = document.getElementById('searchChart').getContext('2d');
       
       if (searchChart) {
         searchChart.destroy();
       }
 
-      searchChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: [`${searchedValues} gesuchte Werte`],
-          datasets: [{
-            data: [searchedValues],
-            backgroundColor: ['rgba(147, 197, 253, 0.8)'],
-            borderColor: ['rgba(147, 197, 253, 1)'],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: () => `${totalSiemens} Siemens-Produkte × 8 Werte = ${searchedValues} gesuchte Werte`
-              }
-            }
-          },
-          cutout: '40%'
-        }
-      });
-    }
-
-    function createSearchResultsChart(searchedValues, foundWebValues, missingWebValues) {
-      const ctx = document.getElementById('matchChart').getContext('2d');
-      
-      if (matchChart) {
-        matchChart.destroy();
-      }
-
       const foundPercentage = ((foundWebValues / searchedValues) * 100).toFixed(1);
       const missingPercentage = ((missingWebValues / searchedValues) * 100).toFixed(1);
 
-      matchChart = new Chart(ctx, {
+      searchChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
           labels: [
@@ -835,11 +799,11 @@
           datasets: [{
             data: [foundWebValues, missingWebValues],
             backgroundColor: [
-              'rgba(34, 197, 94, 0.8)',
-              'rgba(249, 115, 22, 0.8)'
+              'rgba(156, 163, 175, 0.8)',  // Grau für gefundene Web-Werte
+              'rgba(249, 115, 22, 0.8)'    // Orange für fehlende Web-Werte
             ],
             borderColor: [
-              'rgba(34, 197, 94, 1)',
+              'rgba(156, 163, 175, 1)',
               'rgba(249, 115, 22, 1)'
             ],
             borderWidth: 2
@@ -853,7 +817,55 @@
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  return `${context.label}: ${context.parsed}`;
+                  return `${context.label}: ${context.parsed} Werte`;
+                }
+              }
+            }
+          },
+          cutout: '40%'
+        }
+      });
+    }
+
+    function createComparisonChart(foundWebValues, matches, differences) {
+      const ctx = document.getElementById('matchChart').getContext('2d');
+      
+      if (matchChart) {
+        matchChart.destroy();
+      }
+
+      const matchPercentage = ((matches / foundWebValues) * 100).toFixed(1);
+      const diffPercentage = ((differences / foundWebValues) * 100).toFixed(1);
+
+      matchChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: [
+            `Übereinstimmungen (${matchPercentage}%)`,
+            `Abweichungen (${diffPercentage}%)`
+          ],
+          datasets: [{
+            data: [matches, differences],
+            backgroundColor: [
+              'rgba(34, 197, 94, 0.8)',   // Grün für Übereinstimmungen
+              'rgba(239, 68, 68, 0.8)'    // Rot für Abweichungen
+            ],
+            borderColor: [
+              'rgba(34, 197, 94, 1)',
+              'rgba(239, 68, 68, 1)'
+            ],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.label}: ${context.parsed} Werte`;
                 }
               }
             }
@@ -960,6 +972,7 @@
           
           if (statsResp.ok) {
             const stats = await statsResp.json();
+            qualityStats = stats; // Store for web search
             
             // Create quality chart
             createQualityChart(stats.complete, stats.incomplete, stats.total);
@@ -1036,6 +1049,10 @@
         // Get real statistics from the processed Excel file
         const statsForm = new FormData();
         statsForm.append('file', new File([webProcessedBlob], 'Web_Vergleich_Ergebnis.xlsx'));
+        // Include total datasets from quality check if available
+        if (qualityStats && qualityStats.total) {
+          statsForm.append('totalFromQuality', qualityStats.total);
+        }
         
         try {
           const statsResp = await fetch('/api/web-search-stats', {

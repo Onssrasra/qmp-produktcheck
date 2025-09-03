@@ -485,10 +485,9 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     // 1. Gesamt Siemens-Produkte = Anzahl Zeilen minus 4 (Header-Zeilen)
     const totalSiemens = lastRow - 4;
     
-    // 2. Total Datensätze - wir müssen schätzen oder aus dem Original-File lesen
-    // Für die Darstellung nehmen wir an, dass Siemens etwa 30-50% aller Daten ausmacht
-    // TODO: Dies sollte aus der ursprünglichen Datei vor der Filterung gelesen werden
-    const totalDataSets = Math.round(totalSiemens / 0.4); // Annahme: 40% der Daten sind Siemens
+    // 2. Total Datensätze - holen wir aus der Qualitätsprüfung-Statistik
+    // Fallback: Schätzen basierend auf Siemens-Anteil wenn Quality-Stats nicht verfügbar
+    const totalDataSets = req.body.totalFromQuality || Math.round(totalSiemens / 0.4);
     
     // 3. Gesuchte Werte = Gesamt Siemens-Produkte × 8 (8 Spaltenpaare)
     const searchedValues = totalSiemens * 8;
