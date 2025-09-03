@@ -718,15 +718,17 @@
 
     function createStep1Legend(totalDataSets, totalSiemens) {
       const legendContainer = document.getElementById('step1Legend');
-      const siemensPercentage = ((totalSiemens / totalDataSets) * 100).toFixed(1);
+      const siemensPercentage = ((totalSiemens / totalDataSets) * 100).toFixed(0);
+      const nonSiemens = totalDataSets - totalSiemens;
+      const nonSiemensPercentage = ((nonSiemens / totalDataSets) * 100).toFixed(0);
       legendContainer.innerHTML = `
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(147, 197, 253, 0.4);"></div>
-          <span>Gesamtdatensätze: ${totalDataSets}</span>
-        </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.8);"></div>
           <span>Gesamt Siemens-Produkte: ${totalSiemens} (${siemensPercentage}%)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background-color: rgba(147, 197, 253, 0.4);"></div>
+          <span>Produkte anderer Hersteller: ${nonSiemens} (${nonSiemensPercentage}%)</span>
         </div>
       `;
     }
@@ -736,7 +738,7 @@
       const missingPercentage = (100 - foundPercentage);
       legendContainer.innerHTML = `
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.8);"></div>
+          <div class="legend-color" style="background-color: rgba(74, 222, 128, 0.8);"></div>
           <span>Gefundene Web-Werte: ${foundWebValues} (${foundPercentage}%)</span>
         </div>
         <div class="legend-item">
@@ -832,11 +834,11 @@
           datasets: [{
             data: [foundWebValues, missingWebValues],
             backgroundColor: [
-              'rgba(59, 130, 246, 0.8)',   // Blau für gefundene Web-Werte (wie Siemens-Produkte)
+              'rgba(74, 222, 128, 0.8)',   // Helleres Grün für gefundene Web-Werte
               'rgba(249, 115, 22, 0.8)'    // Orange für fehlende Web-Werte
             ],
             borderColor: [
-              'rgba(59, 130, 246, 1)',
+              'rgba(74, 222, 128, 1)',
               'rgba(249, 115, 22, 1)'
             ],
             borderWidth: 2
