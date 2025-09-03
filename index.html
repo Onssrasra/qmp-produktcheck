@@ -718,6 +718,7 @@
 
     function createStep1Legend(totalDataSets, totalSiemens) {
       const legendContainer = document.getElementById('step1Legend');
+      const siemensPercentage = ((totalSiemens / totalDataSets) * 100).toFixed(1);
       legendContainer.innerHTML = `
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(147, 197, 253, 0.4);"></div>
@@ -725,7 +726,7 @@
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.8);"></div>
-          <span>Gesamt Siemens-Produkte: ${totalSiemens}</span>
+          <span>Gesamt Siemens-Produkte: ${totalSiemens} (${siemensPercentage}%)</span>
         </div>
       `;
     }
@@ -767,20 +768,21 @@
       }
 
       const siemensPercentage = ((totalSiemens / totalDataSets) * 100).toFixed(1);
-      const totalPercentage = '100';
+      const nonSiemens = totalDataSets - totalSiemens;
+      const nonSiemensPercentage = ((nonSiemens / totalDataSets) * 100).toFixed(1);
 
       productsChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
           labels: [
             `Gesamt Siemens-Produkte (${siemensPercentage}%)`,
-            `Gesamtdatensätze (${totalPercentage}%)`
+            `Andere Produkte (${nonSiemensPercentage}%)`
           ],
           datasets: [{
-            data: [totalSiemens, totalDataSets],
+            data: [totalSiemens, nonSiemens],
             backgroundColor: [
               'rgba(59, 130, 246, 0.8)',  // Blau für Siemens-Produkte
-              'rgba(147, 197, 253, 0.4)'  // Hellblau für Gesamtdatensätze
+              'rgba(147, 197, 253, 0.4)'  // Hellblau für andere Produkte
             ],
             borderColor: [
               'rgba(59, 130, 246, 1)',
@@ -798,8 +800,8 @@
               callbacks: {
                 label: function(context) {
                   const label = context.dataIndex === 0 ? 
-                    `Gesamt Siemens-Produkte: ${totalSiemens}` : 
-                    `Gesamtdatensätze: ${totalDataSets}`;
+                    `Gesamt Siemens-Produkte: ${totalSiemens} (${siemensPercentage}%)` : 
+                    `Andere Produkte: ${nonSiemens} (${nonSiemensPercentage}%)`;
                   return label;
                 }
               }
