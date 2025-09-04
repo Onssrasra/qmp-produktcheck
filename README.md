@@ -2,6 +2,29 @@
 
 Ein Tool zur Verarbeitung von Excel-Dateien mit Siemens-Produktdaten, das Web-Daten von MyMobase scraped und mit DB-Daten vergleicht.
 
+## ⚠️ Wichtiger Hinweis: Technische Limitationen
+
+### 🚀 Deployment-Umgebung
+Die Anwendung wird über **Render** bereitgestellt und nutzt derzeit die **kostenlose Version** mit folgenden Einschränkungen:
+
+- **CPU**: 0.1 CPU (sehr begrenzt)
+- **RAM**: 512 MB (minimal)
+- **Performance**: Langsamere Verarbeitung großer Dateien
+
+### 📊 Auswirkungen auf die Nutzung
+
+**Was bedeutet das für Sie?**
+
+1. **Dateigröße**: Maximale Dateigröße auf **10 MB** begrenzt
+2. **Verarbeitungszeit**: 
+   - Kleine Dateien (< 50 Produkte): ~2-5 Minuten
+   - Mittlere Dateien (50-200 Produkte): ~5-15 Minuten
+   - Große Dateien (200+ Produkte): ~15-30 Minuten
+3. **Web-Suche**: Langsamere Abfrage von MyMobase-Daten
+4. **Gleichzeitige Nutzer**: Nur ein Nutzer kann die Anwendung gleichzeitig verwenden
+
+**Empfehlung**: Für größere Datenmengen oder häufige Nutzung empfehlen wir ein Upgrade auf eine kostenpflichtige Version.
+
 ## 🆕 Neue Features (Version 2.1)
 
 ### Neues Layout: Spaltenblöcke
