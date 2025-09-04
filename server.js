@@ -19,7 +19,7 @@ const { checkCompleteness } = require('./completeness-checker');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SCRAPE_CONCURRENCY = Number(process.env.SCRAPE_CONCURRENCY || 1); // Ultra-konservativ für maximale Stabilität
+const SCRAPE_CONCURRENCY = Number(process.env.SCRAPE_CONCURRENCY || 2); // Optimiert für bessere Performance
 const WEIGHT_TOL_PCT = Number(process.env.WEIGHT_TOL_PCT || 0); // 0 = strikt
 
 // Ursprüngliche Spalten-Definition (für die Input-Erkennung)

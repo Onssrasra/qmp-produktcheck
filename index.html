@@ -1193,9 +1193,8 @@
       enableSection(webSearchSection, true);
       webSearchBtn.disabled = false;
       
-      // Update pipeline steps
-      updateStep(2, 'active');
-      updateStep(3, 'active');  // Web search can also start immediately
+      // Keep pipeline steps as they are - only step 1 completed
+      updateStep(1, 'completed');
       
       statusEl.textContent = 'Datei erfolgreich hochgeladen — Qualitätsprüfung oder Web-Suche starten.';
     }

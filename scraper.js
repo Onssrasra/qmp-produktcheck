@@ -2,7 +2,7 @@
 // Playwright is lazy-required and can be disabled by setting DISABLE_PLAYWRIGHT=1.
 
 const cheerio = require('cheerio');
-const NAV_TIMEOUT_MS = Number(process.env.NAV_TIMEOUT_MS || 8000); // Aggressiv reduziert für Speed
+const NAV_TIMEOUT_MS = Number(process.env.NAV_TIMEOUT_MS || 12000); // Optimiert für bessere Performance
 const DISABLE_PLAYWRIGHT = String(process.env.DISABLE_PLAYWRIGHT || '0') === '1';
 
 function a2vUrl(a2v) {
