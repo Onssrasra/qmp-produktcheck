@@ -548,6 +548,8 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     let greenCount = 0;  // Übereinstimmungen (grün)
     let redCount = 0;    // Abweichungen (rot)
     let orangeCount = 0; // Produkt im Web nicht gefunden (orange)
+    let ampelGreenCount = 0; // Ampel grün
+    let ampelRedCount = 0;   // Ampel rot
     
     // Debug: Log all found colors
     const foundColors = new Set();
@@ -570,6 +572,10 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
             redCount++;
           } else if (color === 'FFFFEAA7') { // Orange - Produkt im Web nicht gefunden
             orangeCount++;
+          } else if (color === 'FF00F26D') { // Ampel Green
+            ampelGreenCount++;
+          } else if (color === 'FFFF0000') { // Ampel Red
+            ampelRedCount++;
           }
         }
       }
@@ -585,7 +591,9 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
       foundWebValues, 
       green: greenCount, 
       red: redCount, 
-      orange: orangeCount 
+      orange: orangeCount,
+      ampelGreen: ampelGreenCount,
+      ampelRed: ampelRedCount
     });
     
     res.json({
@@ -596,6 +604,8 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
       green: greenCount,
       red: redCount,
       orange: orangeCount,
+      ampelGreen: ampelGreenCount,
+      ampelRed: ampelRedCount,
       foundWebValuesPercentage: searchedValues > 0 ? Math.round((foundWebValues / searchedValues) * 100) : 0,
       greenPercentage: foundWebValues > 0 ? Math.round((greenCount / foundWebValues) * 100) : 0,
       redPercentage: foundWebValues > 0 ? Math.round((redCount / foundWebValues) * 100) : 0,

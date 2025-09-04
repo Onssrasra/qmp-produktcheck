@@ -533,7 +533,7 @@
             <!-- Step 2: Web Search -->
             <div class="web-chart-group">
               <div class="chart-title">Schritt 2: Websuche</div>
-              <div class="chart-subtitle">30 Produkte × 8 Attribute = 240 Suchvorgänge</div>
+              <div class="chart-subtitle" id="step2Subtitle">Lade Daten...</div>
               <div class="chart-wrapper">
                 <canvas id="searchChart"></canvas>
               </div>
@@ -548,6 +548,16 @@
                 <canvas id="matchChart"></canvas>
               </div>
               <div class="chart-legend" id="step3Legend"></div>
+            </div>
+
+            <!-- Step 4: Ampelbewertung -->
+            <div class="web-chart-group">
+              <div class="chart-title">Schritt 4: Ampelbewertung</div>
+              <div class="chart-subtitle">Siemens-Produkte nach Qualitätsstatus</div>
+              <div class="chart-wrapper">
+                <canvas id="ampelChart"></canvas>
+              </div>
+              <div class="chart-legend" id="step4Legend"></div>
             </div>
           </div>
         </div>
@@ -599,6 +609,7 @@
     let productsChart = null;
     let searchChart = null;
     let matchChart = null;
+    let ampelChart = null;
 
     /* ==================== HELPER FUNCTIONS ==================== */
     function updateStep(stepNum, status) {
@@ -709,11 +720,13 @@
       createDataOverviewChart(stats.totalDataSets, stats.totalSiemens);
       createWebSearchChart(stats.searchedValues, stats.foundWebValues, stats.searchedValues - stats.foundWebValues);
       createComparisonChart(stats.foundWebValues, stats.green, stats.red);
+      createAmpelChart(stats.ampelGreen || 0, stats.ampelRed || 0);
       
       // Create individual legends for each chart
       createStep1Legend(stats.totalDataSets, stats.totalSiemens);
       createStep2Legend(stats.foundWebValues, stats.searchedValues - stats.foundWebValues, stats.foundWebValuesPercentage);
       createStep3Legend(stats.green, stats.red, stats.greenPercentage, stats.redPercentage);
+      createStep4Legend(stats.ampelGreen || 0, stats.ampelRed || 0);
     }
 
     function createStep1Legend(totalDataSets, totalSiemens) {
@@ -820,6 +833,11 @@
       if (searchChart) {
         searchChart.destroy();
       }
+
+      // Update subtitle with actual values
+      const productCount = Math.round(searchedValues / 8); // 8 attributes per product
+      const subtitle = document.getElementById('step2Subtitle');
+      subtitle.textContent = `${productCount} Produkte × 8 Attribute = ${searchedValues} Suchvorgänge`;
 
       const foundPercentage = ((foundWebValues / searchedValues) * 100).toFixed(1);
       const missingPercentage = ((missingWebValues / searchedValues) * 100).toFixed(1);
@@ -1121,7 +1139,9 @@
               green: 0,
               red: 0,
               greenPercentage: '0',
-              redPercentage: '0'
+              redPercentage: '0',
+              ampelGreen: 0,
+              ampelRed: 0
             };
             createWebCharts(fallbackStats);
             webCharts.classList.remove('hidden');
@@ -1138,7 +1158,9 @@
             green: 0,
             red: 0,
             greenPercentage: '0',
-            redPercentage: '0'
+            redPercentage: '0',
+            ampelGreen: 0,
+            ampelRed: 0
           };
           createWebCharts(fallbackStats);
           webCharts.classList.remove('hidden');
@@ -1180,6 +1202,73 @@
       a.click();
       URL.revokeObjectURL(a.href);
       a.remove();
+    }
+
+    function createAmpelChart(greenProducts, redProducts) {
+      const ctx = document.getElementById('ampelChart').getContext('2d');
+      
+      if (ampelChart) {
+        ampelChart.destroy();
+      }
+
+      const totalProducts = greenProducts + redProducts;
+      const greenPercentage = ((greenProducts / totalProducts) * 100).toFixed(1);
+      const redPercentage = ((redProducts / totalProducts) * 100).toFixed(1);
+
+      ampelChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: [
+            `Qualität OK (${greenPercentage}%)`,
+            `Qualität fehlerhaft (${redPercentage}%)`
+          ],
+          datasets: [{
+            data: [greenProducts, redProducts],
+            backgroundColor: [
+              'rgba(0, 242, 109, 0.8)',   // Ampel Grün
+              'rgba(255, 0, 0, 0.8)'      // Ampel Rot
+            ],
+            borderColor: [
+              'rgba(0, 242, 109, 1)',
+              'rgba(255, 0, 0, 1)'
+            ],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.label}: ${context.parsed} Produkte`;
+                }
+              }
+            }
+          },
+          cutout: '40%'
+        }
+      });
+    }
+
+    function createStep4Legend(greenProducts, redProducts) {
+      const legendContainer = document.getElementById('step4Legend');
+      const totalProducts = greenProducts + redProducts;
+      const greenPercentage = ((greenProducts / totalProducts) * 100).toFixed(1);
+      const redPercentage = ((redProducts / totalProducts) * 100).toFixed(1);
+      
+      legendContainer.innerHTML = `
+        <div class="legend-item">
+          <div class="legend-color" style="background-color: rgba(0, 242, 0, 0.8);"></div>
+          <span>Qualität OK: ${greenProducts} (${greenPercentage}%)</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background-color: rgba(255, 0, 0, 0.8);"></div>
+          <span>Qualität fehlerhaft: ${redProducts} (${redPercentage}%)</span>
+        </div>
+      `;
     }
   </script>
 </body>
