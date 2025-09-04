@@ -50,7 +50,7 @@
       justify-content: space-between;
       background: var(--white);
       padding: 0;
-      margin-bottom: 0;
+      margin-bottom: 80px;
       box-shadow: none;
       border: none;
     }
@@ -95,7 +95,7 @@
     .divider {
       height: 1px;
       background: linear-gradient(to right, transparent, var(--grey-3), transparent);
-      margin: 50px 0;
+      margin: 80px 0;
       border-radius: 1px;
     }
     
@@ -1270,9 +1270,8 @@
         
         downloadQualityBtn.disabled = false;
         
-        // Update pipeline steps
+        // Update pipeline steps - only mark quality check as completed
         updateStep(2, 'completed');
-        updateStep(3, 'active');
         
       } catch (err) {
         statusEl.textContent = 'Fehler bei Qualitätsprüfung: ' + err.message;
