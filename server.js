@@ -108,8 +108,8 @@ function fillColor(ws, addr, color) {
     orange: 'FFDA65', // hellorange
     dbBlue: 'FFE6F3FF', // hellblau (Label DB)
     webBlue:'FFCCE7FF', // noch helleres Blau (Label Web)
-    ampelGreen: '00F26D', // andere Grün-Farbe für Ampel
-    ampelRed:   'FF0000'  // andere Rot-Farbe für Ampel
+    ampelGreen: 'FF00F26D', // andere Grün-Farbe für Ampel
+    ampelRed:   'FFFF0000'  // andere Rot-Farbe für Ampel
   };
   ws.getCell(addr).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: map[color] || map.green } };
 }

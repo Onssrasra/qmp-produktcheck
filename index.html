@@ -756,7 +756,7 @@
           <span>Übereinstimmungen: ${green} (${greenPercentage}%)</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(239, 68, 68, 0.8);"></div>
+          <div class="legend-color" style="background-color: rgba(194, 0, 21, 0.8);"></div>
           <span>Abweichungen: ${red} (${redPercentage}%)</span>
         </div>
       `;
@@ -778,7 +778,7 @@
         data: {
           labels: [
             `Gesamt Siemens-Produkte (${siemensPercentage}%)`,
-            `Andere Produkte (${nonSiemensPercentage}%)`
+            `Produkte anderer Hersteller (${nonSiemensPercentage}%)`
           ],
           datasets: [{
             data: [totalSiemens, nonSiemens],
@@ -803,7 +803,7 @@
                 label: function(context) {
                   const label = context.dataIndex === 0 ? 
                     `Gesamt Siemens-Produkte: ${totalSiemens} (${siemensPercentage}%)` : 
-                    `Andere Produkte: ${nonSiemens} (${nonSiemensPercentage}%)`;
+                    `Produkte anderer Hersteller: ${nonSiemens} (${nonSiemensPercentage}%)`;
                   return label;
                 }
               }
@@ -883,11 +883,11 @@
             data: [matches, differences],
             backgroundColor: [
               'rgba(34, 197, 94, 0.8)',   // Grün für Übereinstimmungen
-              'rgba(239, 68, 68, 0.8)'    // Rot für Abweichungen
+              'rgba(194, 0, 21, 0.8)'     // Rot für Abweichungen (gleich wie Qualitätsprüfung)
             ],
             borderColor: [
               'rgba(34, 197, 94, 1)',
-              'rgba(239, 68, 68, 1)'
+              'rgba(194, 0, 21, 1)'
             ],
             borderWidth: 2
           }]
