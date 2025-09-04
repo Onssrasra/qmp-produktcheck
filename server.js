@@ -19,7 +19,7 @@ const { checkCompleteness } = require('./completeness-checker');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SCRAPE_CONCURRENCY = Number(process.env.SCRAPE_CONCURRENCY || 4);
+const SCRAPE_CONCURRENCY = Number(process.env.SCRAPE_CONCURRENCY || 1); // Ultra-konservativ für maximale Stabilität
 const WEIGHT_TOL_PCT = Number(process.env.WEIGHT_TOL_PCT || 0); // 0 = strikt
 
 // Ursprüngliche Spalten-Definition (für die Input-Erkennung)
@@ -260,11 +260,18 @@ function mergePairHeaders(ws, pairs) {
   }
 }
 
-// -------- Routes ----------
+// -------- Static Files & Routes ----------
+app.use('/Images', express.static(path.join(__dirname, 'Images')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+const upload = multer({ 
+  storage: multer.memoryStorage(), 
+  limits: { 
+    fileSize: 10 * 1024 * 1024,  // Reduziert auf 10MB für Stabilität
+    fieldSize: 2 * 1024 * 1024   // 2MB field limit
+  } 
+});
 
 app.post('/api/process-excel', upload.single('file'), async (req, res) => {
   try {
@@ -286,8 +293,10 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
       rowsPerSheet.set(ws, indices);
     }
 
-    // 2) Scrapen
+    // 2) Scrapen mit Progress-Logging
+    console.log(`Starting web scraping for ${tasks.length} unique A2V numbers...`);
     const resultsMap = await scraper.scrapeMany(tasks, SCRAPE_CONCURRENCY);
+    console.log(`Web scraping completed for ${tasks.length} products`);
 
     // 3) Umbau pro Worksheet
     for (const ws of wb.worksheets) {
@@ -328,16 +337,28 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
       // 3.6.5 Ampelbewertung-Spalte hinzufügen
       addAmpelColumn(ws);
 
-      // 3.7 Web-Daten eintragen / vergleichen
+      // 3.7 Web-Daten eintragen / vergleichen - Optimiert mit Batches
       const prodRows = rowsPerSheet.get(ws) || [];
-      for (const originalRow of prodRows) {
-        const currentRow = originalRow + 1; // wegen eingefügter Label-Zeile
+      const totalRows = prodRows.length;
+      console.log(`Processing ${totalRows} Siemens products for sheet ${ws.name}`);
+      
+      // Process in ultra-small batches for maximum stability
+      const EXCEL_BATCH_SIZE = 10;
+      
+      for (let batchStart = 0; batchStart < prodRows.length; batchStart += EXCEL_BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + EXCEL_BATCH_SIZE, prodRows.length);
+        const progress = Math.round((batchStart / totalRows) * 100);
+        console.log(`Processing Excel batch ${batchStart+1}-${batchEnd} of ${totalRows} (${progress}%)`);
+        
+        for (let i = batchStart; i < batchEnd; i++) {
+          const originalRow = prodRows[i];
+          const currentRow = originalRow + 1; // wegen eingefügter Label-Zeile
 
-        // neue Z-Spalte (A2V) bestimmen
-        let zCol = ORIGINAL_COLS.Z;
-        if (structure.otherCols.has(ORIGINAL_COLS.Z)) zCol = structure.otherCols.get(ORIGINAL_COLS.Z);
-        const a2v = (ws.getCell(`${zCol}${currentRow}`).value || '').toString().trim().toUpperCase();
-        const web = resultsMap.get(a2v) || {};
+          // neue Z-Spalte (A2V) bestimmen
+          let zCol = ORIGINAL_COLS.Z;
+          if (structure.otherCols.has(ORIGINAL_COLS.Z)) zCol = structure.otherCols.get(ORIGINAL_COLS.Z);
+          const a2v = (ws.getCell(`${zCol}${currentRow}`).value || '').toString().trim().toUpperCase();
+          const web = resultsMap.get(a2v) || {};
 
         // je Paar
         for (const pair of structure.pairs) {
@@ -421,10 +442,21 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
           }
         }
         
-        // 3.8 Ampelbewertung für die aktuelle Zeile berechnen
-        const ampelColor = calculateAmpelStatus(ws, currentRow);
-        fillColor(ws, `A${currentRow}`, ampelColor);
+          // 3.8 Ampelbewertung für die aktuelle Zeile berechnen
+          const ampelColor = calculateAmpelStatus(ws, currentRow);
+          fillColor(ws, `A${currentRow}`, ampelColor);
+        }
+        
+        // Aggressives Memory cleanup nach jedem kleinen Batch
+        if (global.gc) {
+          global.gc();
+        }
+        
+        // Kurze Pause für CPU-Entlastung bei schwacher Hardware
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
+      
+      console.log(`Completed processing ${totalRows} Siemens products for sheet ${ws.name}`);
     }
 
     const out = await wb.xlsx.writeBuffer();
@@ -470,32 +502,21 @@ app.post('/api/quality-stats', upload.single('file'), async (req, res) => {
     // Debug: Log all found colors
     const foundColors = new Set();
     
-    // Count colored cells in data rows (from row 4)
+    // Count Ampelbewertung in Spalte A (from row 4) - OPTIMIERT
     const lastRow = ws.lastRow ? ws.lastRow.number : 0;
     for (let r = 4; r <= lastRow; r++) {
-      const row = ws.getRow(r);
-      let rowHasRed = false;
-      let rowHasGreen = false;
+      // Nur Spalte A (Ampelbewertung) prüfen - viel schneller!
+      const ampelCell = ws.getCell(`A${r}`);
       
-      for (let c = 1; c <= row.cellCount; c++) {
-        const cell = row.getCell(c);
-        if (cell.fill && cell.fill.fgColor) {
-          const color = cell.fill.fgColor.argb;
-          foundColors.add(color);
-          
-          if (color === 'FFCCFFCC') { // Green - vollständig und richtig
-            rowHasGreen = true;
-          } else if (color === 'FFFFCCCC') { // Red - unvollständig oder unplausibel
-            rowHasRed = true;
-          }
+      if (ampelCell.fill && ampelCell.fill.fgColor) {
+        const color = ampelCell.fill.fgColor.argb;
+        foundColors.add(color);
+        
+        if (color === 'FF00F26D') { // Ampel Grün - Qualität OK
+          greenCount++;
+        } else if (color === 'FFFF0000') { // Ampel Rot - Qualität fehlerhaft  
+          redCount++;
         }
-      }
-      
-      // Count complete rows (all green) vs incomplete rows (any red)
-      if (rowHasGreen && !rowHasRed) {
-        greenCount++;
-      } else if (rowHasRed) {
-        redCount++;
       }
     }
     
@@ -658,8 +679,10 @@ app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) =
       return res.status(400).json({ error: 'Keine Siemens-Produkte (A2V-Nummern) in der Datei gefunden.' });
     }
 
-    // 2) Scrapen
+    // 2) Scrapen mit Progress-Logging (Siemens-only)
+    console.log(`Starting optimized web scraping for ${tasks.length} Siemens products...`);
     const resultsMap = await scraper.scrapeMany(tasks, SCRAPE_CONCURRENCY);
+    console.log(`Optimized web scraping completed for ${tasks.length} Siemens products`);
 
     // 3) Erstelle neue Siemens-Datei und verarbeite nur Siemens-Produkte
     const siemensWb = new ExcelJS.Workbook();
@@ -737,9 +760,20 @@ app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) =
       // 4.6.5 Ampelbewertung-Spalte hinzufügen
       addAmpelColumn(ws);
 
-      // 4.7 Web-Daten eintragen / vergleichen
+      // 4.7 Web-Daten eintragen / vergleichen - Optimiert mit Batches
       const siemensRows = siemensRowsPerSheet.get(wb.worksheets.find(w => w.name === ws.name)) || [];
-      for (let i = 0; i < siemensRows.length; i++) {
+      const totalSiemensRows = siemensRows.length;
+      console.log(`Processing ${totalSiemensRows} Siemens products for optimized sheet ${ws.name}`);
+      
+      // Process in ultra-small batches for maximum stability
+      const SIEMENS_BATCH_SIZE = 10;
+      
+      for (let batchStart = 0; batchStart < siemensRows.length; batchStart += SIEMENS_BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + SIEMENS_BATCH_SIZE, siemensRows.length);
+        const progress = Math.round((batchStart / totalSiemensRows) * 100);
+        console.log(`Processing Siemens batch ${batchStart+1}-${batchEnd} of ${totalSiemensRows} (${progress}%)`);
+        
+        for (let i = batchStart; i < batchEnd; i++) {
         const currentRow = 5 + i; // Start ab Zeile 5 (nach Labels)
 
         // neue Z-Spalte (A2V) bestimmen

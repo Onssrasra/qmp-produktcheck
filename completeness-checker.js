@@ -55,31 +55,10 @@ function addQualityAmpelColumn(ws) {
   ws.getCell('A3').alignment = { horizontal: 'center', vertical: 'middle' };
 }
 
-/** Calculate Ampel status for quality report row */
-function calculateQualityAmpelStatus(ws, row) {
-  // Prüfe ob die gesamte Zeile grün markiert ist
-  const rowObj = ws.getRow(row);
-  let hasGreen = false;
-  let hasRed = false;
-  
-  for (let c = 1; c <= ws.columnCount; c++) {
-    const cell = rowObj.getCell(c);
-    if (cell.fill && cell.fill.fgColor) {
-      const color = cell.fill.fgColor.argb;
-      if (color === 'FFCCFFCC') { // Zeile OK (grün)
-        hasGreen = true;
-      } else if (color === 'FFFFCCCC') { // Pflicht fehlt (rot)
-        hasRed = true;
-      }
-    }
-  }
-  
-  // Wenn die Zeile grün markiert ist und keine roten Markierungen hat
-  if (hasGreen && !hasRed) {
-    return FILL_AMPEL_GREEN;
-  } else {
-    return FILL_AMPEL_RED;
-  }
+/** Calculate Ampel status for quality report row - Optimized */
+function calculateQualityAmpelStatus(hasRed) {
+  // Simple logic based on hasRed flag from main loop
+  return hasRed ? FILL_AMPEL_RED : FILL_AMPEL_GREEN;
 }
 
 /** Utility: copy entire worksheet values and formatting for first 3 rows */
@@ -198,13 +177,24 @@ async function checkCompleteness(fileBuffer) {
   const cNetto = colByHeader(src, 'Nettogewicht');
   const cBrutto = colByHeader(src, 'Bruttogewicht');
 
-  // Iterate data rows (from row 4)
+  // Iterate data rows (from row 4) - Optimized for large files
   const last = src.lastRow ? src.lastRow.number : FIRST_DATA_ROW - 1;
-  for (let r = FIRST_DATA_ROW; r <= last; r++) {
-    const rowQ = wsQ.getRow(r);
-    const rowS = src.getRow(r);
+  const totalRows = last - FIRST_DATA_ROW + 1;
+  console.log(`Processing ${totalRows} rows in batches...`);
+  
+  // Process in ultra-small batches for maximum stability
+  const BATCH_SIZE = 20;
+  
+  for (let batchStart = FIRST_DATA_ROW; batchStart <= last; batchStart += BATCH_SIZE) {
+    const batchEnd = Math.min(batchStart + BATCH_SIZE - 1, last);
+    const progress = Math.round(((batchStart - FIRST_DATA_ROW) / totalRows) * 100);
+    console.log(`Processing batch ${batchStart}-${batchEnd} (${progress}%)`);
+    
+    for (let r = batchStart; r <= batchEnd; r++) {
+      const rowQ = wsQ.getRow(r);
+      const rowS = src.getRow(r);
 
-    if (!rowS || rowS.cellCount === 0) continue;
+      if (!rowS || rowS.cellCount === 0) continue;
 
     let hasRed = false;
 
@@ -275,18 +265,25 @@ async function checkCompleteness(fileBuffer) {
       }
     }
 
-    // 7) If row has no red → whole row green
-    if (!hasRed){
-      for (let c = 1; c <= src.columnCount; c++){
-        rowQ.getCell(c).fill = FILL_GREEN;
-      }
+    // 7) OPTIMIERT: Keine ganze Zeile grün färben - nur Ampelbewertung setzen
+    // Das spart massiv Zeit und Speicher!
+    
+    // 8) Ampelbewertung in Spalte A: Rot wenn Probleme, Grün wenn alles OK
+    const ampelFill = calculateQualityAmpelStatus(hasRed);
+    rowQ.getCell(1).fill = ampelFill; // Column A
     }
     
-    // 8) Calculate Ampelbewertung for current row
-    const ampelFill = calculateQualityAmpelStatus(wsQ, r);
-    rowQ.getCell(1).fill = ampelFill; // Column A
+    // Aggressives Memory cleanup nach jedem kleinen Batch
+    if (global.gc) {
+      global.gc();
+    }
+    
+    // Kurze Pause für CPU-Entlastung bei schwacher Hardware
+    await new Promise(resolve => setTimeout(resolve, 50));
   }
 
+  console.log(`Completed processing ${totalRows} rows`);
+  
   // Return the workbook as buffer
   return await outWb.xlsx.writeBuffer();
 }

@@ -41,6 +41,58 @@
       margin: 0 auto;
       padding: 0 20px;
     }
+
+    /* Header mit Logos */
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .logo-left, .logo-right {
+      flex: 0 0 auto;
+      width: 120px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .header-logo {
+      height: 60px;
+      width: auto;
+      max-width: 110px;
+      object-fit: contain;
+    }
+
+    .header-title {
+      flex: 1;
+      text-align: center;
+      padding: 0 30px;
+    }
+
+    .header-title h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-title p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--grey-4);
+      font-weight: 500;
+    }
     
     /* Card Design */
     .card {
@@ -456,19 +508,51 @@
         grid-template-columns: 1fr;
         gap: 20px;
       }
+      
+      /* Header responsive */
+      .main-header {
+        flex-direction: column;
+        padding: 15px 20px;
+        gap: 15px;
+      }
+      
+      .logo-left, .logo-right {
+        width: 80px;
+      }
+      
+      .header-logo {
+        height: 40px;
+        max-width: 80px;
+      }
+      
+      .header-title h1 {
+        font-size: 22px;
+      }
+      
+      .header-title p {
+        font-size: 12px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <!-- Header mit Logos -->
+    <div class="main-header">
+      <div class="logo-left">
+        <img src="/Images/Deutsche_Bahn_AG-Logo.svg.png" alt="Deutsche Bahn Logo" class="header-logo">
+      </div>
+      <div class="header-title">
+        <h1>Qualitätsmonitor</h1>
+        <p>Vollständigkeits- & Plausibilitätsprüfung - Siemens Web-Vergleich</p>
+      </div>
+      <div class="logo-right">
+        <img src="/Images/TU-Berlin-Logo.svg.png" alt="TU Berlin Logo" class="header-logo">
+      </div>
+    </div>
+
     <!-- Main Card -->
     <div class="card">
-      <!-- Header -->
-      <div class="header">
-        <h1>Qualitätsmonitor</h1>
-        <div class="subtitle">Vollständigkeits- & Plausibilitätsprüfung - Siemens Web-Vergleich</div>
-        <div class="divider"></div>
-      </div>
 
       <!-- Pipeline Steps -->
       <div class="pipeline-steps">

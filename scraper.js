@@ -2,7 +2,7 @@
 // Playwright is lazy-required and can be disabled by setting DISABLE_PLAYWRIGHT=1.
 
 const cheerio = require('cheerio');
-const NAV_TIMEOUT_MS = Number(process.env.NAV_TIMEOUT_MS || 18000);
+const NAV_TIMEOUT_MS = Number(process.env.NAV_TIMEOUT_MS || 8000); // Aggressiv reduziert für Speed
 const DISABLE_PLAYWRIGHT = String(process.env.DISABLE_PLAYWRIGHT || '0') === '1';
 
 function a2vUrl(a2v) {
@@ -256,12 +256,11 @@ class SiemensProductScraper {
     if (this.cache.has(key)) return this.cache.get(key);
     let out;
     try {
+      // Nur HTTP versuchen - kein Playwright Fallback für Speed
       out = await this.httpScrapeA2V(key);
     } catch (e) {
-      try { out = await this.pwScrapeA2V(key); }
-      catch (err) {
-        out = { A2V: key, URL: a2vUrl(key), Produkttitel:'Nicht gefunden', 'Weitere Artikelnummer':'Nicht gefunden', Abmessung:'Nicht gefunden', Gewicht:'Nicht gefunden', Werkstoff:'Nicht gefunden', Materialklassifizierung:'Nicht gefunden', Status:'Fehler: '+err.message };
-      }
+      // Schneller Fallback ohne weitere Versuche
+      out = { A2V: key, URL: a2vUrl(key), Produkttitel:'Nicht gefunden', 'Weitere Artikelnummer':'Nicht gefunden', Abmessung:'Nicht gefunden', Gewicht:'Nicht gefunden', Werkstoff:'Nicht gefunden', Materialklassifizierung:'Nicht gefunden', Status:'HTTP-Fehler: '+e.message };
     }
     this.cache.set(key, out);
     return out;
