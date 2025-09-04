@@ -1,6 +1,6 @@
-# QMP Siemens Produktcheck - DB vs. Web Vergleich
+# Qualitätsmonitor für Materialstammdaten
 
-Ein Tool zur Verarbeitung von Excel-Dateien mit Siemens-Produktdaten, das Web-Daten von MyMobase scraped und mit DB-Daten vergleicht.
+Ein Tool zur Prüfung von Vollständigkeit & Plausibilität von Materialstammdaten und Vergleich mit Siemens-Webdaten (MyMobase)
 
 ## ⚠️ Wichtiger Hinweis: Technische Limitationen
 
@@ -183,10 +183,3 @@ node test-excel.js
 - Überprüfen Sie die Header-Zeile (Zeile 3)
 - Stellen Sie sicher, dass A2V-Nummern in der Produkt-ID-Spalte stehen
 - Überprüfen Sie die Render-Logs für Details
-
-## 🤝 Support
-
-Bei Fragen oder Problemen:
-1. Überprüfen Sie die Render-Logs
-2. Testen Sie mit der Test-Excel-Datei
-3. Wenden Sie sich an das Entwicklungsteam 
