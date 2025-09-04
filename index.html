@@ -7,6 +7,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
   <style>
     :root {
@@ -48,11 +49,10 @@
       align-items: center;
       justify-content: space-between;
       background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px 30px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 0;
+      margin-bottom: 0;
+      box-shadow: none;
+      border: none;
     }
 
     .logo-left, .logo-right {
@@ -88,6 +88,41 @@
       font-size: 14px;
       color: var(--grey-4);
       font-weight: 500;
+    }
+    
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--grey-3), transparent);
+      margin: 30px 0;
+      border-radius: 1px;
+    }
+    
+    /* SVG Icons */
+    .step-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--black);
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+    
+    .section-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      vertical-align: middle;
+      color: var(--black);
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+    
+    .dropzone-icon svg {
+      width: 48px;
+      height: 48px;
+      color: var(--grey-4);
+      stroke: currentColor;
+      stroke-width: 2;
     }
     
     /* Card Design */
@@ -169,23 +204,6 @@
       font-weight: bold;
       margin-bottom: 6px;
       font-size: 14px;
-    }
-
-    .step-icon {
-      width: 20px;
-      height: 20px;
-      object-fit: contain;
-      filter: brightness(0) invert(1);
-      transition: all 0.3s ease;
-    }
-
-    .section-icon {
-      width: 20px;
-      height: 20px;
-      object-fit: contain;
-      margin-right: 8px;
-      vertical-align: middle;
-      filter: hue-rotate(0deg) saturate(1.2);
     }
 
     .step.active .step-number {
@@ -526,7 +544,7 @@
       /* Header responsive */
       .main-header {
         flex-direction: column;
-        padding: 15px 20px;
+        padding: 0;
         gap: 15px;
       }
       
@@ -551,41 +569,52 @@
 </head>
 <body>
   <div class="wrap">
-    <!-- Header mit Logos -->
-    <div class="main-header">
-      <div class="logo-left">
-        <img src="/Images/Deutsche_Bahn_AG-Logo.svg.png" alt="Deutsche Bahn Logo" class="header-logo">
-      </div>
-      <div class="header-title">
-        <h1>Qualitätsmonitor</h1>
-        <p>Vollständigkeits- & Plausibilitätsprüfung - Siemens Web-Vergleich</p>
-      </div>
-      <div class="logo-right">
-        <img src="/Images/TU-Berlin-Logo.svg.png" alt="TU Berlin Logo" class="header-logo">
-      </div>
-    </div>
-
     <!-- Main Card -->
     <div class="card">
+      <!-- Header -->
+      <div class="main-header">
+        <div class="logo-left">
+          <img src="/Images/Deutsche_Bahn_AG-Logo.svg.png" alt="Deutsche Bahn Logo" class="header-logo">
+        </div>
+        <div class="header-title">
+          <h1>Qualitätsmonitor</h1>
+          <p>Vollständigkeits- & Plausibilitätsprüfung - Siemens Web-Vergleich</p>
+        </div>
+        <div class="logo-right">
+          <img src="/Images/TU-Berlin-Logo.svg.png" alt="TU Berlin Logo" class="header-logo">
+        </div>
+      </div>
+
+      <div class="divider"></div>
 
       <!-- Pipeline Steps -->
       <div class="pipeline-steps">
         <div class="step active" id="step-1">
           <div class="step-number">
-            <img src="/Images/file-icon.png" alt="Datei" class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-closed-icon lucide-folder-closed step-icon">
+              <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+              <path d="M2 10h20"/>
+            </svg>
           </div>
           <div class="step-title">Datei Upload</div>
         </div>
         <div class="step" id="step-2">
           <div class="step-number">
-            <img src="/Images/quality-icon.png" alt="Qualitätsprüfung" class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-check-icon lucide-clipboard-check step-icon">
+              <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <path d="m9 14 2 2 4-4"/>
+            </svg>
           </div>
           <div class="step-title">Qualitätsprüfung</div>
           <div class="step-desc">alle Produkte</div>
         </div>
         <div class="step" id="step-3">
           <div class="step-number">
-            <img src="/Images/search-icon.png" alt="Web-Suche" class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search step-icon">
+              <path d="m21 21-4.34-4.34"/>
+              <circle cx="11" cy="11" r="8"/>
+            </svg>
           </div>
           <div class="step-title">Web-Suche</div>
           <div class="step-desc">nur Siemens Produkte</div>
@@ -594,17 +623,26 @@
 
       <!-- Step 1: Upload -->
       <div class="action-section" id="upload-section">
-        <h3><img src="/Images/file-icon.png" alt="📁" class="section-icon"> Datei Upload</h3>
+        <h3>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-closed-icon lucide-folder-closed section-icon">
+            <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+            <path d="M2 10h20"/>
+          </svg>
+          Datei Upload
+        </h3>
         <center>
           <div id="dropzone" class="dropzone">
             <div class="dropzone-icon">
-              <img src="/Images/file-icon.png" alt="📁" style="width: 48px; height: 48px; filter: opacity(0.7);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-closed-icon lucide-folder-closed">
+                <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+                <path d="M2 10h20"/>
+              </svg>
             </div>
             <p id="dzText" class="dropzone-text">
               <strong>Datei hier ablegen</strong><br>
               oder klicken zum Auswählen
             </p>
-            <p class="hint">Unterstützt .xlsx und .xls Dateien (max. 10 MB)</p>
+            <p class="hint">Unterstützt .xlsx und .xls Dateien (max. 50 MB)</p>
           </div>
         </center>
         <input type="file" id="fileInput" accept=".xlsx,.xls" hidden />
@@ -612,7 +650,14 @@
 
       <!-- Step 2: Quality Check -->
       <div class="action-section disabled" id="quality-section">
-        <h3><img src="/Images/quality-icon.png" alt="✅" class="section-icon"> Vollständigkeit & Plausibilität prüfen</h3>
+        <h3>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-check-icon lucide-clipboard-check section-icon">
+            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <path d="m9 14 2 2 4-4"/>
+          </svg>
+          Vollständigkeit & Plausibilität prüfen
+        </h3>
         <div class="action-buttons">
           <button id="qualityCheckBtn" disabled>Qualitätsprüfung starten</button>
           <button id="downloadQualityBtn" class="secondary" disabled>Excel herunterladen</button>
@@ -632,7 +677,13 @@
 
       <!-- Step 3: Web Search -->
       <div class="action-section" id="web-search-section">
-        <h3><img src="/Images/search-icon.png" alt="🔍" class="section-icon"> Web-Suche (nur für Siemens Produkte)</h3>
+        <h3>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search section-icon">
+            <path d="m21 21-4.34-4.34"/>
+            <circle cx="11" cy="11" r="8"/>
+          </svg>
+          Web-Suche (nur für Siemens Produkte)
+        </h3>
         <div class="action-buttons">
           <button id="webSearchBtn" disabled>Web-Suche starten</button>
           <button id="downloadWebBtn" class="secondary" disabled>Excel herunterladen</button>
