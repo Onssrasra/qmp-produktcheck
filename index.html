@@ -304,7 +304,8 @@
       position: relative;
       width: 250px;
       height: 250px;
-      margin: 0 5px;
+      margin: 10px 5px;
+      flex-shrink: 0; /* Verhindert Schrumpfung */
     }
 
     /* Web Search Charts */
@@ -321,8 +322,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
       width: 100%;
       max-width: 320px;
+      height: 400px; /* Feste Höhe für alle Charts */
     }
 
     .chart-title {
@@ -331,6 +334,7 @@
       color: var(--text);
       margin-bottom: 10px;
       text-align: center;
+      height: 20px;
     }
 
     .chart-subtitle {
@@ -338,6 +342,7 @@
       color: var(--grey-4);
       margin-bottom: 15px;
       text-align: center;
+      min-height: 40px;
     }
 
     .flow-arrow {
@@ -363,6 +368,8 @@
       margin-top: 15px;
       font-size: 12px;
       text-align: center;
+      min-height: 60px;
+      justify-content: flex-start;
     }
 
     .legend-item {
@@ -662,7 +669,7 @@
       const incompletePercentage = ((incomplete / total) * 100).toFixed(1);
 
       qualityChart = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
           labels: [
             `Vollständig & richtig (${completePercentage}%)`,
@@ -796,7 +803,7 @@
       const nonSiemensPercentage = ((nonSiemens / totalDataSets) * 100).toFixed(1);
 
       productsChart = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
           labels: [
             `Gesamt Siemens-Produkte (${siemensPercentage}%)`,
@@ -852,7 +859,7 @@
       const missingPercentage = ((missingWebValues / searchedValues) * 100).toFixed(1);
 
       searchChart = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
           labels: [
             `Gefundene Web-Werte (${foundPercentage}%)`,
@@ -899,7 +906,7 @@
       const diffPercentage = ((differences / foundWebValues) * 100).toFixed(1);
 
       matchChart = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
           labels: [
             `Übereinstimmungen (${matchPercentage}%)`,
@@ -1220,7 +1227,7 @@
       const redPercentage = ((redProducts / totalProducts) * 100).toFixed(1);
 
       ampelChart = new Chart(ctx, {
-        type: 'doughnut',
+        type: 'pie',
         data: {
           labels: [
             `Qualität OK (${greenPercentage}%)`,
