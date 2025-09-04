@@ -31,7 +31,7 @@
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: linear-gradient(135deg, var(--grey-1) 0%, var(--grey-2) 100%);
+      background: var(--white);
       color: var(--text);
       min-height: 100vh;
       padding: 10px 0;
@@ -47,7 +47,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      background: var(--white);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 20px 30px;
@@ -80,11 +80,7 @@
       margin: 0 0 8px 0;
       font-size: 28px;
       font-weight: 700;
-      color: var(--text);
-      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: #911e16;
     }
 
     .header-title p {
@@ -114,7 +110,7 @@
       font-weight: 700;
       font-size: 28px;
       letter-spacing: -0.5px;
-      color: var(--db-red);
+      color: #911e16;
       margin-bottom: 8px;
     }
 
@@ -127,7 +123,7 @@
     .divider {
       width: 100%;
       height: 3px;
-      background: var(--db-red);
+      background: #911e16;
       border-radius: 2px;
       margin: 0 auto;
     }
@@ -176,7 +172,7 @@
     }
 
     .step.active .step-number {
-      background: var(--db-red);
+      background: #911e16;
     }
 
     .step.completed .step-number {
@@ -216,10 +212,10 @@
     }
     
     .dropzone.dragover {
-      border-color: var(--db-red);
+      border-color: #911e16;
       background: var(--white);
       transform: scale(1.02);
-      box-shadow: 0 8px 32px rgba(194, 0, 21, 0.15);
+      box-shadow: 0 8px 32px rgba(145, 30, 22, 0.15);
     }
     
     .dropzone strong {
@@ -280,8 +276,8 @@
       font-size: 14px;
       font-weight: 600;
       border-radius: 10px;
-      border: 2px solid var(--db-red);
-      background: var(--db-red);
+      border: 2px solid #911e16;
+      background: #911e16;
       color: var(--white);
       transition: all 0.3s ease;
       cursor: pointer;
@@ -290,19 +286,20 @@
     }
     
     button:hover:not(:disabled) {
-      background: var(--db-red-dark);
+      background: #7a1914;
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(194, 0, 21, 0.3);
+      box-shadow: 0 8px 24px rgba(145, 30, 22, 0.3);
     }
     
     button.secondary {
       background: var(--white);
-      color: var(--db-red);
+      color: #911e16;
+      border-color: #911e16;
     }
     
     button.secondary:hover:not(:disabled) {
-      background: var(--grey-1);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      background: #f9f9f9;
+      box-shadow: 0 8px 24px rgba(145, 30, 22, 0.15);
     }
 
     button.success {
@@ -460,7 +457,7 @@
     .progress > div {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--db-red), var(--db-red-dark));
+      background: linear-gradient(90deg, #911e16, #7a1914);
       transition: width 0.3s ease;
       border-radius: 999px;
     }
@@ -609,7 +606,7 @@
       </div>
 
       <!-- Step 3: Web Search -->
-      <div class="action-section disabled" id="web-search-section">
+      <div class="action-section" id="web-search-section">
         <h3>🔍 Web-Suche (nur für Siemens Produkte)</h3>
         <div class="action-buttons">
           <button id="webSearchBtn" disabled>Web-Suche starten</button>
@@ -712,6 +709,44 @@
     let ampelChart = null;
 
     /* ==================== HELPER FUNCTIONS ==================== */
+    
+    function resetAllStates() {
+      // Reset all global variables
+      qualityBlob = null;
+      webProcessedBlob = null;
+      qualityStats = null;
+      
+      // Reset all charts
+      if (productsChart) { productsChart.destroy(); productsChart = null; }
+      if (searchChart) { searchChart.destroy(); searchChart = null; }
+      if (matchChart) { matchChart.destroy(); matchChart = null; }
+      if (ampelChart) { ampelChart.destroy(); ampelChart = null; }
+      
+      // Reset all download buttons
+      downloadQualityBtn.disabled = true;
+      downloadWebBtn.disabled = true;
+      
+      // Hide all charts
+      qualityCharts.classList.add('hidden');
+      webCharts.classList.add('hidden');
+      
+      // Clear all legends
+      document.getElementById('qualityLegend').innerHTML = '';
+      document.getElementById('step1Legend').innerHTML = '';
+      document.getElementById('step2Legend').innerHTML = '';
+      document.getElementById('step3Legend').innerHTML = '';
+      document.getElementById('step4Legend').innerHTML = '';
+      
+      // Reset pipeline steps
+      updateStep(1, 'enabled');
+      updateStep(2, 'pending');
+      updateStep(3, 'pending');
+      updateStep(4, 'pending');
+      
+      // Reset status
+      statusEl.textContent = 'Bereit für neue Datei';
+    }
+    
     function updateStep(stepNum, status) {
       const steps = [step1, step2, step3];
       steps.forEach((step, i) => {
@@ -1067,17 +1102,25 @@
         return;
       }
       
+      // Reset all previous states when new file is uploaded
+      resetAllStates();
+      
       selectedFile = file;
       dzText.innerHTML = `<strong>${file.name}</strong><br><span class="hint">Datei bereit zur Verarbeitung</span>`;
       
-      // Enable quality section first
+      // Enable quality section
       enableSection(qualitySection, true);
       qualityCheckBtn.disabled = false;
       
+      // Enable web search section independently  
+      enableSection(webSearchSection, true);
+      webSearchBtn.disabled = false;
+      
       // Update pipeline steps
       updateStep(2, 'active');
+      updateStep(3, 'active');  // Web search can also start immediately
       
-      statusEl.textContent = 'Datei erfolgreich hochgeladen — Qualitätsprüfung starten.';
+      statusEl.textContent = 'Datei erfolgreich hochgeladen — Qualitätsprüfung oder Web-Suche starten.';
     }
 
     /* ==================== QUALITY CHECK ==================== */
@@ -1150,10 +1193,6 @@
         statusEl.textContent = 'Qualitätsprüfung abgeschlossen — Qualitätsbericht verfügbar.';
         
         downloadQualityBtn.disabled = false;
-        
-        // Enable web search section
-        enableSection(webSearchSection, true);
-        webSearchBtn.disabled = false;
         
         // Update pipeline steps
         updateStep(2, 'completed');
