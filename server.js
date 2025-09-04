@@ -105,11 +105,11 @@ function fillColor(ws, addr, color) {
   const map = {
     green:  'FFD5F4E6', // hellgrün
     red:    'FFFDEAEA', // hellrot
-    orange: 'FFFFEAA7', // hellorange
+    orange: 'FFDA65', // hellorange
     dbBlue: 'FFE6F3FF', // hellblau (Label DB)
     webBlue:'FFCCE7FF', // noch helleres Blau (Label Web)
-    ampelGreen: 'FF90EE90', // andere Grün-Shade für Ampel
-    ampelRed:   'FFFF6B6B'  // andere Rot-Shade für Ampel
+    ampelGreen: '00F26D', // andere Grün-Farbe für Ampel
+    ampelRed:   'FF0000'  // andere Rot-Farbe für Ampel
   };
   ws.getCell(addr).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: map[color] || map.green } };
 }
