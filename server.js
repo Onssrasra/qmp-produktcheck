@@ -864,10 +864,21 @@ app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) =
           }
         }
         
-        // 4.8 Ampelbewertung für die aktuelle Zeile berechnen
-        const ampelColor = calculateAmpelStatus(ws, currentRow);
-        fillColor(ws, `A${currentRow}`, ampelColor);
+          // 4.8 Ampelbewertung für die aktuelle Zeile berechnen
+          const ampelColor = calculateAmpelStatus(ws, currentRow);
+          fillColor(ws, `A${currentRow}`, ampelColor);
+        }
+        
+        // Memory cleanup after each batch
+        if (global.gc) {
+          global.gc();
+        }
+        
+        // Kurze Pause für CPU-Entlastung bei schwacher Hardware
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
+      
+      console.log(`Completed processing ${totalSiemensRows} Siemens products for optimized sheet ${ws.name}`);
     }
 
     const out = await siemensWb.xlsx.writeBuffer();
