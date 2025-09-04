@@ -9,6 +9,8 @@ const FIRST_DATA_ROW = 4;   // Data start in row 4
 const FILL_RED    = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFCCCC' } }; // Pflicht fehlt
 const FILL_ORANGE = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE0B2' } }; // unplausibel/ungültig
 const FILL_GREEN  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFCCFFCC' } }; // Zeile OK
+const FILL_AMPEL_GREEN = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00F26D' } }; // Ampel grün
+const FILL_AMPEL_RED   = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF0000' } }; // Ampel rot
 
 // Allowed values for Fert./Prüfhinweis segments
 const POS1 = new Set(['OHNE','1','2','3']);
@@ -41,6 +43,43 @@ function validFertPruef(v){
   const parts = String(v).split('/').map(t => String(t).trim());
   if (parts.length !== 5) return false;
   return POS1.has(parts[0]) && POS2.has(parts[1]) && POS3.has(parts[2]) && POS4.has(parts[3]) && POS5.has(parts[4]);
+}
+
+/** Add Ampelbewertung column for quality report */
+function addQualityAmpelColumn(ws) {
+  // Header für Ampelbewertung-Spalte hinzufügen
+  ws.getCell('A3').value = 'Ampelbewertung';
+  
+  // Formatierung für Header
+  ws.getCell('A3').font = { bold: true };
+  ws.getCell('A3').alignment = { horizontal: 'center', vertical: 'middle' };
+}
+
+/** Calculate Ampel status for quality report row */
+function calculateQualityAmpelStatus(ws, row) {
+  // Prüfe ob die gesamte Zeile grün markiert ist
+  const rowObj = ws.getRow(row);
+  let hasGreen = false;
+  let hasRed = false;
+  
+  for (let c = 1; c <= ws.columnCount; c++) {
+    const cell = rowObj.getCell(c);
+    if (cell.fill && cell.fill.fgColor) {
+      const color = cell.fill.fgColor.argb;
+      if (color === 'FFCCFFCC') { // Zeile OK (grün)
+        hasGreen = true;
+      } else if (color === 'FFFFCCCC') { // Pflicht fehlt (rot)
+        hasRed = true;
+      }
+    }
+  }
+  
+  // Wenn die Zeile grün markiert ist und keine roten Markierungen hat
+  if (hasGreen && !hasRed) {
+    return FILL_AMPEL_GREEN;
+  } else {
+    return FILL_AMPEL_RED;
+  }
 }
 
 /** Utility: copy entire worksheet values and formatting for first 3 rows */
@@ -145,6 +184,9 @@ async function checkCompleteness(fileBuffer) {
   // Apply correct header structure for Qualitätsbericht
   applyQualitaetsberichtHeaders(wsQ);
 
+  // Add Ampelbewertung column
+  addQualityAmpelColumn(wsQ);
+
   // Map column indexes by header name (from row 3)
   const cFert = colByHeader(src, 'Fert./Prüfhinweis');
   const cL    = colByHeader(src, 'Länge');
@@ -239,6 +281,10 @@ async function checkCompleteness(fileBuffer) {
         rowQ.getCell(c).fill = FILL_GREEN;
       }
     }
+    
+    // 8) Calculate Ampelbewertung for current row
+    const ampelFill = calculateQualityAmpelStatus(wsQ, r);
+    rowQ.getCell(1).fill = ampelFill; // Column A
   }
 
   // Return the workbook as buffer

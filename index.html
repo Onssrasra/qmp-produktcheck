@@ -533,7 +533,7 @@
             <!-- Step 2: Web Search -->
             <div class="web-chart-group">
               <div class="chart-title">Schritt 2: Websuche</div>
-              <div class="chart-subtitle">Gesuchte Werte: 8 Werte pro Produkt</div>
+              <div class="chart-subtitle">30 Produkte × 8 Attribute = 240 Suchvorgänge</div>
               <div class="chart-wrapper">
                 <canvas id="searchChart"></canvas>
               </div>
@@ -853,6 +853,9 @@
               callbacks: {
                 label: function(context) {
                   return `${context.label}: ${context.parsed} Werte`;
+                },
+                afterBody: function() {
+                  return 'Attribute: Materialkurztext, Art.-Nr., Fert./Prüfhinweis, Werkstoff, Gewicht, L×B×H';
                 }
               }
             }
