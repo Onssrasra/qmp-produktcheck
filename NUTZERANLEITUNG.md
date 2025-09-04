@@ -156,24 +156,8 @@ Die Anwendung wird über **Render** bereitgestellt und nutzt derzeit die **koste
 - Stellen Sie sicher, dass A2V-Nummern vorhanden sind
 - Format: A2V gefolgt von Zahlen
 
----
-
-## 📞 Support & Kontakt
-
-Bei technischen Problemen oder Fragen:
-- **GitHub Repository**: Onssrasra / qmp-produktcheck
-- **Service URL**: https://qmp-produktcheck.onrender.com
 
 ---
 
-## 🔄 Updates & Verbesserungen
+*Letzte Aktualisierung: September 2025*
 
-Die Anwendung wird kontinuierlich verbessert:
-- **Performance-Optimierungen** für 0.1 CPU
-- **Bessere Fehlerbehandlung**
-- **Erweiterte Vergleichsalgorithmen**
-- **Neue Visualisierungsoptionen**
-
----
-
-*Letzte Aktualisierung: Dezember 2024*
