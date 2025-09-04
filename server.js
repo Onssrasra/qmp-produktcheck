@@ -107,7 +107,9 @@ function fillColor(ws, addr, color) {
     red:    'FFFDEAEA', // hellrot
     orange: 'FFFFEAA7', // hellorange
     dbBlue: 'FFE6F3FF', // hellblau (Label DB)
-    webBlue:'FFCCE7FF'  // noch helleres Blau (Label Web)
+    webBlue:'FFCCE7FF', // noch helleres Blau (Label Web)
+    ampelGreen: 'FF90EE90', // andere Grün-Shade für Ampel
+    ampelRed:   'FFFF6B6B'  // andere Rot-Shade für Ampel
   };
   ws.getCell(addr).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: map[color] || map.green } };
 }
@@ -128,6 +130,36 @@ function applyLabelCellFormatting(ws, addr, isWebCell = false) {
   cell.border = { top:{style:'thin'}, left:{style:'thin'}, bottom:{style:'thin'}, right:{style:'thin'} };
   cell.font = { bold: true, size: 10 };
   cell.alignment = { horizontal: 'center', vertical: 'middle' };
+}
+
+// -------- Ampelbewertung ----------
+function calculateAmpelStatus(ws, row, webColumns) {
+  // Prüfe die relevanten Web-Spalten: G, Q, X, AA, AC, AE
+  const relevantColumns = ['G', 'Q', 'X', 'AA', 'AC', 'AE'];
+  
+  for (const col of relevantColumns) {
+    const cell = ws.getCell(`${col}${row}`);
+    if (cell.fill && cell.fill.fgColor && cell.fill.fgColor.argb === 'FFFDEAEA') {
+      // Wenn mindestens eine Spalte rot markiert ist → Ampel rot
+      return 'ampelRed';
+    }
+  }
+  
+  // Wenn keine rote Markierung gefunden → Ampel grün
+  return 'ampelGreen';
+}
+
+function addAmpelColumn(ws) {
+  // Header für Ampelbewertung-Spalte hinzufügen
+  ws.getCell('A3').value = 'Ampelbewertung';
+  ws.getCell('A4').value = 'Status';
+  
+  // Formatierung für Header
+  ws.getCell('A3').font = { bold: true };
+  ws.getCell('A3').alignment = { horizontal: 'center', vertical: 'middle' };
+  ws.getCell('A4').font = { bold: true };
+  ws.getCell('A4').alignment = { horizontal: 'center', vertical: 'middle' };
+  fillColor(ws, 'A4', 'dbBlue');
 }
 
 // -------- Vergleichslogik ----------
@@ -293,6 +325,9 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
       // 3.6 NEU: Header in Zeile 2 und 3 pro Paar zusammenfassen (C2:D2, C3:D3, F2:G2, F3:G3, ...)
       mergePairHeaders(ws, structure.pairs);
 
+      // 3.6.5 Ampelbewertung-Spalte hinzufügen
+      addAmpelColumn(ws);
+
       // 3.7 Web-Daten eintragen / vergleichen
       const prodRows = rowsPerSheet.get(ws) || [];
       for (const originalRow of prodRows) {
@@ -385,6 +420,10 @@ app.post('/api/process-excel', upload.single('file'), async (req, res) => {
             fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
           }
         }
+        
+        // 3.8 Ampelbewertung für die aktuelle Zeile berechnen
+        const ampelColor = calculateAmpelStatus(ws, currentRow);
+        fillColor(ws, `A${currentRow}`, ampelColor);
       }
     }
 
@@ -685,6 +724,9 @@ app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) =
       // 4.6 Header in Zeile 2 und 3 pro Paar zusammenfassen
       mergePairHeaders(ws, structure.pairs);
 
+      // 4.6.5 Ampelbewertung-Spalte hinzufügen
+      addAmpelColumn(ws);
+
       // 4.7 Web-Daten eintragen / vergleichen
       const siemensRows = siemensRowsPerSheet.get(wb.worksheets.find(w => w.name === ws.name)) || [];
       for (let i = 0; i < siemensRows.length; i++) {
@@ -777,6 +819,10 @@ app.post('/api/process-excel-siemens', upload.single('file'), async (req, res) =
             fillColor(ws, `${pair.webCol}${currentRow}`, 'orange');
           }
         }
+        
+        // 4.8 Ampelbewertung für die aktuelle Zeile berechnen
+        const ampelColor = calculateAmpelStatus(ws, currentRow);
+        fillColor(ws, `A${currentRow}`, ampelColor);
       }
     }
 
