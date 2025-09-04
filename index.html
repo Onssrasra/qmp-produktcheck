@@ -171,6 +171,23 @@
       font-size: 14px;
     }
 
+    .step-icon {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+      transition: all 0.3s ease;
+    }
+
+    .section-icon {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      margin-right: 8px;
+      vertical-align: middle;
+      filter: hue-rotate(0deg) saturate(1.2);
+    }
+
     .step.active .step-number {
       background: #911e16;
     }
@@ -554,16 +571,22 @@
       <!-- Pipeline Steps -->
       <div class="pipeline-steps">
         <div class="step active" id="step-1">
-          <div class="step-number">📁</div>
+          <div class="step-number">
+            <img src="/Images/file-icon.png" alt="Datei" class="step-icon">
+          </div>
           <div class="step-title">Datei Upload</div>
         </div>
         <div class="step" id="step-2">
-          <div class="step-number">✅</div>
+          <div class="step-number">
+            <img src="/Images/quality-icon.png" alt="Qualitätsprüfung" class="step-icon">
+          </div>
           <div class="step-title">Qualitätsprüfung</div>
           <div class="step-desc">alle Produkte</div>
         </div>
         <div class="step" id="step-3">
-          <div class="step-number">🔍</div>
+          <div class="step-number">
+            <img src="/Images/search-icon.png" alt="Web-Suche" class="step-icon">
+          </div>
           <div class="step-title">Web-Suche</div>
           <div class="step-desc">nur Siemens Produkte</div>
         </div>
@@ -571,10 +594,12 @@
 
       <!-- Step 1: Upload -->
       <div class="action-section" id="upload-section">
-        <h3>📁 Datei Upload</h3>
+        <h3><img src="/Images/file-icon.png" alt="📁" class="section-icon"> Datei Upload</h3>
         <center>
           <div id="dropzone" class="dropzone">
-            <div class="dropzone-icon">📁</div>
+            <div class="dropzone-icon">
+              <img src="/Images/file-icon.png" alt="📁" style="width: 48px; height: 48px; filter: opacity(0.7);">
+            </div>
             <p id="dzText" class="dropzone-text">
               <strong>Datei hier ablegen</strong><br>
               oder klicken zum Auswählen
@@ -587,7 +612,7 @@
 
       <!-- Step 2: Quality Check -->
       <div class="action-section disabled" id="quality-section">
-        <h3>✅ Vollständigkeit & Plausibilität prüfen</h3>
+        <h3><img src="/Images/quality-icon.png" alt="✅" class="section-icon"> Vollständigkeit & Plausibilität prüfen</h3>
         <div class="action-buttons">
           <button id="qualityCheckBtn" disabled>Qualitätsprüfung starten</button>
           <button id="downloadQualityBtn" class="secondary" disabled>Excel herunterladen</button>
@@ -607,7 +632,7 @@
 
       <!-- Step 3: Web Search -->
       <div class="action-section" id="web-search-section">
-        <h3>🔍 Web-Suche (nur für Siemens Produkte)</h3>
+        <h3><img src="/Images/search-icon.png" alt="🔍" class="section-icon"> Web-Suche (nur für Siemens Produkte)</h3>
         <div class="action-buttons">
           <button id="webSearchBtn" disabled>Web-Suche starten</button>
           <button id="downloadWebBtn" class="secondary" disabled>Excel herunterladen</button>
