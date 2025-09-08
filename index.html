@@ -349,6 +349,15 @@
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
+      background: #911e16;
+      color: var(--white);
+      border-color: #911e16;
+    }
+    
+    button.secondary:disabled {
+      background: var(--white);
+      color: #911e16;
+      border-color: #911e16;
     }
 
     /* Charts Container */
@@ -406,6 +415,7 @@
       width: 100%;
       max-width: 320px;
       height: 400px; /* Feste Höhe für alle Charts */
+      position: relative;
     }
 
     .chart-title {
@@ -429,6 +439,20 @@
       font-size: 24px;
       color: var(--grey-4);
       margin: 10px 0;
+    }
+    
+    .chart-flow-arrow {
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: #911e16;
+      z-index: 10;
+      background: var(--white);
+      padding: 5px;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     /* Legend */
@@ -692,17 +716,18 @@
             <!-- Step 1: Product Analysis -->
             <div class="web-chart-group">
               <div class="chart-title">Schritt 1: Produktanalyse</div>
-              <div class="chart-subtitle">Siemens Produkte extrahieren</div>
+              <div class="chart-subtitle">Gesamtdatensätze</div>
               <div class="chart-wrapper">
                 <canvas id="productsChart"></canvas>
               </div>
               <div class="chart-legend" id="step1Legend"></div>
+              <div class="chart-flow-arrow">→</div>
             </div>
 
             <!-- Step 2: Web Search -->
             <div class="web-chart-group">
               <div class="chart-title">Schritt 2: Websuche</div>
-              <div class="chart-subtitle" id="step2Subtitle">Lade Daten...</div>
+              <div class="chart-subtitle" id="step2Subtitle">Gesamtsuchvorgänge</div>
               <div class="chart-wrapper">
                 <canvas id="searchChart"></canvas>
               </div>
@@ -712,7 +737,7 @@
             <!-- Step 3: Comparison -->
             <div class="web-chart-group">
               <div class="chart-title">Schritt 3: Vergleich</div>
-              <div class="chart-subtitle">Gefundene Web-Wert vs. DB-Wert</div>
+              <div class="chart-subtitle">Gefundene Webwerte</div>
               <div class="chart-wrapper">
                 <canvas id="matchChart"></canvas>
               </div>
@@ -722,7 +747,7 @@
             <!-- Step 4: Ampelbewertung -->
             <div class="web-chart-group">
               <div class="chart-title">Schritt 4: Ampelbewertung</div>
-              <div class="chart-subtitle">Siemens-Produkte nach Qualitätsstatus</div>
+              <div class="chart-subtitle">Siemens-Produkte nach Datenaktualität</div>
               <div class="chart-wrapper">
                 <canvas id="ampelChart"></canvas>
               </div>
@@ -823,7 +848,8 @@
       const steps = [step1, step2, step3];
       steps.forEach((step, i) => {
         step.classList.remove('active', 'completed');
-        if (i + 1 < stepNum || (i + 1 === stepNum && status === 'completed')) {
+        // Nur der spezifische Step wird grün, wenn er abgeschlossen ist
+        if (i + 1 === stepNum && status === 'completed') {
           step.classList.add('completed');
         } else if (i + 1 === stepNum && status === 'active') {
           step.classList.add('active');
@@ -918,7 +944,10 @@
           <span>Unvollständig/unplausibel: ${incomplete} (${incompletePercentage}%)</span>
         </div>
         <div class="legend-item">
-          <strong>Gesamt: ${total} Datensätze</strong>
+          <strong>Gesamt: ${total} Datensätze*</strong>
+        </div>
+        <div class="legend-item" style="font-size: 10px; color: var(--grey-4); margin-top: 5px;">
+          <em>*Datensatz = Materialnummer</em>
         </div>
       `;
     }
@@ -1423,8 +1452,8 @@
         type: 'pie',
         data: {
           labels: [
-            `Qualität OK (${greenPercentage}%)`,
-            `Qualität fehlerhaft (${redPercentage}%)`
+            `Datenaktualität OK (${greenPercentage}%)`,
+            `Datenaktualität stimmt nicht (${redPercentage}%)`
           ],
           datasets: [{
             data: [greenProducts, redProducts],
@@ -1465,11 +1494,11 @@
       legendContainer.innerHTML = `
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(0, 242, 0, 0.8);"></div>
-          <span>Qualität OK: ${greenProducts} (${greenPercentage}%)</span>
+          <span>Datenaktualität OK: ${greenProducts} (${greenPercentage}%)</span>
         </div>
         <div class="legend-item">
           <div class="legend-color" style="background-color: rgba(255, 0, 0, 0.8);"></div>
-          <span>Qualität fehlerhaft: ${redProducts} (${redPercentage}%)</span>
+          <span>Datenaktualität stimmt nicht: ${redProducts} (${redPercentage}%)</span>
         </div>
       `;
     }
