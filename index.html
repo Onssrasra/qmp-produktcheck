@@ -401,7 +401,7 @@
     .web-charts {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
+      gap: 40px;
       justify-items: center;
       max-width: 1400px;
       margin: 0 auto;
@@ -413,8 +413,8 @@
       align-items: center;
       justify-content: flex-start;
       width: 100%;
-      max-width: 320px;
-      height: 400px; /* Feste Höhe für alle Charts */
+      max-width: 280px;
+      height: 380px; /* Verkleinerte Höhe für mehr Abstand */
       position: relative;
     }
 
@@ -443,16 +443,13 @@
     
     .chart-flow-arrow {
       position: absolute;
-      right: -20px;
+      right: -30px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 20px;
-      color: #911e16;
+      font-size: 24px;
+      color: var(--black);
+      font-weight: bold;
       z-index: 10;
-      background: var(--white);
-      padding: 5px;
-      border-radius: 50%;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     /* Legend */
@@ -847,13 +844,16 @@
     function updateStep(stepNum, status) {
       const steps = [step1, step2, step3];
       steps.forEach((step, i) => {
-        step.classList.remove('active', 'completed');
+        // Entferne nur 'active', aber behalte 'completed' wenn bereits vorhanden
+        step.classList.remove('active');
+        
         // Nur der spezifische Step wird grün, wenn er abgeschlossen ist
         if (i + 1 === stepNum && status === 'completed') {
           step.classList.add('completed');
         } else if (i + 1 === stepNum && status === 'active') {
           step.classList.add('active');
         }
+        // Wenn bereits 'completed', bleibt es erhalten
       });
     }
 
@@ -944,9 +944,9 @@
           <span>Unvollständig/unplausibel: ${incomplete} (${incompletePercentage}%)</span>
         </div>
         <div class="legend-item">
-          <strong>Gesamt: ${total} Datensätze*</strong>
+          <strong>Gesamt: ${total} Datensätze</strong>
         </div>
-        <div class="legend-item" style="font-size: 10px; color: var(--grey-4); margin-top: 5px;">
+        <div class="legend-item" style="font-size: 10px; color: var(--grey-4); text-align: right; margin-top: 5px;">
           <em>*Datensatz = Materialnummer</em>
         </div>
       `;
@@ -987,11 +987,11 @@
       const missingPercentage = (100 - foundPercentage);
       legendContainer.innerHTML = `
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(74, 222, 128, 0.8);"></div>
+          <div class="legend-color" style="background-color: rgba(76, 117, 0, 0.8);"></div>
           <span>Gefundene Web-Werte: ${foundWebValues} (${foundPercentage}%)</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(249, 115, 22, 0.8);"></div>
+          <div class="legend-color" style="background-color: rgba(229, 147, 24, 0.8);"></div>
           <span>Fehlende Web-Werte: ${missingWebValues} (${missingPercentage}%)</span>
         </div>
       `;
@@ -1088,12 +1088,12 @@
           datasets: [{
             data: [foundWebValues, missingWebValues],
             backgroundColor: [
-              'rgba(74, 222, 128, 0.8)',   // Helleres Grün für gefundene Web-Werte
-              'rgba(249, 115, 22, 0.8)'    // Orange für fehlende Web-Werte
+              'rgba(76, 117, 0, 0.8)',    // Gefundene Web-Werte (#4C7500)
+              'rgba(229, 147, 24, 0.8)'   // Fehlende Web-Werte (#E59318)
             ],
             borderColor: [
-              'rgba(74, 222, 128, 1)',
-              'rgba(249, 115, 22, 1)'
+              'rgba(76, 117, 0, 1)',
+              'rgba(229, 147, 24, 1)'
             ],
             borderWidth: 2
           }]
@@ -1452,18 +1452,18 @@
         type: 'pie',
         data: {
           labels: [
-            `Datenaktualität OK (${greenPercentage}%)`,
-            `Datenaktualität stimmt nicht (${redPercentage}%)`
+            `Datenaktualität passt (${greenPercentage}%)`,
+            `Datenaktualität fehlerhaft (${redPercentage}%)`
           ],
           datasets: [{
             data: [greenProducts, redProducts],
             backgroundColor: [
-              'rgba(0, 242, 109, 0.8)',   // Ampel Grün
-              'rgba(255, 0, 0, 0.8)'      // Ampel Rot
+              'rgba(35, 111, 7, 0.8)',    // Datenaktualität passt (#236F07)
+              'rgba(229, 21, 16, 0.8)'    // Datenaktualität fehlerhaft (#E51510)
             ],
             borderColor: [
-              'rgba(0, 242, 109, 1)',
-              'rgba(255, 0, 0, 1)'
+              'rgba(35, 111, 7, 1)',      // Dunklerer Rand
+              'rgba(229, 21, 16, 1)'       // Dunklerer Rand
             ],
             borderWidth: 2
           }]
@@ -1493,12 +1493,12 @@
       
       legendContainer.innerHTML = `
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(0, 242, 0, 0.8);"></div>
-          <span>Datenaktualität OK: ${greenProducts} (${greenPercentage}%)</span>
+          <div class="legend-color" style="background-color: rgba(35, 111, 7, 0.8);"></div>
+          <span>Datenaktualität passt: ${greenProducts} (${greenPercentage}%)</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(255, 0, 0, 0.8);"></div>
-          <span>Datenaktualität stimmt nicht: ${redProducts} (${redPercentage}%)</span>
+          <div class="legend-color" style="background-color: rgba(229, 21, 16, 0.8);"></div>
+          <span>Datenaktualität fehlerhaft: ${redProducts} (${redPercentage}%)</span>
         </div>
       `;
     }
