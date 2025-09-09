@@ -415,7 +415,7 @@
       justify-content: flex-start;
       width: 100%;
       max-width: 260px;
-      min-height: 350px;
+      height: 380px; /* Fixed height for all charts */
       position: relative;
       background: var(--white);
       border: 1px solid var(--grey-2);
@@ -449,7 +449,7 @@
     
     .chart-flow-arrow {
       position: absolute;
-      right: -25px;
+      right: -22px; /* Position exactly in the middle of 20px gap (gap/2 + arrow_width/2) */
       top: 50%;
       transform: translateY(-50%);
       font-size: 28px;
@@ -457,6 +457,8 @@
       font-weight: 900;
       z-index: 10;
       text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      width: 24px;
+      text-align: center;
     }
 
     /* Legend */
@@ -535,6 +537,7 @@
       
       .web-chart-group {
         max-width: 300px;
+        height: 380px; /* Maintain fixed height */
       }
       
       .chart-flow-arrow {
@@ -567,6 +570,7 @@
       .web-chart-group {
         max-width: 100%;
         padding: 10px;
+        height: 350px; /* Slightly smaller height for mobile */
       }
       
       .chart-flow-arrow {
@@ -1072,7 +1076,8 @@
               'rgba(59, 130, 246, 1)',
               'rgba(147, 197, 253, 0.8)'
             ],
-            borderWidth: 2
+            borderWidth: 2,
+            offset: [20, 0] // Explode first segment (Siemens-Produkte)
           }]
         },
         options: {
@@ -1129,7 +1134,8 @@
               'rgba(76, 117, 0, 1)',
               'rgba(229, 147, 24, 1)'
             ],
-            borderWidth: 2
+            borderWidth: 2,
+            offset: [15, 0] // Explode first segment (Gefundene Web-Werte)
           }]
         },
         options: {
