@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DB Produktdaten — Qualitätsmonitor</title>
+  <title>DB Produktdaten – Qualitätsmonitor</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -96,9 +96,8 @@
       width: 100%;
       height: 3px;
       background: var(--db-red);
-      border-radius: 2px
+      border-radius: 2px;
       margin: 25px 0;
-      
     }
    
     /* SVG Icons */
@@ -300,7 +299,7 @@
       flex-wrap: wrap;
     }
 
-    /* Buttons */
+    /* Enhanced Button Styles - Unified Look */
     button {
       min-width: 160px;
       padding: 12px 20px;
@@ -316,13 +315,24 @@
       overflow: hidden;
     }
     
+    /* Unified disabled state for all buttons */
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--grey-3);
+      border-color: var(--grey-3);
+      color: var(--white);
+      transform: none;
+      box-shadow: none;
+    }
+    
     button:hover:not(:disabled) {
       background: #7a1914;
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(145, 30, 22, 0.3);
     }
     
-    button.secondary {
+    button.secondary:not(:disabled) {
       background: var(--white);
       color: #911e16;
       border-color: #911e16;
@@ -333,7 +343,7 @@
       box-shadow: 0 8px 24px rgba(145, 30, 22, 0.15);
     }
 
-    button.success {
+    button.success:not(:disabled) {
       background: var(--green);
       border-color: var(--green);
       color: var(--white);
@@ -343,22 +353,6 @@
       background: #16a34a;
       border-color: #16a34a;
     }
-    
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-      background: #911e16;
-      color: var(--white);
-      border-color: #911e16;
-    }
-    
-    button.secondary:disabled {
-      background: var(--white);
-      color: #911e16;
-      border-color: #911e16;
-    }
 
     /* Charts Container */
     .charts-container {
@@ -367,6 +361,7 @@
       background: var(--grey-1);
       border-radius: 12px;
       border: 1px solid var(--grey-2);
+      position: relative;
     }
 
     .charts-container.hidden {
@@ -391,20 +386,21 @@
 
     .chart-wrapper {
       position: relative;
-      width: 250px;
-      height: 250px;
+      width: 220px;
+      height: 220px;
       margin: 10px 5px;
-      flex-shrink: 0; /* Verhindert Schrumpfung */
+      flex-shrink: 0;
     }
 
-    /* Web Search Charts */
+    /* Enhanced Web Search Charts */
     .web-charts {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
       justify-items: center;
       max-width: 1400px;
       margin: 0 auto;
+      position: relative;
     }
 
     .web-chart-group {
@@ -413,8 +409,9 @@
       align-items: center;
       justify-content: flex-start;
       width: 100%;
-      max-width: 280px;
-      height: 380px; /* Verkleinerte Höhe für mehr Abstand */
+      max-width: 300px;
+      height: auto;
+      min-height: 400px;
       position: relative;
     }
 
@@ -425,6 +422,13 @@
       margin-bottom: 10px;
       text-align: center;
       height: 20px;
+      position: relative;
+    }
+
+    /* Asterisk styling for Step 1 */
+    .chart-title .asterisk {
+      color: var(--db-red);
+      font-weight: bold;
     }
 
     .chart-subtitle {
@@ -435,21 +439,21 @@
       min-height: 40px;
     }
 
+    /* Arrow between charts */
     .flow-arrow {
-      font-size: 24px;
-      color: var(--grey-4);
-      margin: 10px 0;
-    }
-    
-    .chart-flow-arrow {
       position: absolute;
-      right: -30px;
       top: 50%;
+      right: -25px;
       transform: translateY(-50%);
-      font-size: 24px;
-      color: var(--black);
+      font-size: 28px;
       font-weight: bold;
+      color: var(--black);
       z-index: 10;
+      pointer-events: none;
+    }
+
+    .web-chart-group:last-child .flow-arrow {
+      display: none;
     }
 
     /* Legend */
@@ -484,6 +488,30 @@
       width: 12px;
       height: 12px;
       border-radius: 2px;
+    }
+
+    /* Summary rows under charts */
+    .chart-summary {
+      margin-top: 15px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+      border: 1px solid var(--grey-2);
+    }
+
+    /* Footnote styling */
+    .footnote {
+      position: absolute;
+      bottom: 15px;
+      right: 20px;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--grey-4);
+      font-weight: 500;
     }
 
     /* Status & Progress */
@@ -530,14 +558,37 @@
       .pipeline-steps::before { display: none; }
       
       .chart-wrapper {
-        width: 250px;
-        height: 250px;
+        width: 200px;
+        height: 200px;
         margin: 0 10px;
       }
       
       .web-charts {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
         gap: 15px;
+      }
+
+      .flow-arrow {
+        position: static;
+        transform: rotate(90deg);
+        margin: 10px 0;
+      }
+
+      .footnote {
+        position: static;
+        text-align: center;
+        margin-top: 15px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .chart-wrapper {
+        width: 180px;
+        height: 180px;
+      }
+      
+      .flow-arrow {
+        font-size: 24px;
       }
     }
 
@@ -549,13 +600,8 @@
       .dropzone { min-height: 80px; padding: 15px; }
       
       .chart-wrapper {
-        width: 200px;
-        height: 200px;
-      }
-      
-      .web-charts {
-        grid-template-columns: 1fr;
-        gap: 20px;
+        width: 180px;
+        height: 180px;
       }
       
       /* Header responsive */
@@ -636,6 +682,16 @@
           <div class="step-title">Web-Suche</div>
           <div class="step-desc">nur Siemens Produkte</div>
         </div>
+        <div class="step" id="step-4">
+          <div class="step-number">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle-icon lucide-check-circle step-icon">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22,4 12,14.01 9,11.01"/>
+            </svg>
+          </div>
+          <div class="step-title">Abschluss</div>
+          <div class="step-desc">Ergebnis</div>
+        </div>
       </div>
 
       <!-- Step 1: Upload -->
@@ -666,7 +722,7 @@
       </div>
 
       <!-- Step 2: Quality Check -->
-      <div class="action-section disabled" id="quality-section">
+      <div class="action-section" id="quality-section">
         <h3>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-check-icon lucide-clipboard-check section-icon">
             <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
@@ -712,796 +768,40 @@
           <div class="web-charts">
             <!-- Step 1: Product Analysis -->
             <div class="web-chart-group">
-              <div class="chart-title">Schritt 1: Produktanalyse</div>
-              <div class="chart-subtitle">Gesamtdatensätze</div>
+              <div class="chart-title">Schritt 1: Gesamt <span id="totalDatasets">X</span> Datensätze<span class="asterisk">*</span></div>
+              <div class="chart-subtitle">Siemens Produkte extrahieren</div>
               <div class="chart-wrapper">
                 <canvas id="productsChart"></canvas>
               </div>
               <div class="chart-legend" id="step1Legend"></div>
-              <div class="chart-flow-arrow">→</div>
+              <div class="chart-summary" id="step1Summary">Gesamtdatensatz / Gesamtwert</div>
+              <div class="flow-arrow">→</div>
             </div>
 
             <!-- Step 2: Web Search -->
             <div class="web-chart-group">
               <div class="chart-title">Schritt 2: Websuche</div>
-              <div class="chart-subtitle" id="step2Subtitle">Gesamtsuchvorgänge</div>
+              <div class="chart-subtitle" id="step2Subtitle">Lade Daten...</div>
               <div class="chart-wrapper">
                 <canvas id="searchChart"></canvas>
               </div>
               <div class="chart-legend" id="step2Legend"></div>
+              <div class="chart-summary" id="step2Summary">Gesamtsuchvorgänge / Webwerte</div>
+              <div class="flow-arrow">→</div>
             </div>
 
             <!-- Step 3: Comparison -->
             <div class="web-chart-group">
               <div class="chart-title">Schritt 3: Vergleich</div>
-              <div class="chart-subtitle">Gefundene Webwerte</div>
+              <div class="chart-subtitle">Gefundene Web-Wert vs. DB-Wert</div>
               <div class="chart-wrapper">
                 <canvas id="matchChart"></canvas>
               </div>
               <div class="chart-legend" id="step3Legend"></div>
+              <div class="chart-summary" id="step3Summary">Gefundener Webwert</div>
+              <div class="flow-arrow">→</div>
             </div>
 
             <!-- Step 4: Ampelbewertung -->
             <div class="web-chart-group">
-              <div class="chart-title">Schritt 4: Ampelbewertung</div>
-              <div class="chart-subtitle">Siemens-Produkte nach Datenaktualität</div>
-              <div class="chart-wrapper">
-                <canvas id="ampelChart"></canvas>
-              </div>
-              <div class="chart-legend" id="step4Legend"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="status" id="status"></div>
-      <div class="progress" id="progress"><div></div></div>
-    </div>
-  </div>
-
-  <script>
-    /* ==================== VARIABLEN ==================== */
-    const dropzone = document.getElementById('dropzone');
-    const dzText = document.getElementById('dzText');
-    const fileInput = document.getElementById('fileInput');
-    
-    // Buttons
-    const webSearchBtn = document.getElementById('webSearchBtn');
-    const downloadWebBtn = document.getElementById('downloadWebBtn');
-    const qualityCheckBtn = document.getElementById('qualityCheckBtn');
-    const downloadQualityBtn = document.getElementById('downloadQualityBtn');
-    
-    // UI Elements
-    const statusEl = document.getElementById('status');
-    const progressEl = document.getElementById('progress');
-    const bar = progressEl.firstElementChild;
-    
-    // Sections
-    const uploadSection = document.getElementById('upload-section');
-    const webSearchSection = document.getElementById('web-search-section');
-    const qualitySection = document.getElementById('quality-section');
-    
-    // Charts
-    const qualityCharts = document.getElementById('qualityCharts');
-    const webCharts = document.getElementById('webCharts');
-    
-    // Steps
-    const step1 = document.getElementById('step-1');
-    const step2 = document.getElementById('step-2');
-    const step3 = document.getElementById('step-3');
-
-    let selectedFile = null;
-    let webProcessedBlob = null;
-    let qualityBlob = null;
-    let qualityStats = null; // Store quality stats for web search
-
-    // Chart instances
-    let qualityChart = null;
-    let productsChart = null;
-    let searchChart = null;
-    let matchChart = null;
-    let ampelChart = null;
-
-    /* ==================== HELPER FUNCTIONS ==================== */
-    
-    function resetAllStates() {
-      // Reset all global variables
-      qualityBlob = null;
-      webProcessedBlob = null;
-      qualityStats = null;
-      
-      // Reset all charts
-      if (productsChart) { productsChart.destroy(); productsChart = null; }
-      if (searchChart) { searchChart.destroy(); searchChart = null; }
-      if (matchChart) { matchChart.destroy(); matchChart = null; }
-      if (ampelChart) { ampelChart.destroy(); ampelChart = null; }
-      
-      // Reset all download buttons
-      downloadQualityBtn.disabled = true;
-      downloadWebBtn.disabled = true;
-      
-      // Hide all charts
-      qualityCharts.classList.add('hidden');
-      webCharts.classList.add('hidden');
-      
-      // Clear all legends
-      document.getElementById('qualityLegend').innerHTML = '';
-      document.getElementById('step1Legend').innerHTML = '';
-      document.getElementById('step2Legend').innerHTML = '';
-      document.getElementById('step3Legend').innerHTML = '';
-      document.getElementById('step4Legend').innerHTML = '';
-      
-      // Reset pipeline steps
-      updateStep(1, 'enabled');
-      updateStep(2, 'pending');
-      updateStep(3, 'pending');
-      updateStep(4, 'pending');
-      
-      // Reset status
-      statusEl.textContent = 'Bereit für neue Datei';
-    }
-    
-    function updateStep(stepNum, status) {
-      const steps = [step1, step2, step3];
-      steps.forEach((step, i) => {
-        // Entferne nur 'active', aber behalte 'completed' wenn bereits vorhanden
-        step.classList.remove('active');
-        
-        // Nur der spezifische Step wird grün, wenn er abgeschlossen ist
-        if (i + 1 === stepNum && status === 'completed') {
-          step.classList.add('completed');
-        } else if (i + 1 === stepNum && status === 'active') {
-          step.classList.add('active');
-        }
-        // Wenn bereits 'completed', bleibt es erhalten
-      });
-    }
-
-    function enableSection(section, enable = true) {
-      if (enable) {
-        section.classList.remove('disabled');
-      } else {
-        section.classList.add('disabled');
-      }
-    }
-
-    function showProgress(show = true) {
-      progressEl.style.display = show ? 'block' : 'none';
-      if (!show) bar.style.width = '0%';
-    }
-
-    function updateProgress(percent) {
-      bar.style.width = percent + '%';
-    }
-
-    /* ==================== CHART FUNCTIONS ==================== */
-    function createQualityChart(complete, incomplete, total) {
-      const ctx = document.getElementById('qualityChart').getContext('2d');
-      
-      if (qualityChart) {
-        qualityChart.destroy();
-      }
-
-      const completePercentage = ((complete / total) * 100).toFixed(1);
-      const incompletePercentage = ((incomplete / total) * 100).toFixed(1);
-
-      qualityChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: [
-            `Vollständig & richtig (${completePercentage}%)`,
-            `Unvollständig/unplausibel (${incompletePercentage}%)`
-          ],
-          datasets: [{
-            data: [complete, incomplete],
-            backgroundColor: [
-              'rgba(34, 197, 94, 0.8)',
-              'rgba(194, 0, 21, 0.8)'
-            ],
-            borderColor: [
-              'rgba(34, 197, 94, 1)',
-              'rgba(194, 0, 21, 1)'
-            ],
-            borderWidth: 2,
-            hoverBackgroundColor: [
-              'rgba(34, 197, 94, 0.9)',
-              'rgba(194, 0, 21, 0.9)'
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.parsed} Datensätze`;
-                }
-              }
-            }
-          },
-          elements: {
-            arc: {
-              borderWidth: 2
-            }
-          }
-        }
-      });
-
-      // Create custom legend
-      const legendContainer = document.getElementById('qualityLegend');
-      legendContainer.innerHTML = `
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
-          <span>Vollständig & richtig: ${complete} (${completePercentage}%)</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(194, 0, 21, 0.8);"></div>
-          <span>Unvollständig/unplausibel: ${incomplete} (${incompletePercentage}%)</span>
-        </div>
-        <div class="legend-item">
-          <strong>Gesamt: ${total} Datensätze</strong>
-        </div>
-        <div class="legend-item" style="font-size: 10px; color: var(--grey-4); text-align: right; margin-top: 5px;">
-          <em>*Datensatz = Materialnummer</em>
-        </div>
-      `;
-    }
-
-    function createWebCharts(stats) {
-      createDataOverviewChart(stats.totalDataSets, stats.totalSiemens);
-      createWebSearchChart(stats.searchedValues, stats.foundWebValues, stats.searchedValues - stats.foundWebValues);
-      createComparisonChart(stats.foundWebValues, stats.green, stats.red);
-      createAmpelChart(stats.ampelGreen || 0, stats.ampelRed || 0);
-      
-      // Create individual legends for each chart
-      createStep1Legend(stats.totalDataSets, stats.totalSiemens);
-      createStep2Legend(stats.foundWebValues, stats.searchedValues - stats.foundWebValues, stats.foundWebValuesPercentage);
-      createStep3Legend(stats.green, stats.red, stats.greenPercentage, stats.redPercentage);
-      createStep4Legend(stats.ampelGreen || 0, stats.ampelRed || 0);
-    }
-
-    function createStep1Legend(totalDataSets, totalSiemens) {
-      const legendContainer = document.getElementById('step1Legend');
-      const siemensPercentage = ((totalSiemens / totalDataSets) * 100).toFixed(0);
-      const nonSiemens = totalDataSets - totalSiemens;
-      const nonSiemensPercentage = ((nonSiemens / totalDataSets) * 100).toFixed(0);
-      legendContainer.innerHTML = `
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.8);"></div>
-          <span>Gesamt Siemens-Produkte: ${totalSiemens} (${siemensPercentage}%)</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(147, 197, 253, 0.4);"></div>
-          <span>Produkte anderer Hersteller: ${nonSiemens} (${nonSiemensPercentage}%)</span>
-        </div>
-      `;
-    }
-
-    function createStep2Legend(foundWebValues, missingWebValues, foundPercentage) {
-      const legendContainer = document.getElementById('step2Legend');
-      const missingPercentage = (100 - foundPercentage);
-      legendContainer.innerHTML = `
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(76, 117, 0, 0.8);"></div>
-          <span>Gefundene Web-Werte: ${foundWebValues} (${foundPercentage}%)</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(229, 147, 24, 0.8);"></div>
-          <span>Fehlende Web-Werte: ${missingWebValues} (${missingPercentage}%)</span>
-        </div>
-      `;
-    }
-
-    function createStep3Legend(green, red, greenPercentage, redPercentage) {
-      const legendContainer = document.getElementById('step3Legend');
-      legendContainer.innerHTML = `
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
-          <span>Übereinstimmungen: ${green} (${greenPercentage}%)</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(194, 0, 21, 0.8);"></div>
-          <span>Abweichungen: ${red} (${redPercentage}%)</span>
-        </div>
-      `;
-    }
-
-    function createDataOverviewChart(totalDataSets, totalSiemens) {
-      const ctx = document.getElementById('productsChart').getContext('2d');
-      
-      if (productsChart) {
-        productsChart.destroy();
-      }
-
-      const siemensPercentage = ((totalSiemens / totalDataSets) * 100).toFixed(1);
-      const nonSiemens = totalDataSets - totalSiemens;
-      const nonSiemensPercentage = ((nonSiemens / totalDataSets) * 100).toFixed(1);
-
-      productsChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: [
-            `Gesamt Siemens-Produkte (${siemensPercentage}%)`,
-            `Produkte anderer Hersteller (${nonSiemensPercentage}%)`
-          ],
-          datasets: [{
-            data: [totalSiemens, nonSiemens],
-            backgroundColor: [
-              'rgba(59, 130, 246, 0.8)',  // Blau für Siemens-Produkte
-              'rgba(147, 197, 253, 0.4)'  // Hellblau für andere Produkte
-            ],
-            borderColor: [
-              'rgba(59, 130, 246, 1)',
-              'rgba(147, 197, 253, 0.8)'
-            ],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const label = context.dataIndex === 0 ? 
-                    `Gesamt Siemens-Produkte: ${totalSiemens} (${siemensPercentage}%)` : 
-                    `Produkte anderer Hersteller: ${nonSiemens} (${nonSiemensPercentage}%)`;
-                  return label;
-                }
-              }
-            }
-          },
-        }
-      });
-    }
-
-    function createWebSearchChart(searchedValues, foundWebValues, missingWebValues) {
-      const ctx = document.getElementById('searchChart').getContext('2d');
-      
-      if (searchChart) {
-        searchChart.destroy();
-      }
-
-      // Update subtitle with actual values
-      const productCount = Math.round(searchedValues / 8); // 8 attributes per product
-      const subtitle = document.getElementById('step2Subtitle');
-      subtitle.innerHTML = `${productCount} Produkte × 8 Attribute = ${searchedValues} Suchvorgänge<br>
-        <small style="font-size: 0.8em; color: #666;">Attribute: Materialkurztext, Art.-Nr., Fert./Prüfhinweis, Werkstoff, Gewicht, L×B×H</small>`;
-
-      const foundPercentage = ((foundWebValues / searchedValues) * 100).toFixed(1);
-      const missingPercentage = ((missingWebValues / searchedValues) * 100).toFixed(1);
-
-      searchChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: [
-            `Gefundene Web-Werte (${foundPercentage}%)`,
-            `Fehlende Web-Werte (${missingPercentage}%)`
-          ],
-          datasets: [{
-            data: [foundWebValues, missingWebValues],
-            backgroundColor: [
-              'rgba(76, 117, 0, 0.8)',    // Gefundene Web-Werte (#4C7500)
-              'rgba(229, 147, 24, 0.8)'   // Fehlende Web-Werte (#E59318)
-            ],
-            borderColor: [
-              'rgba(76, 117, 0, 1)',
-              'rgba(229, 147, 24, 1)'
-            ],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.parsed} Werte`;
-                }
-              }
-            }
-          },
-        }
-      });
-    }
-
-    function createComparisonChart(foundWebValues, matches, differences) {
-      const ctx = document.getElementById('matchChart').getContext('2d');
-      
-      if (matchChart) {
-        matchChart.destroy();
-      }
-
-      const matchPercentage = ((matches / foundWebValues) * 100).toFixed(1);
-      const diffPercentage = ((differences / foundWebValues) * 100).toFixed(1);
-
-      matchChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: [
-            `Übereinstimmungen (${matchPercentage}%)`,
-            `Abweichungen (${diffPercentage}%)`
-          ],
-          datasets: [{
-            data: [matches, differences],
-            backgroundColor: [
-              'rgba(34, 197, 94, 0.8)',   // Grün für Übereinstimmungen
-              'rgba(194, 0, 21, 0.8)'     // Rot für Abweichungen (gleich wie Qualitätsprüfung)
-            ],
-            borderColor: [
-              'rgba(34, 197, 94, 1)',
-              'rgba(194, 0, 21, 1)'
-            ],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.parsed} Werte`;
-                }
-              }
-            }
-          },
-        }
-      });
-    }
-
-    function createMatchChart(foundWebValues, matches, differences) {
-      // Für jetzt verwenden wir eine neue Variable für das letzte Chart
-      // Wir brauchen ein 4. Canvas-Element, nutzen aber für jetzt ein existierendes
-      console.log('Match Chart - foundWebValues:', foundWebValues, 'matches:', matches, 'differences:', differences);
-      
-      // Das 4. Chart würde hier implementiert werden, aber wir haben nur 3 Canvas-Elemente
-      // Für die bessere Übersicht fokussieren wir uns auf die ersten 3 Charts
-    }
-
-    /* ==================== DROP ZONE ==================== */
-    dropzone.addEventListener('click', () => fileInput.click());
-
-    dropzone.addEventListener('dragover', e => {
-      e.preventDefault();
-      dropzone.classList.add('dragover');
-    });
-
-    dropzone.addEventListener('dragleave', () => {
-      dropzone.classList.remove('dragover');
-    });
-
-    dropzone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropzone.classList.remove('dragover');
-      if (e.dataTransfer.files?.length) {
-        handleFile(e.dataTransfer.files[0]);
-      }
-    });
-
-    fileInput.addEventListener('change', e => {
-      if (e.target.files?.length) {
-        handleFile(e.target.files[0]);
-      }
-    });
-
-    function handleFile(file) {
-      if (!/\.(xlsx|xls)$/i.test(file.name)) {
-        statusEl.textContent = 'Bitte nur .xlsx oder .xls Dateien!';
-        return;
-      }
-      
-      // Reset all previous states when new file is uploaded
-      resetAllStates();
-      
-      selectedFile = file;
-      dzText.innerHTML = `<strong>${file.name}</strong><br><span class="hint">Datei bereit zur Verarbeitung</span>`;
-      
-      // Enable quality section
-      enableSection(qualitySection, true);
-      qualityCheckBtn.disabled = false;
-      
-      // Enable web search section independently  
-      enableSection(webSearchSection, true);
-      webSearchBtn.disabled = false;
-      
-      // Keep pipeline steps as they are - only step 1 completed
-      updateStep(1, 'completed');
-      
-      statusEl.textContent = 'Datei erfolgreich hochgeladen — Qualitätsprüfung oder Web-Suche starten.';
-    }
-
-    /* ==================== QUALITY CHECK ==================== */
-    qualityCheckBtn.addEventListener('click', async () => {
-      if (!selectedFile) return;
-      
-      qualityBlob = null;
-      
-      statusEl.textContent = 'Qualitätsprüfung läuft — Vollständigkeit und Plausibilität werden geprüft...';
-      showProgress(true);
-      updateProgress(20);
-
-      try {
-        const form = new FormData();
-        form.append('file', selectedFile);
-        
-        const resp = await fetch('/api/check-completeness', { 
-          method: 'POST', 
-          body: form 
-        });
-        
-        if (!resp.ok) {
-          const errorData = await resp.text();
-          throw new Error(`HTTP ${resp.status}: ${errorData}`);
-        }
-
-        updateProgress(70);
-        
-        const buf = await resp.arrayBuffer();
-        qualityBlob = new Blob([buf], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        
-        // Get real statistics from the processed Excel file
-        const statsForm = new FormData();
-        statsForm.append('file', new File([qualityBlob], 'Qualitätsbericht.xlsx'));
-        
-        try {
-          const statsResp = await fetch('/api/quality-stats', {
-            method: 'POST',
-            body: statsForm
-          });
-          
-          if (statsResp.ok) {
-            const stats = await statsResp.json();
-            qualityStats = stats; // Store for web search
-            
-            // Create quality chart
-            createQualityChart(stats.complete, stats.incomplete, stats.total);
-            qualityCharts.classList.remove('hidden');
-            
-            // Debug info in console
-            if (stats.debug) {
-              console.log('Quality debug info:', stats.debug);
-              console.log('Found colors:', stats.debug.foundColors);
-            }
-          } else {
-            // Fallback - create chart with placeholder data
-            createQualityChart(0, 0, 0);
-            qualityCharts.classList.remove('hidden');
-          }
-        } catch (statsErr) {
-          console.error('Error getting quality stats:', statsErr);
-          // Fallback - create chart with placeholder data
-          createQualityChart(0, 0, 0);
-          qualityCharts.classList.remove('hidden');
-        }
-        
-        updateProgress(100);
-        statusEl.textContent = 'Qualitätsprüfung abgeschlossen — Qualitätsbericht verfügbar.';
-        
-        downloadQualityBtn.disabled = false;
-        
-        // Update pipeline steps - only mark quality check as completed
-        updateStep(2, 'completed');
-        
-      } catch (err) {
-        statusEl.textContent = 'Fehler bei Qualitätsprüfung: ' + err.message;
-        console.error(err);
-      } finally {
-        setTimeout(() => showProgress(false), 1200);
-      }
-    });
-
-    /* ==================== WEB SEARCH ==================== */
-    webSearchBtn.addEventListener('click', async () => {
-      if (!selectedFile) return;
-      
-      webProcessedBlob = null;
-      downloadWebBtn.disabled = true;
-      webCharts.classList.add('hidden');
-      
-      statusEl.textContent = 'Web-Suche läuft — Siemens-Produkte werden gesucht...';
-      showProgress(true);
-      updateProgress(10);
-
-      try {
-        const form = new FormData();
-        form.append('file', selectedFile);
-        
-        const resp = await fetch('/api/process-excel-siemens', { 
-          method: 'POST', 
-          body: form 
-        });
-        
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
-        updateProgress(50);
-        
-        const buf = await resp.arrayBuffer();
-        webProcessedBlob = new Blob([buf], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        
-        // Get real statistics from the processed Excel file
-        const statsForm = new FormData();
-        statsForm.append('file', new File([webProcessedBlob], 'Web_Vergleich_Ergebnis.xlsx'));
-        // Include total datasets from quality check if available
-        if (qualityStats && qualityStats.total) {
-          statsForm.append('totalFromQuality', qualityStats.total);
-        }
-        
-        try {
-          const statsResp = await fetch('/api/web-search-stats', {
-            method: 'POST',
-            body: statsForm
-          });
-          
-          if (statsResp.ok) {
-            const stats = await statsResp.json();
-            
-            // Create web search charts
-            createWebCharts(stats);
-            webCharts.classList.remove('hidden');
-            
-            // Debug info in console
-            if (stats.debug) {
-              console.log('Debug info:', stats.debug);
-              console.log('Found colors:', stats.debug.foundColors);
-            }
-          } else {
-            // Fallback - create charts with placeholder data
-            const fallbackStats = {
-              totalDataSets: 0,
-              totalSiemens: 0,
-              searchedValues: 0,
-              foundWebValues: 0,
-              foundWebValuesPercentage: '0',
-              green: 0,
-              red: 0,
-              greenPercentage: '0',
-              redPercentage: '0',
-              ampelGreen: 0,
-              ampelRed: 0
-            };
-            createWebCharts(fallbackStats);
-            webCharts.classList.remove('hidden');
-          }
-        } catch (statsErr) {
-          console.error('Error getting stats:', statsErr);
-          // Fallback - create charts with placeholder data
-          const fallbackStats = {
-            totalDataSets: 0,
-            totalSiemens: 0,
-            searchedValues: 0,
-            foundWebValues: 0,
-            foundWebValuesPercentage: '0',
-            green: 0,
-            red: 0,
-            greenPercentage: '0',
-            redPercentage: '0',
-            ampelGreen: 0,
-            ampelRed: 0
-          };
-          createWebCharts(fallbackStats);
-          webCharts.classList.remove('hidden');
-        }
-        
-        updateProgress(100);
-        statusEl.textContent = 'Web-Suche abgeschlossen — Ergebnis herunterladen oder zur Qualitätsprüfung.';
-        
-        downloadWebBtn.disabled = false;
-        
-        // Update pipeline steps
-        updateStep(3, 'completed');
-        
-      } catch (err) {
-        statusEl.textContent = 'Fehler bei Web-Suche: ' + err.message;
-        console.error(err);
-      } finally {
-        setTimeout(() => showProgress(false), 1200);
-      }
-    });
-
-    /* ==================== DOWNLOADS ==================== */
-    downloadWebBtn.addEventListener('click', () => {
-      if (!webProcessedBlob) return;
-      downloadBlob(webProcessedBlob, 'Web_Vergleich_Siemens.xlsx');
-    });
-
-    downloadQualityBtn.addEventListener('click', () => {
-      if (!qualityBlob) return;
-      downloadBlob(qualityBlob, 'Qualitätsbericht.xlsx');
-    });
-
-    function downloadBlob(blob, filename) {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.append(a);
-      a.click();
-      URL.revokeObjectURL(a.href);
-      a.remove();
-    }
-
-    function createAmpelChart(greenProducts, redProducts) {
-      const ctx = document.getElementById('ampelChart').getContext('2d');
-      
-      if (ampelChart) {
-        ampelChart.destroy();
-      }
-
-      const totalProducts = greenProducts + redProducts;
-      const greenPercentage = ((greenProducts / totalProducts) * 100).toFixed(1);
-      const redPercentage = ((redProducts / totalProducts) * 100).toFixed(1);
-
-      ampelChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: [
-            `Datenaktualität passt (${greenPercentage}%)`,
-            `Datenaktualität fehlerhaft (${redPercentage}%)`
-          ],
-          datasets: [{
-            data: [greenProducts, redProducts],
-            backgroundColor: [
-              'rgba(35, 111, 7, 0.8)',    // Datenaktualität passt (#236F07)
-              'rgba(229, 21, 16, 0.8)'    // Datenaktualität fehlerhaft (#E51510)
-            ],
-            borderColor: [
-              'rgba(35, 111, 7, 1)',      // Dunklerer Rand
-              'rgba(229, 21, 16, 1)'       // Dunklerer Rand
-            ],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.parsed} Produkte`;
-                }
-              }
-            }
-          },
-        }
-      });
-    }
-
-    function createStep4Legend(greenProducts, redProducts) {
-      const legendContainer = document.getElementById('step4Legend');
-      const totalProducts = greenProducts + redProducts;
-      const greenPercentage = ((greenProducts / totalProducts) * 100).toFixed(1);
-      const redPercentage = ((redProducts / totalProducts) * 100).toFixed(1);
-      
-      legendContainer.innerHTML = `
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(35, 111, 7, 0.8);"></div>
-          <span>Datenaktualität passt: ${greenProducts} (${greenPercentage}%)</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(229, 21, 16, 0.8);"></div>
-          <span>Datenaktualität fehlerhaft: ${redProducts} (${redPercentage}%)</span>
-        </div>
-      `;
-    }
-  </script>
-</body>
-</html>
+              <div class="chart-title">Schritt 4: Siemens-Produkte nach Datenaktual
