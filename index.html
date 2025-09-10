@@ -391,9 +391,9 @@
 
     .chart-wrapper {
       position: relative;
-      width: 200px;
-      height: 200px;
-      margin: 10px 5px;
+      width: 220px;
+      height: 220px;
+      margin: 15px 10px; /* Mehr Margin für explodierte Segmente */
       flex-shrink: 0; /* Verhindert Schrumpfung */
     }
 
@@ -414,13 +414,13 @@
       align-items: center;
       justify-content: flex-start;
       width: 100%;
-      max-width: 260px;
-      height: 380px; /* Fixed height for all charts */
+      max-width: 280px;
+      height: 420px; /* Increased height for exploded segments */
       position: relative;
       background: var(--white);
       border: 1px solid var(--grey-2);
       border-radius: 12px;
-      padding: 15px 10px;
+      padding: 20px 15px; /* More padding for exploded segments */
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
@@ -536,8 +536,8 @@
       }
       
       .web-chart-group {
-        max-width: 300px;
-        height: 380px; /* Maintain fixed height */
+        max-width: 320px;
+        height: 420px; /* Maintain fixed height */
       }
       
       .chart-flow-arrow {
@@ -556,9 +556,9 @@
       .pipeline-steps::before { display: none; }
       
       .chart-wrapper {
-        width: 180px;
-        height: 180px;
-        margin: 5px;
+        width: 200px;
+        height: 200px;
+        margin: 10px;
       }
       
       .web-charts {
@@ -569,8 +569,8 @@
       
       .web-chart-group {
         max-width: 100%;
-        padding: 10px;
-        height: 350px; /* Slightly smaller height for mobile */
+        padding: 15px;
+        height: 380px; /* Adjusted height for mobile */
       }
       
       .chart-flow-arrow {
@@ -965,6 +965,9 @@
             arc: {
               borderWidth: 2
             }
+          },
+          layout: {
+            padding: 15 // Add padding to prevent clipping
           }
         }
       });
@@ -1083,7 +1086,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: true,
-          rotation: -90, // Start at 3 o'clock position (90 degrees counterclockwise)
+          rotation: 0, // Start at 12 o'clock position, exploded segment goes to the right
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -1097,6 +1100,9 @@
               }
             }
           },
+          layout: {
+            padding: 25 // Add padding to prevent clipping of exploded segments
+          }
         }
       });
     }
@@ -1141,6 +1147,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: true,
+          rotation: 0, // Start at 12 o'clock position, exploded segment goes to the right
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -1151,6 +1158,9 @@
               }
             }
           },
+          layout: {
+            padding: 20 // Add padding to prevent clipping of exploded segments
+          }
         }
       });
     }
@@ -1198,6 +1208,9 @@
               }
             }
           },
+          layout: {
+            padding: 15 // Add padding to prevent clipping
+          }
         }
       });
     }
@@ -1521,6 +1534,9 @@
               }
             }
           },
+          layout: {
+            padding: 15 // Add padding to prevent clipping
+          }
         }
       });
     }
