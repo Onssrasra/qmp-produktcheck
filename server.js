@@ -470,58 +470,6 @@ app.post('/api/quality-stats', upload.single('file'), async (req, res) => {
   }
 });
 
-// Neue Route für Dataset Statistiken (aus Original-Excel)
-app.post('/api/dataset-stats', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'Bitte Excel-Datei hochladen (file).' });
-
-    const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(req.file.buffer);
-    const ws = wb.worksheets[0];
-    
-    const lastRow = ws.lastRow ? ws.lastRow.number : 0;
-    
-    // Total Datasets: Total number of rows in original Excel file minus header rows
-    const totalDataSets = lastRow - 3; // Zeilen 1-3 sind Header
-    
-    // Siemens Products: All products that have an A2V number in Column Z
-    let totalSiemens = 0;
-    for (let r = 4; r <= lastRow; r++) { // ab Zeile 4 (erste Datenzeile)
-      const a2v = (ws.getCell(`${ORIGINAL_COLS.Z}${r}`).value || '').toString().trim().toUpperCase();
-      if (a2v.startsWith('A2V')) {
-        totalSiemens++;
-      }
-    }
-    
-    // Other Manufacturers
-    const otherManufacturers = totalDataSets - totalSiemens;
-    
-    console.log('Dataset stats:', { 
-      totalDataSets, 
-      totalSiemens, 
-      otherManufacturers,
-      lastRow
-    });
-    
-    res.json({
-      totalDataSets: totalDataSets,
-      totalSiemens: totalSiemens,
-      otherManufacturers: otherManufacturers,
-      siemensPercentage: totalDataSets > 0 ? Math.round((totalSiemens / totalDataSets) * 100) : 0,
-      otherPercentage: totalDataSets > 0 ? Math.round((otherManufacturers / totalDataSets) * 100) : 0,
-      debug: {
-        totalRows: lastRow,
-        headerRows: 3,
-        firstDataRow: 4
-      }
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Neue Route für Web-Suche Statistiken
 app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
   try {
