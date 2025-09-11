@@ -419,8 +419,15 @@
       border-radius: 12px;
       padding: 20px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      flex: 1;
       min-height: 650px;
+    }
+
+    .ring-chart-group:first-child {
+      flex: 2; /* 2/3 width */
+    }
+
+    .ring-chart-group:last-child {
+      flex: 1; /* 1/3 width */
     }
 
     .ring-chart-wrapper {
@@ -787,7 +794,7 @@
           <div class="charts-title">Qualitätsprüfung Ergebnisse</div>
           <div class="quality-chart">
             <div class="chart-wrapper">
-              <canvas id="qualityChart"></canvas>
+              <svg id="qualityChart" width="220" height="220"></svg>
             </div>
           </div>
           <div class="custom-legend" id="qualityLegend"></div>
@@ -956,75 +963,50 @@
 
     /* ==================== CHART FUNCTIONS ==================== */
     function createQualityChart(complete, incomplete, total) {
-      const ctx = document.getElementById('qualityChart').getContext('2d');
+      // Convert to SVG chart to match the style of other charts
+      const svg = document.getElementById('qualityChart');
+      svg.innerHTML = ''; // Clear previous content
       
-      if (qualityChart) {
-        qualityChart.destroy();
-      }
+      const centerX = 110; // Smaller chart for quality
+      const centerY = 110;
+      const colors = {
+        complete: '#22C55E',
+        incomplete: '#C20015'
+      };
 
-      const completePercentage = ((complete / total) * 100).toFixed(1);
-      const incompletePercentage = ((incomplete / total) * 100).toFixed(1);
+      const completePercent = (complete / total) * 100;
+      const startAngle = -Math.PI / 2; // Start from 12 o'clock
+      const completeAngle = (completePercent / 100) * 2 * Math.PI;
 
-      qualityChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: [
-            `Vollständig & richtig (${completePercentage}%)`,
-            `Unvollständig/unplausibel (${incompletePercentage}%)`
-          ],
-          datasets: [{
-            data: [complete, incomplete],
-            backgroundColor: [
-              'rgba(34, 197, 94, 0.8)',
-              'rgba(194, 0, 21, 0.8)'
-            ],
-            borderColor: [
-              'rgba(34, 197, 94, 1)',
-              'rgba(194, 0, 21, 1)'
-            ],
-            borderWidth: 2,
-            hoverBackgroundColor: [
-              'rgba(34, 197, 94, 0.9)',
-              'rgba(194, 0, 21, 0.9)'
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.parsed} Datensätze`;
-                }
-              }
-            }
-          },
-          elements: {
-            arc: {
-              borderWidth: 2
-            }
-          },
-          layout: {
-            padding: 15 // Add padding to prevent clipping
-          }
-        }
-      });
+      // Ring thickness and radius to match other charts
+      const ringThickness = 50;
+      const standardInnerRadius = 70;
+      const innerRadius = standardInnerRadius;
+      const outerRadius = innerRadius + ringThickness;
 
-      // Create custom legend
+      // Create tooltip
+      const tooltip = createTooltip();
+      svg.parentElement.appendChild(tooltip);
+
+      // Create ring segments - start from 12 o'clock
+      createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, startAngle + completeAngle, colors.complete, 
+        `Vollständig & richtig: ${complete} (${completePercent.toFixed(1)}%)`, tooltip);
+      createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle + completeAngle, startAngle + 2 * Math.PI, colors.incomplete, 
+        `Unvollständig/unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)`, tooltip);
+
+      // Central circle - show total count with title
+      createCentralCircle(svg, centerX, centerY, 60, total, 'Datensätze', true, true);
+
+      // Create custom legend with note
       const legendContainer = document.getElementById('qualityLegend');
       legendContainer.innerHTML = `
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
-          <span>Vollständig & richtig: ${complete} (${completePercentage}%)</span>
+          <div class="legend-color" style="background-color: #22C55E;"></div>
+          <span>Vollständig & richtig: ${complete} (${completePercent.toFixed(1)}%)</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(194, 0, 21, 0.8);"></div>
-          <span>Unvollständig/unplausibel: ${incomplete} (${incompletePercentage}%)</span>
+          <div class="legend-color" style="background-color: #C20015;"></div>
+          <span>Unvollständig/unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)</span>
         </div>
         <div class="legend-item">
           <strong>Gesamt: ${total} Datensätze</strong>
@@ -1068,9 +1050,10 @@
       const webFoundAngle = (webFoundPercent / 100) * siemensAngle;
       const matchesAngle = (matchesPercent / 100) * webFoundAngle;
 
-      // Equal ring thickness: 50px each
+      // Equal ring thickness: 50px each, adjusted for standardized inner circle
       const ringThickness = 50;
-      const innerRadius1 = 70;
+      const standardInnerRadius = 70; // Standardized for all charts
+      const innerRadius1 = standardInnerRadius;
       const outerRadius1 = innerRadius1 + ringThickness;
       const innerRadius2 = outerRadius1 + 10; // 10px gap
       const outerRadius2 = innerRadius2 + ringThickness;
@@ -1101,8 +1084,8 @@
       createRingSegment(svg, centerX, centerY, innerRadius3, outerRadius3, startAngle + matchesAngle, webFoundAngleEnd, colors.abweichungen, 
         `Abweichungen: ${stats.red} (${(100 - matchesPercent).toFixed(1)}%)`, tooltip);
 
-      // Central circle with text
-      createCentralCircle(svg, centerX, centerY, 60, stats.totalDataSets);
+      // Central circle with text - show "Gesamtdatensätze" and total count
+      createCentralCircle(svg, centerX, centerY, 60, stats.totalDataSets, 'Datensätze', true, true);
     }
 
     function createAmpelRingChart(greenProducts, redProducts) {
@@ -1127,7 +1110,8 @@
 
       // Create ring segments - start from 12 o'clock, match concentric chart thickness
       const ringThickness = 50;
-      const innerRadius = 150;
+      const standardInnerRadius = 70; // Match concentric chart
+      const innerRadius = standardInnerRadius;
       const outerRadius = innerRadius + ringThickness;
       
       createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, startAngle + greenAngle, colors.ok, 
@@ -1135,8 +1119,8 @@
       createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle + greenAngle, startAngle + 2 * Math.PI, colors.fehlerhaft, 
         `Datenaktualität fehlerhaft: ${redProducts} (${(100 - greenPercent).toFixed(1)}%)`, tooltip);
 
-      // Central circle - larger to match concentric chart
-      createCentralCircle(svg, centerX, centerY, 140, totalProducts, 'Produkte');
+      // Central circle - show "Siemens-Produkte" and count
+      createCentralCircle(svg, centerX, centerY, 60, totalProducts, 'Produkte', true, true);
     }
 
     function createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, endAngle, color, tooltipText, tooltip) {
@@ -1183,32 +1167,45 @@
       svg.appendChild(path);
     }
 
-    function createCentralCircle(svg, centerX, centerY, radius, value, unit = 'Datensätze') {
+    function createCentralCircle(svg, centerX, centerY, radius, value, unit = 'Datensätze', showTitle = true, showValue = true) {
+      // Standardized radius for all charts
+      const standardRadius = 60;
+      
       // Background circle
       const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('cx', centerX);
       circle.setAttribute('cy', centerY);
-      circle.setAttribute('r', radius);
+      circle.setAttribute('r', standardRadius);
       circle.setAttribute('fill', '#f8f9fa');
       circle.setAttribute('stroke', '#dee2e6');
       circle.setAttribute('stroke-width', '2');
       svg.appendChild(circle);
 
-      // Title text
-      const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      titleText.setAttribute('x', centerX);
-      titleText.setAttribute('y', centerY - 10);
-      titleText.setAttribute('class', 'center-text center-text-title');
-      titleText.textContent = unit === 'Datensätze' ? 'Gesamtdatensätze' : unit;
-      svg.appendChild(titleText);
+      if (showTitle && showValue) {
+        // Both title and value (for quality and concentric charts)
+        const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        titleText.setAttribute('x', centerX);
+        titleText.setAttribute('y', centerY - 10);
+        titleText.setAttribute('class', 'center-text center-text-title');
+        titleText.textContent = unit === 'Datensätze' ? 'Gesamtdatensätze' : unit === 'Produkte' ? 'Siemens-Produkte' : unit;
+        svg.appendChild(titleText);
 
-      // Value text
-      const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      valueText.setAttribute('x', centerX);
-      valueText.setAttribute('y', centerY + 15);
-      valueText.setAttribute('class', 'center-text center-text-value');
-      valueText.textContent = value;
-      svg.appendChild(valueText);
+        const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        valueText.setAttribute('x', centerX);
+        valueText.setAttribute('y', centerY + 15);
+        valueText.setAttribute('class', 'center-text center-text-value');
+        valueText.textContent = value;
+        svg.appendChild(valueText);
+      } else if (showValue && !showTitle) {
+        // Only value, centered
+        const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        valueText.setAttribute('x', centerX);
+        valueText.setAttribute('y', centerY + 5);
+        valueText.setAttribute('class', 'center-text center-text-value');
+        valueText.textContent = value;
+        svg.appendChild(valueText);
+      }
+      // If both false, show empty circle
     }
 
     function createTooltip() {
@@ -1245,11 +1242,11 @@
             <strong>Ring 1: Herstellerverteilung</strong>
             <div class="legend-item">
               <div class="legend-color" style="background-color: #4A90E2;"></div>
-              <span>Siemens: ${stats.totalSiemens} (${siemensPercent}%)</span>
+              <span>Siemens-Produkte: ${stats.totalSiemens} (${siemensPercent}%)</span>
             </div>
             <div class="legend-item">
               <div class="legend-color" style="background-color: #E5E7EB;"></div>
-              <span>Andere: ${stats.totalDataSets - stats.totalSiemens} (${(100 - siemensPercent).toFixed(1)}%)</span>
+              <span>Andere Hersteller: ${stats.totalDataSets - stats.totalSiemens} (${(100 - siemensPercent).toFixed(1)}%)</span>
             </div>
           </div>
           <div>
