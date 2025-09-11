@@ -543,6 +543,52 @@ app.post('/api/quality-stats', upload.single('file'), async (req, res) => {
   }
 });
 
+// Neue Route für direkte Zählung von Siemens vs. anderen Herstellern
+app.post('/api/count-products', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Bitte Excel-Datei hochladen (file).' });
+
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(req.file.buffer);
+    const ws = wb.worksheets[0];
+    
+    const lastRow = ws.lastRow ? ws.lastRow.number : 0;
+    
+    // Zähle alle Produkte (ab Zeile 5, da Zeilen 1-4 Header sind)
+    let totalProducts = 0;
+    let siemensProducts = 0;
+    
+    for (let r = 5; r <= lastRow; r++) {
+      const a2v = (ws.getCell(`Z${r}`).value || '').toString().trim().toUpperCase();
+      totalProducts++;
+      
+      if (a2v.startsWith('A2V')) {
+        siemensProducts++;
+      }
+    }
+    
+    const otherProducts = totalProducts - siemensProducts;
+    
+    console.log('Product counts:', { 
+      totalProducts, 
+      siemensProducts, 
+      otherProducts 
+    });
+    
+    res.json({
+      totalDataSets: totalProducts,
+      totalSiemens: siemensProducts,
+      totalOthers: otherProducts,
+      siemensPercentage: totalProducts > 0 ? Math.round((siemensProducts / totalProducts) * 100) : 0,
+      othersPercentage: totalProducts > 0 ? Math.round((otherProducts / totalProducts) * 100) : 0
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Neue Route für Web-Suche Statistiken
 app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
   try {
@@ -558,9 +604,11 @@ app.post('/api/web-search-stats', upload.single('file'), async (req, res) => {
     // 1. Gesamt Siemens-Produkte = Anzahl Zeilen minus 4 (Header-Zeilen)
     const totalSiemens = lastRow - 4;
     
-    // 2. Total Datensätze - holen wir aus der Qualitätsprüfung-Statistik
-    // Fallback: Schätzen basierend auf Siemens-Anteil wenn Quality-Stats nicht verfügbar
-    const totalDataSets = req.body.totalFromQuality || Math.round(totalSiemens / 0.4);
+    // 2. Total Datensätze - aus der Qualitätsprüfung-Statistik (required)
+    const totalDataSets = req.body.totalFromQuality;
+    if (!totalDataSets) {
+      return res.status(400).json({ error: 'Total datasets from quality check required.' });
+    }
     
     // 3. Gesuchte Werte = Gesamt Siemens-Produkte × 8 (8 Spaltenpaare)
     const searchedValues = totalSiemens * 8;
