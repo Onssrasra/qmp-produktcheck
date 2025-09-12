@@ -380,18 +380,21 @@
       background: var(--grey-1);
       border-radius: 12px;
       border: 1px solid var(--grey-2);
-      display: flex;
       flex-direction: column;
       align-items: center;
       min-height: auto;
     }
 
+    #qualityCharts:not(.hidden) {
+      display: flex;
+    }
+
     #qualityCharts .charts-title {
-      margin-bottom: 15px;
+      margin-bottom: 5px;
     }
 
     #qualityCharts .quality-chart {
-      margin: 10px 0;
+      margin: 5px 0;
     }
 
     #qualityCharts .custom-legend {
@@ -417,8 +420,8 @@
 
     .chart-wrapper {
       position: relative;
-      width: 400px;
-      height: 400px;
+      width: 450px;
+      height: 450px;
       margin: 0 auto;
       display: flex;
       align-items: center;
@@ -567,7 +570,7 @@
       justify-content: center;
       gap: 15px;
       margin-top: 15px;
-      font-size: 12px;
+      font-size: 14px;
     }
 
     .chart-legend {
@@ -676,8 +679,8 @@
       .pipeline-steps::before { display: none; }
       
       .chart-wrapper {
-        width: 280px;
-        height: 280px;
+        width: 320px;
+        height: 320px;
         margin: 0 auto;
       }
       
@@ -722,8 +725,8 @@
       .dropzone { min-height: 80px; padding: 15px; }
       
       .chart-wrapper {
-        width: 200px;
-        height: 200px;
+        width: 250px;
+        height: 250px;
         margin: 0 auto;
       }
       
@@ -859,7 +862,7 @@
           <div class="charts-title">Qualitätsprüfung Ergebnisse</div>
           <div class="quality-chart">
             <div class="chart-wrapper">
-              <svg id="qualityChart" width="400" height="400"></svg>
+              <svg id="qualityChart" width="450" height="450"></svg>
             </div>
           </div>
           <div class="custom-legend" id="qualityLegend"></div>
@@ -1031,9 +1034,9 @@
       const svg = document.getElementById('qualityChart');
       svg.innerHTML = ''; // Clear previous content
       
-      // Same dimensions as AmpelRingChart
-      const centerX = 200;
-      const centerY = 200;
+      // Larger dimensions for better visibility
+      const centerX = 225;
+      const centerY = 225;
       
       const colors = {
         complete: '#22c55e',
@@ -1051,7 +1054,7 @@
       svg.parentElement.appendChild(tooltip);
 
       // Auto-size center circle based on text content
-      const centerTexts = ['Vollständig', '& richtig', total.toString()];
+      const centerTexts = ['Gesamtdatensätze*', total.toString()];
       const centerRadius = calculateCenterCircleRadius(centerTexts, 65);
 
       // Same ring dimensions as AmpelRingChart
@@ -1076,13 +1079,13 @@
             <div class="legend-item" style="margin-bottom: 8px;">
               <div class="legend-color" style="background-color: #22c55e;"></div>
               <span>Vollständig & plausibel</span>
-            </div>
-            <div class="legend-item">
+        </div>
+        <div class="legend-item">
               <div class="legend-color" style="background-color: #c20015;"></div>
               <span>Unvollständig & unplausibel</span>
-            </div>
-          </div>
-          <div style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--grey-4); font-style: italic; white-space: nowrap;">
+        </div>
+        </div>
+          <div style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--grey-4); font-style: italic; white-space: nowrap;">
             *Datensatz = Materialnummer
           </div>
         </div>
@@ -1309,20 +1312,20 @@
         valueText.textContent = value;
         svg.appendChild(valueText);
       } else {
-        // Two lines for ConcentricRingChart: "Gesamtdatensätze" / number
+        // Two lines for ConcentricRingChart: "Gesamtdatensätze*" / number
         const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         titleText.setAttribute('x', centerX);
         titleText.setAttribute('y', centerY - 5);
         titleText.setAttribute('class', 'center-text center-text-title');
-        titleText.textContent = 'Gesamtdatensätze';
+        titleText.textContent = 'Gesamtdatensätze*';
         svg.appendChild(titleText);
 
-        const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        valueText.setAttribute('x', centerX);
+      const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      valueText.setAttribute('x', centerX);
         valueText.setAttribute('y', centerY + 20);
-        valueText.setAttribute('class', 'center-text center-text-value');
-        valueText.textContent = value;
-        svg.appendChild(valueText);
+      valueText.setAttribute('class', 'center-text center-text-value');
+      valueText.textContent = value;
+      svg.appendChild(valueText);
       }
     }
 
