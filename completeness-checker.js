@@ -171,7 +171,6 @@ async function checkCompleteness(fileBuffer) {
   const cL    = colByHeader(src, 'Länge');
   const cB    = colByHeader(src, 'Breite');
   const cH    = colByHeader(src, 'Höhe');
-  const cTxt  = colByHeader(src, 'Materialkurztext');
   
   // Gewichtsspalten nach Header-Namen (aus Zeile 3)
   const cNetto = colByHeader(src, 'Nettogewicht');
@@ -218,11 +217,10 @@ async function checkCompleteness(fileBuffer) {
       }
     }
 
-    // 3) Maße L/B/H: <0 → rot; all 0/empty & no text measure → rot
+    // 3) Maße L/B/H: <0 → rot; all 0/empty → rot
     const vL = cL ? toNum(rowS.getCell(cL).value) : null;
     const vB = cB ? toNum(rowS.getCell(cB).value) : null;
     const vH = cH ? toNum(rowS.getCell(cH).value) : null;
-    const vTxt = cTxt ? rowS.getCell(cTxt).value : null;
 
     const markRed = (c) => { if (c){ rowQ.getCell(c).fill = FILL_RED; hasRed = true; } };
 
@@ -230,7 +228,7 @@ async function checkCompleteness(fileBuffer) {
       markRed(cL); markRed(cB); markRed(cH);
     } else {
       const allZeroOrNone = [vL, vB, vH].every(v => v == null || v === 0);
-      if (allZeroOrNone && !hasTextMeasure(vTxt)){
+      if (allZeroOrNone){
         markRed(cL); markRed(cB); markRed(cH);
       }
     }
@@ -290,4 +288,4 @@ async function checkCompleteness(fileBuffer) {
 
 module.exports = {
   checkCompleteness
-}; 
+};
