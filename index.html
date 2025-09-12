@@ -1194,7 +1194,7 @@
       svg.parentElement.appendChild(tooltip);
 
       // Auto-size center circle based on text content
-      const centerTexts = ['Siemens-', 'Produkte', totalProducts.toString()];
+      const centerTexts = ['Siemensprodukte', totalProducts.toString()];
       const centerRadius = calculateCenterCircleRadius(centerTexts, 65);
 
       // Simple 10px gap between center circle and ring (like Ring 1 in ConcentricRingChart)
@@ -1317,7 +1317,7 @@
         titleText.setAttribute('x', centerX);
         titleText.setAttribute('y', centerY - 5);
         titleText.setAttribute('class', 'center-text center-text-title');
-        titleText.textContent = 'Gesamtdatensätze*';
+        titleText.textContent = 'Gesamtdatensätze';
         svg.appendChild(titleText);
 
       const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
