@@ -449,8 +449,8 @@
     /* Chart-specific sizing - both charts bigger */
     #concentricChart,
     #ampelRingChart {
-      width: 500px;
-      height: 500px;
+      width: 400px;
+      height: 400px;
     }
 
     /* SVG Ring Styles */
@@ -829,7 +829,7 @@
           <div class="charts-title">Qualitätsprüfung Ergebnisse</div>
           <div class="quality-chart">
             <div class="chart-wrapper">
-              <canvas id="qualityChart"></canvas>
+              <svg id="qualityChart" width="400" height="400"></svg>
             </div>
           </div>
           <div class="custom-legend" id="qualityLegend"></div>
@@ -998,76 +998,56 @@
 
     /* ==================== CHART FUNCTIONS ==================== */
     function createQualityChart(complete, incomplete, total) {
-      const ctx = document.getElementById('qualityChart').getContext('2d');
+      const svg = document.getElementById('qualityChart');
+      svg.innerHTML = ''; // Clear previous content
       
-      if (qualityChart) {
-        qualityChart.destroy();
-      }
+      // Same dimensions as AmpelRingChart
+      const centerX = 200;
+      const centerY = 200;
+      
+      const colors = {
+        complete: '#22c55e',
+        incomplete: '#c20015'
+      };
 
-      const completePercentage = ((complete / total) * 100).toFixed(1);
-      const incompletePercentage = ((incomplete / total) * 100).toFixed(1);
+      const completePercent = (complete / total) * 100;
+      
+      // Start from 12 o'clock (-Math.PI/2) and go clockwise
+      const startAngle = -Math.PI / 2;
+      const completeAngle = startAngle + (completePercent / 100) * 2 * Math.PI;
 
-      qualityChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: [
-            `Vollständig & richtig (${completePercentage}%)`,
-            `Unvollständig/unplausibel (${incompletePercentage}%)`
-          ],
-          datasets: [{
-            data: [complete, incomplete],
-            backgroundColor: [
-              'rgba(34, 197, 94, 0.8)',
-              'rgba(194, 0, 21, 0.8)'
-            ],
-            borderColor: [
-              'rgba(34, 197, 94, 1)',
-              'rgba(194, 0, 21, 1)'
-            ],
-            borderWidth: 2,
-            hoverBackgroundColor: [
-              'rgba(34, 197, 94, 0.9)',
-              'rgba(194, 0, 21, 0.9)'
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          rotation: -Math.PI / 2, // Start at 12 o'clock position and go clockwise
-          plugins: {
-            legend: {
-              display: false
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return `${context.label}: ${context.parsed} Datensätze`;
-                }
-              }
-            }
-          },
-          elements: {
-            arc: {
-              borderWidth: 2
-            }
-          },
-          layout: {
-            padding: 15 // Add padding to prevent clipping
-          }
-        }
-      });
+      // Create tooltip
+      const tooltip = createTooltip();
+      svg.parentElement.appendChild(tooltip);
+
+      // Auto-size center circle based on text content
+      const centerTexts = ['Vollständig', '& richtig', total.toString()];
+      const centerRadius = calculateCenterCircleRadius(centerTexts, 65);
+
+      // Same ring dimensions as AmpelRingChart
+      const ringThickness = 50;
+      const innerRadius = centerRadius + 15; // 15px gap from center
+      const outerRadius = innerRadius + ringThickness;
+
+      // Create ring segments
+      createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, completeAngle, colors.complete, 
+        `Vollständig & richtig: ${complete} (${completePercent.toFixed(1)}%)`, tooltip);
+      createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, completeAngle, startAngle + 2 * Math.PI, colors.incomplete, 
+        `Unvollständig/unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)`, tooltip);
+
+      // Central circle with auto-sized radius
+      createCentralCircle(svg, centerX, centerY, centerRadius, total, 'Qualität');
 
       // Create custom legend
       const legendContainer = document.getElementById('qualityLegend');
       legendContainer.innerHTML = `
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
-          <span>Vollständig & richtig: ${complete} (${completePercentage}%)</span>
+          <div class="legend-color" style="background-color: #22c55e;"></div>
+          <span>Vollständig & richtig: ${complete} (${completePercent.toFixed(1)}%)</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color" style="background-color: rgba(194, 0, 21, 0.8);"></div>
-          <span>Unvollständig/unplausibel: ${incomplete} (${incompletePercentage}%)</span>
+          <div class="legend-color" style="background-color: #c20015;"></div>
+          <span>Unvollständig/unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)</span>
         </div>
         <div class="legend-item">
           <strong>Gesamt: ${total} Datensätze</strong>
@@ -1183,10 +1163,10 @@
       const centerTexts = ['Siemens', 'Produkte', totalProducts.toString()];
       const centerRadius = calculateCenterCircleRadius(centerTexts, 65);
 
-      // Use same radii as ConcentricRingChart first ring
-      const ringThickness = 35;
-      const innerRadius = centerRadius + 10; // 10px gap from center (same as ConcentricRingChart)
-      const outerRadius = innerRadius + ringThickness; // Same thickness as ConcentricRingChart first ring
+      // Bigger ring dimensions
+      const ringThickness = 50;
+      const innerRadius = centerRadius + 15; // 15px gap from center
+      const outerRadius = innerRadius + ringThickness;
 
       // Create ring segments
       createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, greenAngle, colors.ok, 
@@ -1267,6 +1247,28 @@
         line2Text.setAttribute('y', centerY + 8);
         line2Text.setAttribute('class', 'center-text center-text-title');
         line2Text.textContent = 'Produkte';
+        svg.appendChild(line2Text);
+
+        const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        valueText.setAttribute('x', centerX);
+        valueText.setAttribute('y', centerY + 25);
+        valueText.setAttribute('class', 'center-text center-text-value');
+        valueText.textContent = value;
+        svg.appendChild(valueText);
+      } else if (unit === 'Qualität') {
+        // Three lines for QualityChart: "Vollständig" / "& richtig" / number
+        const line1Text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        line1Text.setAttribute('x', centerX);
+        line1Text.setAttribute('y', centerY - 8);
+        line1Text.setAttribute('class', 'center-text center-text-title');
+        line1Text.textContent = 'Vollständig';
+        svg.appendChild(line1Text);
+
+        const line2Text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        line2Text.setAttribute('x', centerX);
+        line2Text.setAttribute('y', centerY + 8);
+        line2Text.setAttribute('class', 'center-text center-text-title');
+        line2Text.textContent = '& richtig';
         svg.appendChild(line2Text);
 
         const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
