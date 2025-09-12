@@ -391,10 +391,13 @@
 
     .chart-wrapper {
       position: relative;
-      width: 220px;
-      height: 220px;
-      margin: 15px 10px; /* Mehr Margin für explodierte Segmente */
-      flex-shrink: 0; /* Verhindert Schrumpfung */
+      width: 400px;
+      height: 400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
     /* Ring Charts */
@@ -647,9 +650,9 @@
       .pipeline-steps::before { display: none; }
       
       .chart-wrapper {
-        width: 200px;
-        height: 200px;
-        margin: 10px;
+        width: 280px;
+        height: 280px;
+        margin: 0 auto;
       }
       
       .ring-charts-container {
@@ -695,6 +698,7 @@
       .chart-wrapper {
         width: 200px;
         height: 200px;
+        margin: 0 auto;
       }
       
       .web-charts {
@@ -1035,25 +1039,24 @@
       createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, completeAngle, startAngle + 2 * Math.PI, colors.incomplete, 
         `Unvollständig/unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)`, tooltip);
 
-      // Central circle with auto-sized radius
-      createCentralCircle(svg, centerX, centerY, centerRadius, total, 'Qualität');
+      // Central circle with auto-sized radius - show total datasets in center
+      createCentralCircle(svg, centerX, centerY, centerRadius, total, 'Datensätze');
 
       // Create custom legend
       const legendContainer = document.getElementById('qualityLegend');
       legendContainer.innerHTML = `
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: #22c55e;"></div>
-          <span>Vollständig & richtig: ${complete} (${completePercent.toFixed(1)}%)</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background-color: #c20015;"></div>
-          <span>Unvollständig/unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)</span>
-        </div>
-        <div class="legend-item">
-          <strong>Gesamt: ${total} Datensätze</strong>
-        </div>
-        <div class="legend-item" style="font-size: 10px; color: var(--grey-4); text-align: right; margin-top: 5px;">
-          <em>*Datensatz = Materialnummer</em>
+        <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; position: relative;">
+          <div class="legend-item" style="margin-bottom: 8px;">
+            <div class="legend-color" style="background-color: #22c55e;"></div>
+            <span>Vollständig & plausibel</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color" style="background-color: #c20015;"></div>
+            <span>Unvollständig & unplausibel</span>
+          </div>
+          <div style="position: absolute; right: 0; bottom: 0; font-size: 10px; color: var(--grey-4); font-style: italic;">
+            *Datensatz = Materialnummer
+          </div>
         </div>
       `;
     }
