@@ -413,13 +413,13 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between;
       background: var(--white);
       border: 1px solid var(--grey-2);
       border-radius: 12px;
-      padding: 20px;
+      padding: 15px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      height: 600px;
+      height: 650px;
       box-sizing: border-box;
     }
 
@@ -433,12 +433,12 @@
 
     .ring-chart-wrapper {
       position: relative;
-      margin: 20px 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 300px;
-      height: 300px;
+      width: 400px;
+      height: 400px;
+      flex-shrink: 0;
     }
 
     .ring-chart-wrapper svg {
@@ -446,11 +446,11 @@
       margin: 0 auto;
     }
 
-    /* Chart-specific sizing - both charts same size */
+    /* Chart-specific sizing - both charts bigger */
     #concentricChart,
     #ampelRingChart {
-      width: 300px;
-      height: 300px;
+      width: 400px;
+      height: 400px;
     }
 
     /* SVG Ring Styles */
@@ -622,13 +622,17 @@
       
       #concentricChart,
       #ampelRingChart {
-        width: 280px;
-        height: 280px;
+        width: 350px;
+        height: 350px;
       }
       
       .ring-chart-wrapper {
-        width: 280px;
-        height: 280px;
+        width: 350px;
+        height: 350px;
+      }
+      
+      .ring-chart-group {
+        height: 580px;
       }
     }
 
@@ -666,13 +670,18 @@
       
       #concentricChart,
       #ampelRingChart {
-        width: 240px;
-        height: 240px;
+        width: 280px;
+        height: 280px;
       }
       
       .ring-chart-wrapper {
-        width: 240px;
-        height: 240px;
+        width: 280px;
+        height: 280px;
+      }
+      
+      .ring-chart-group {
+        height: 500px;
+        padding: 10px;
       }
     }
 
@@ -848,7 +857,7 @@
             <div class="ring-chart-group">
               <div class="chart-title">Web-Suche Ergebnisse für Siemens Produkte</div>
               <div class="ring-chart-wrapper">
-                <svg id="concentricChart" width="300" height="300"></svg>
+                <svg id="concentricChart" width="400" height="400"></svg>
               </div>
               <div class="chart-legend" id="concentricLegend"></div>
             </div>
@@ -857,7 +866,7 @@
             <div class="ring-chart-group">
               <div class="chart-title">Siemens-Produkte nach Datenaktualität</div>
               <div class="ring-chart-wrapper">
-                <svg id="ampelRingChart" width="300" height="300"></svg>
+                <svg id="ampelRingChart" width="400" height="400"></svg>
               </div>
               <div class="chart-legend" id="ampelRingLegend"></div>
             </div>
@@ -1081,10 +1090,9 @@
       const svg = document.getElementById('concentricChart');
       svg.innerHTML = ''; // Clear previous content
       
-      // Fixed dimensions for consistent sizing
-      const centerX = 150;
-      const centerY = 150;
-      const outerRadius = 130; // Same outer radius as AmpelRingChart
+      // Bigger dimensions for less white space
+      const centerX = 200;
+      const centerY = 200;
       
       const colors = {
         siemens: '#4A90E2',
@@ -1110,15 +1118,18 @@
       const tooltip = createTooltip();
       svg.parentElement.appendChild(tooltip);
 
-      // Fixed ring dimensions - equal thickness rings
-      const ringThickness = 25;
-      const ring1Inner = 50;
+      // Auto-size center circle based on text content
+      const centerTexts = ['Gesamtdatensätze', stats.totalDataSets.toString()];
+      const centerRadius = calculateCenterCircleRadius(centerTexts, 65);
+
+      // Bigger ring dimensions - equal thickness rings
+      const ringThickness = 35;
+      const ring1Inner = centerRadius + 10; // 10px gap from center
       const ring1Outer = ring1Inner + ringThickness;
-      const ring2Inner = ring1Outer + 5;
+      const ring2Inner = ring1Outer + 8;
       const ring2Outer = ring2Inner + ringThickness;
-      const ring3Inner = ring2Outer + 5;
+      const ring3Inner = ring2Outer + 8;
       const ring3Outer = ring3Inner + ringThickness;
-      const centerRadius = 40;
 
       // Ring 1: Siemens vs Others (inner ring)
       createRingSegment(svg, centerX, centerY, ring1Inner, ring1Outer, startAngle, siemensAngle, colors.siemens, 
@@ -1140,7 +1151,7 @@
       createRingSegment(svg, centerX, centerY, ring3Inner, ring3Outer, matchesAngle, webFoundAngleEnd, colors.abweichungen, 
         `Abweichungen: ${stats.red} (${(100 - matchesPercent).toFixed(1)}%)`, tooltip);
 
-      // Central circle with text
+      // Central circle with auto-sized radius
       createCentralCircle(svg, centerX, centerY, centerRadius, stats.totalDataSets);
     }
 
@@ -1148,10 +1159,9 @@
       const svg = document.getElementById('ampelRingChart');
       svg.innerHTML = ''; // Clear previous content
       
-      // Fixed dimensions for consistent sizing - same as ConcentricRingChart
-      const centerX = 150;
-      const centerY = 150;
-      const outerRadius = 130; // Same outer radius as ConcentricRingChart
+      // Same dimensions as ConcentricRingChart
+      const centerX = 200;
+      const centerY = 200;
       
       const colors = {
         ok: '#27AE60',
@@ -1169,18 +1179,22 @@
       const tooltip = createTooltip();
       svg.parentElement.appendChild(tooltip);
 
-      // Fixed ring dimensions - same outer radius as ConcentricRingChart
-      const innerRadius = 105;
-      const outerRadiusFinal = 130;
-      const centerRadius = 95;
+      // Auto-size center circle based on text content
+      const centerTexts = ['Siemens', 'Produkte', totalProducts.toString()];
+      const centerRadius = calculateCenterCircleRadius(centerTexts, 65);
+
+      // Use same radii as ConcentricRingChart first ring
+      const ringThickness = 35;
+      const innerRadius = centerRadius + 10; // 10px gap from center (same as ConcentricRingChart)
+      const outerRadius = innerRadius + ringThickness; // Same thickness as ConcentricRingChart first ring
 
       // Create ring segments
-      createRingSegment(svg, centerX, centerY, innerRadius, outerRadiusFinal, startAngle, greenAngle, colors.ok, 
+      createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, greenAngle, colors.ok, 
         `Datenaktualität passt: ${greenProducts} (${greenPercent.toFixed(1)}%)`, tooltip);
-      createRingSegment(svg, centerX, centerY, innerRadius, outerRadiusFinal, greenAngle, startAngle + 2 * Math.PI, colors.fehlerhaft, 
+      createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, greenAngle, startAngle + 2 * Math.PI, colors.fehlerhaft, 
         `Datenaktualität fehlerhaft: ${redProducts} (${(100 - greenPercent).toFixed(1)}%)`, tooltip);
 
-      // Central circle
+      // Central circle with auto-sized radius
       createCentralCircle(svg, centerX, centerY, centerRadius, totalProducts, 'Produkte');
     }
 
@@ -1283,6 +1297,28 @@
       const tooltip = document.createElement('div');
       tooltip.className = 'chart-tooltip';
       return tooltip;
+    }
+
+    function calculateCenterCircleRadius(texts, maxRadius = 100) {
+      // Estimate text width based on character count and font size
+      const fontSize = 10; // CSS font size for center text
+      const charWidth = fontSize * 0.6; // Approximate character width
+      const lineHeight = fontSize * 1.2; // Line height
+      
+      let maxTextWidth = 0;
+      texts.forEach(text => {
+        const textWidth = text.toString().length * charWidth;
+        if (textWidth > maxTextWidth) {
+          maxTextWidth = textWidth;
+        }
+      });
+      
+      // Add padding for the text
+      const padding = 10;
+      const requiredRadius = Math.max(maxTextWidth / 2 + padding, texts.length * lineHeight / 2 + padding);
+      
+      // Ensure it doesn't exceed max radius
+      return Math.min(requiredRadius, maxRadius);
     }
 
     function showTooltip(tooltip, event, text) {
