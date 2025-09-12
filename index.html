@@ -1197,9 +1197,9 @@
       const centerTexts = ['Siemens-', 'Produkte', totalProducts.toString()];
       const centerRadius = calculateCenterCircleRadius(centerTexts, 65);
 
-      // Match Ring 2 dimensions from ConcentricRingChart
+      // Simple 10px gap between center circle and ring (like Ring 1 in ConcentricRingChart)
       const ringThickness = 35; // Same as Ring 2
-      const innerRadius = centerRadius + 10 + 35 + 8; // Match Ring 2 inner radius calculation
+      const innerRadius = centerRadius + 10; // 10px gap from center circle
       const outerRadius = innerRadius + ringThickness;
 
       // Create ring segments
@@ -1317,7 +1317,7 @@
         titleText.setAttribute('x', centerX);
         titleText.setAttribute('y', centerY - 5);
         titleText.setAttribute('class', 'center-text center-text-title');
-        titleText.textContent = 'Gesamtdatensätze';
+        titleText.textContent = 'Gesamtdatensätze*';
         svg.appendChild(titleText);
 
       const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
