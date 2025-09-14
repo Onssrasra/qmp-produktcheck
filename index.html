@@ -53,12 +53,12 @@
     .hint { font-size: 12px; color: var(--grey-4); margin-top: 4px; }
     .dropzone-text { text-align: center; margin: 0; padding: 20px; }
     
-    #action-choices { display: none; gap: 30px; align-items: flex-start; transition: all 0.4s ease-in-out; }
+    #action-choices { display: none; gap: 30px; align-items: stretch; /* CHANGED: align-items to stretch for equal height */ transition: all 0.4s ease-in-out; }
     #action-choices.stacked { flex-direction: column; gap: 25px; }
     #action-choices.stacked #quality-section { order: 1; }
     #action-choices.stacked #web-search-section { order: 2; }
     .action-section { margin-bottom: 25px; transition: opacity 0.4s ease-in-out; }
-    #action-choices .action-section { flex: 1; width: 100%; border: 1px solid var(--grey-2); padding: 25px; border-radius: 12px; background-color: #fdfdfd; margin-bottom: 0; }
+    #action-choices .action-section { flex: 1; width: 100%; border: 1px solid var(--grey-2); padding: 25px; border-radius: 12px; background-color: #fdfdfd; margin-bottom: 0; display: flex; flex-direction: column; /* CHANGED: Added flex properties */ }
     .action-section h3 { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
     .action-buttons { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     
@@ -69,17 +69,21 @@
     button.success { background: var(--green); border-color: var(--green); color: var(--white); }
     button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    .charts-container { margin: 25px 0 0 0; padding: 20px; background: var(--grey-1); border-radius: 12px; border: 1px solid var(--grey-2); }
+    .charts-container { margin: 25px 0 0 0; padding: 20px; background: var(--grey-1); border-radius: 12px; border: 1px solid var(--grey-2); flex-grow: 1; /* CHANGED: Allow container to grow */ }
     .charts-container.hidden { display: none; }
     .charts-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 10px; text-align: center; }
     .chart-wrapper { position: relative; width: 450px; height: 450px; margin: 0 auto; }
     
-    .three-chart-container { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; }
-    .chart-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: var(--white); border: 1px solid var(--grey-2); border-radius: 12px; padding: 15px; min-height: 450px; }
+    .three-chart-container { display: flex; gap: 20px; align-items: stretch; /* CHANGED: align-items to stretch */ justify-content: space-between; }
+    .chart-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: var(--white); border: 1px solid var(--grey-2); border-radius: 12px; padding: 15px; }
     .chart-group .chart-title { font-size: 16px; margin-bottom: 15px; }
     .chart-wrapper-small { width: 300px; height: 300px; position: relative; }
-    .chart-legend { margin-top: 15px; font-size: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .chart-legend { margin-top: auto; /* CHANGED: Push legend to bottom */ font-size: 12px; display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 15px; }
     .hinweis-note { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--grey-2); font-size: 11px; color: #6b7280; line-height: 1.4; }
+    .legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
+    .legend-color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+    /* NEW: Style for indented legend items */
+    .legend-item.indented { margin-left: 20px; }
 
     .ring-segment { cursor: pointer; transition: opacity 0.2s ease; }
     .ring-segment:hover { opacity: 0.8; }
@@ -87,8 +91,6 @@
     .center-text-title { font-size: 12px; font-weight: 600; }
     .center-text-value { font-size: 24px; font-weight: 700; }
     .chart-tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; pointer-events: none; z-index: 1000; opacity: 0; transition: opacity 0.2s ease; }
-    .legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
-    .legend-color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
     
     .status { margin-top: 20px; min-height: 20px; font-size: 14px; text-align: center; font-weight: 500; }
     .progress { width: 100%; height: 6px; background: var(--grey-2); border-radius: 999px; overflow: hidden; margin-top: 12px; display: none; }
@@ -140,7 +142,7 @@
           <div id="webCharts" class="charts-container hidden">
             <div class="three-chart-container">
               <div class="chart-group"> <h3 class="chart-title">Hersteller Verteilung</h3> <div class="chart-wrapper-small"> <svg id="herstellerChart" width="300" height="300"></svg> </div> <div class="chart-legend" id="herstellerLegend"></div> </div>
-              <div class="chart-group"> <h3 class="chart-title">Web-Suche*</h3> <div class="chart-wrapper-small"> <svg id="webSucheChart" width="300" height="300"></svg> </div> <div class="chart-legend" id="webSucheLegend"></div> </div>
+              <div class="chart-group"> <h3 class="chart-title">Web-Suche</h3> <div class="chart-wrapper-small"> <svg id="webSucheChart" width="300" height="300"></svg> </div> <div class="chart-legend" id="webSucheLegend"></div> </div>
               <div class="chart-group"> <h3 class="chart-title">Datenqualität Siemens</h3> <div class="chart-wrapper-small"> <svg id="datenqualitaetChart" width="300" height="300"></svg> </div> <div class="chart-legend" id="datenqualitaetLegend"></div> </div>
             </div>
             <div id="hinweis-note" class="hinweis-note"></div>
@@ -193,44 +195,65 @@
     }
 
     function createHerstellerChart(stats) {
-      const svg = document.getElementById('herstellerChart');
-      svg.innerHTML = '';
-      const centerX = 150, centerY = 150;
-      const tooltip = createTooltip();
-      svg.parentElement.appendChild(tooltip);
-      const total = stats.totalDataSets, siemens = stats.totalSiemens, andere = total - siemens;
-      const siemensPercent = total > 0 ? (siemens / total) * 100 : 0;
-      const startAngle = -Math.PI / 2;
-      const siemensAngle = startAngle + (siemensPercent / 100) * 2 * Math.PI;
-      createRingSegment(svg, centerX, centerY, 60, 110, startAngle, siemensAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
-      createRingSegment(svg, centerX, centerY, 60, 110, siemensAngle, startAngle + 2 * Math.PI, '#bfbfbf', `Andere Hersteller: ${andere} (${(100 - siemensPercent).toFixed(1)}%)`, tooltip);
-      createCentralCircle(svg, centerX, centerY, 'Gesamt', total);
-      document.getElementById('herstellerLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--blue);"></div><span>Siemens Produkte: ${siemens}</span></div><div class="legend-item"><div class="legend-color" style="background-color: #bfbfbf;"></div><span>Andere Hersteller: ${andere}</span></div>`;
+        const svg = document.getElementById('herstellerChart');
+        svg.innerHTML = '';
+        const centerX = 150, centerY = 150;
+        const tooltip = createTooltip();
+        svg.parentElement.appendChild(tooltip);
+        
+        const total = stats.totalDataSets, siemens = stats.totalSiemens, andere = total - siemens;
+        const siemensPercent = total > 0 ? (siemens / total) * 100 : 0;
+        const startAngle = -Math.PI / 2;
+        const siemensAngle = startAngle + (siemensPercent / 100) * 2 * Math.PI;
+
+        // Explode the Siemens slice
+        const explodeOffset = 10;
+        const midAngle = startAngle + (siemensAngle - startAngle) / 2;
+        const explodeX = centerX + explodeOffset * Math.cos(midAngle);
+        const explodeY = centerY + explodeOffset * Math.sin(midAngle);
+
+        createRingSegment(svg, explodeX, explodeY, 60, 110, startAngle, siemensAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, centerX, centerY, 60, 110, siemensAngle, startAngle + 2 * Math.PI, '#bfbfbf', `Andere Hersteller: ${andere} (${(100 - siemensPercent).toFixed(1)}%)`, tooltip);
+        
+        createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze', total);
+        
+        document.getElementById('herstellerLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--blue);"></div><span>Siemens Produkte: ${siemens}</span></div><div class="legend-item"><div class="legend-color" style="background-color: #bfbfbf;"></div><span>Andere Hersteller: ${andere}</span></div>`;
     }
 
     function createWebSucheChart(stats) {
-      const svg = document.getElementById('webSucheChart');
-      svg.innerHTML = '';
-      const centerX = 150, centerY = 150;
-      const tooltip = createTooltip();
-      svg.parentElement.appendChild(tooltip);
-      const totalSearched = stats.searchedValues, found = stats.foundWebValues, missing = totalSearched - found;
-      const foundPercent = totalSearched > 0 ? (found / totalSearched) * 100 : 0;
-      const matches = stats.green, diffs = stats.red;
-      const matchesPercent = found > 0 ? (matches / found) * 100 : 0;
-      const startAngle = -Math.PI / 2;
-      const foundAngle = startAngle + (foundPercent / 100) * 2 * Math.PI;
-      const matchAngle = startAngle + (matchesPercent / 100) * (foundAngle - startAngle);
-      // CORRECTED: Inner ring is Gefunden/Fehlend
-      createRingSegment(svg, centerX, centerY, 50, 80, startAngle, foundAngle, 'var(--light-green)', `Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)`, tooltip);
-      createRingSegment(svg, centerX, centerY, 50, 80, foundAngle, startAngle + 2 * Math.PI, 'var(--orange)', `Fehlende Web-Werte: ${missing} (${(100 - foundPercent).toFixed(1)}%)`, tooltip);
-      // CORRECTED: Outer ring is Übereinstimmungen/Abweichungen
-      if (found > 0) {
-        createRingSegment(svg, centerX, centerY, 80, 110, startAngle, matchAngle, 'var(--green)', `Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)`, tooltip);
-        createRingSegment(svg, centerX, centerY, 80, 110, matchAngle, foundAngle, 'var(--db-red)', `Abweichungen: ${diffs} (${(100 - matchesPercent).toFixed(1)}%)`, tooltip);
-      }
-      createCentralCircle(svg, centerX, centerY, 'Gesuchte Werte*', totalSearched);
-      document.getElementById('webSucheLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches}</span></div><div class="legend-item"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs}</span></div><div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing}</span></div>`;
+        const svg = document.getElementById('webSucheChart');
+        svg.innerHTML = '';
+        const centerX = 150, centerY = 150;
+        const tooltip = createTooltip();
+        svg.parentElement.appendChild(tooltip);
+        
+        const totalSearched = stats.searchedValues, found = stats.foundWebValues, missing = totalSearched - found;
+        const foundPercent = totalSearched > 0 ? (found / totalSearched) * 100 : 0;
+        const matches = stats.green, diffs = stats.red;
+        const matchesPercent = found > 0 ? (matches / found) * 100 : 0;
+        
+        const startAngle = -Math.PI / 2;
+        const foundAngle = startAngle + (foundPercent / 100) * 2 * Math.PI;
+        const matchAngle = startAngle + (matchesPercent / 100) * (foundAngle - startAngle);
+        
+        // Inner Ring: Gefundene/Fehlende
+        createRingSegment(svg, centerX, centerY, 50, 80, startAngle, foundAngle, 'var(--light-green)', `Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, centerX, centerY, 50, 80, foundAngle, startAngle + 2 * Math.PI, 'var(--orange)', `Fehlende Web-Werte: ${missing} (${(100 - foundPercent).toFixed(1)}%)`, tooltip);
+        
+        // Outer Ring: Übereinstimmungen/Abweichungen (within found segment)
+        if (found > 0) {
+            createRingSegment(svg, centerX, centerY, 80, 110, startAngle, matchAngle, 'var(--green)', `Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)`, tooltip);
+            createRingSegment(svg, centerX, centerY, 80, 110, matchAngle, foundAngle, 'var(--db-red)', `Abweichungen: ${diffs} (${(100 - matchesPercent).toFixed(1)}%)`, tooltip);
+        }
+        
+        createCentralCircle(svg, centerX, centerY, 'Gesuchte Web-Werte*', totalSearched);
+        
+        document.getElementById('webSucheLegend').innerHTML = `
+            <div class="legend-item"><div class="legend-color" style="background-color: var(--light-green);"></div><span>Gefundene Web-Werte: ${found}</span></div>
+            <div class="legend-item indented"><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches}</span></div>
+            <div class="legend-item indented"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs}</span></div>
+            <div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing}</span></div>
+        `;
     }
 
     function createDatenqualitaetChart(stats) {
@@ -253,7 +276,7 @@
       createHerstellerChart(stats);
       createWebSucheChart(stats);
       createDatenqualitaetChart(stats);
-      document.getElementById('hinweis-note').innerHTML = `<strong>*Hinweis:</strong> Für jedes Siemens-Produkt werden 8 Attribute im Web geprüft: Materialkurztext, Art.-Nr., Fert./Prüfhinweis, Werkstoff, Gewicht, L×B×H.<br> „Gefundene Web-Werte" und „Fehlende Web-Werte" beziehen sich auf diese Web-Abfragen (= Suchvorgänge) und werden aus Anzahl Siemensprodukte × 8 berechnet.<br> Bei ${stats.totalSiemens} Produkten sind das ${stats.searchedValues} Suchvorgänge.`;
+      document.getElementById('hinweis-note').innerHTML = `<strong>*Hinweis:</strong> Für jedes Siemens-Produkt werden 8 Attribute im Web geprüft: Materialkurztext, Art.-Nr., Fert./Prüfhinweis, Werkstoff, Gewicht, Länge, Breite und Höhe „*Gesuchte  Web-Werte" beziehen sich auf diese Web-Abfragen (= Suchvorgänge) und werden aus Anzahl Siemensprodukte × 8 berechnet.<br> Bei ${stats.totalSiemens} Produkten sind das ${stats.searchedValues} Suchvorgänge.`;
       webCharts.classList.remove('hidden');
     }
     
