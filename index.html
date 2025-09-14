@@ -14,6 +14,7 @@
       --db-red: #c20015;
       --grey-1: #f5f5f5;
       --grey-2: #e6e6e6;
+      --grey-3: #bfbfbf;
       --grey-4: #8c8c8c;
       --text: #222;
       --white: #ffffff;
@@ -53,12 +54,12 @@
     .hint { font-size: 12px; color: var(--grey-4); margin-top: 4px; }
     .dropzone-text { text-align: center; margin: 0; padding: 20px; }
     
-    #action-choices { display: none; gap: 30px; align-items: stretch; /* CHANGED: align-items to stretch for equal height */ transition: all 0.4s ease-in-out; }
+    #action-choices { display: none; gap: 30px; align-items: stretch; transition: all 0.4s ease-in-out; }
     #action-choices.stacked { flex-direction: column; gap: 25px; }
     #action-choices.stacked #quality-section { order: 1; }
     #action-choices.stacked #web-search-section { order: 2; }
     .action-section { margin-bottom: 25px; transition: opacity 0.4s ease-in-out; }
-    #action-choices .action-section { flex: 1; width: 100%; border: 1px solid var(--grey-2); padding: 25px; border-radius: 12px; background-color: #fdfdfd; margin-bottom: 0; display: flex; flex-direction: column; /* CHANGED: Added flex properties */ }
+    #action-choices .action-section { flex: 1; width: 100%; border: 1px solid var(--grey-2); padding: 25px; border-radius: 12px; background-color: #fdfdfd; margin-bottom: 0; display: flex; flex-direction: column; }
     .action-section h3 { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
     .action-buttons { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     
@@ -69,27 +70,26 @@
     button.success { background: var(--green); border-color: var(--green); color: var(--white); }
     button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    .charts-container { margin: 25px 0 0 0; padding: 20px; background: var(--grey-1); border-radius: 12px; border: 1px solid var(--grey-2); flex-grow: 1; /* CHANGED: Allow container to grow */ }
+    .charts-container { margin: 25px 0 0 0; padding: 20px; background: var(--grey-1); border-radius: 12px; border: 1px solid var(--grey-2); flex-grow: 1; }
     .charts-container.hidden { display: none; }
     .charts-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 10px; text-align: center; }
     .chart-wrapper { position: relative; width: 450px; height: 450px; margin: 0 auto; }
     
-    .three-chart-container { display: flex; gap: 20px; align-items: stretch; /* CHANGED: align-items to stretch */ justify-content: space-between; }
+    .three-chart-container { display: flex; gap: 20px; align-items: stretch; justify-content: space-between; }
     .chart-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: var(--white); border: 1px solid var(--grey-2); border-radius: 12px; padding: 15px; }
     .chart-group .chart-title { font-size: 16px; margin-bottom: 15px; }
     .chart-wrapper-small { width: 300px; height: 300px; position: relative; }
-    .chart-legend { margin-top: auto; /* CHANGED: Push legend to bottom */ font-size: 12px; display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 15px; }
+    .chart-legend { margin-top: auto; font-size: 12px; display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 15px; }
     .hinweis-note { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--grey-2); font-size: 11px; color: #6b7280; line-height: 1.4; }
     .legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
     .legend-color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
-    /* NEW: Style for indented legend items */
     .legend-item.indented { margin-left: 20px; }
 
     .ring-segment { cursor: pointer; transition: opacity 0.2s ease; }
     .ring-segment:hover { opacity: 0.8; }
     .center-text { font-family: system-ui, sans-serif; text-anchor: middle; dominant-baseline: middle; fill: var(--text); }
-    .center-text-title { font-size: 12px; font-weight: 600; }
-    .center-text-value { font-size: 24px; font-weight: 700; }
+    .center-text-title { font-size: 14px; font-weight: 600; }
+    .center-text-value { font-size: 28px; font-weight: 700; margin-top: 4px;}
     .chart-tooltip { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; pointer-events: none; z-index: 1000; opacity: 0; transition: opacity 0.2s ease; }
     
     .status { margin-top: 20px; min-height: 20px; font-size: 14px; text-align: center; font-weight: 500; }
@@ -174,7 +174,35 @@
     function showProgress(show = true) { progressEl.style.display = show ? 'block' : 'none'; if (!show) bar.style.width = '0%'; }
     function updateProgress(percent) { bar.style.width = percent + '%'; }
     function createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, endAngle, color, tooltipText, tooltip) { const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); const x1 = centerX + innerRadius * Math.cos(startAngle), y1 = centerY + innerRadius * Math.sin(startAngle); const x2 = centerX + outerRadius * Math.cos(startAngle), y2 = centerY + outerRadius * Math.sin(startAngle); const x3 = centerX + outerRadius * Math.cos(endAngle), y3 = centerY + outerRadius * Math.sin(endAngle); const x4 = centerX + innerRadius * Math.cos(endAngle), y4 = centerY + innerRadius * Math.sin(endAngle); const largeArcFlag = endAngle - startAngle <= Math.PI ? '0' : '1'; const pathData = [`M ${x1} ${y1}`, `L ${x2} ${y2}`, `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${x3} ${y3}`, `L ${x4} ${y4}`, `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x1} ${y1}`, 'Z'].join(' '); path.setAttribute('d', pathData); path.setAttribute('fill', color); path.setAttribute('class', 'ring-segment'); path.addEventListener('mouseenter', (e) => showTooltip(tooltip, e, tooltipText)); path.addEventListener('mouseleave', () => hideTooltip(tooltip)); path.addEventListener('mousemove', (e) => updateTooltipPosition(tooltip, e)); svg.appendChild(path); }
-    function createCentralCircle(svg, centerX, centerY, text, value) { const radius = 50; const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', centerX); circle.setAttribute('cy', centerY); circle.setAttribute('r', radius); circle.setAttribute('fill', '#f8f9fa'); circle.setAttribute('stroke', '#dee2e6'); circle.setAttribute('stroke-width', '2'); svg.appendChild(circle); const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); titleText.setAttribute('x', centerX); titleText.setAttribute('y', centerY - 5); titleText.setAttribute('class', 'center-text center-text-title'); titleText.textContent = text; svg.appendChild(titleText); const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); valueText.setAttribute('x', centerX); valueText.setAttribute('y', centerY + 15); valueText.setAttribute('class', 'center-text center-text-value'); valueText.textContent = value; svg.appendChild(valueText); }
+    function createCentralCircle(svg, centerX, centerY, text, value) {
+        // Background Circle (invisible, just for structure)
+        const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        bgCircle.setAttribute('cx', centerX); bgCircle.setAttribute('cy', centerY);
+        bgCircle.setAttribute('r', 65); // Outer radius of the central area
+        bgCircle.setAttribute('fill', 'var(--white)');
+        svg.appendChild(bgCircle);
+
+        // Visible Inner Border Circle
+        const borderCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        borderCircle.setAttribute('cx', centerX); borderCircle.setAttribute('cy', centerY);
+        borderCircle.setAttribute('r', 62); // Slightly smaller for border effect
+        borderCircle.setAttribute('fill', 'none');
+        borderCircle.setAttribute('stroke', 'var(--grey-2)');
+        borderCircle.setAttribute('stroke-width', '2');
+        svg.appendChild(borderCircle);
+
+        // Text Elements
+        const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        titleText.setAttribute('x', centerX); titleText.setAttribute('y', centerY - 8);
+        titleText.setAttribute('class', 'center-text center-text-title');
+        titleText.textContent = text;
+        svg.appendChild(titleText);
+        const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        valueText.setAttribute('x', centerX); valueText.setAttribute('y', centerY + 20);
+        valueText.setAttribute('class', 'center-text center-text-value');
+        valueText.textContent = value;
+        svg.appendChild(valueText);
+    }
     function createTooltip() { const tooltip = document.createElement('div'); tooltip.className = 'chart-tooltip'; return tooltip; }
     function showTooltip(tooltip, event, text) { tooltip.textContent = text; tooltip.style.opacity = '1'; updateTooltipPosition(tooltip, event); }
     function hideTooltip(tooltip) { tooltip.style.opacity = '0'; }
@@ -212,8 +240,8 @@
         const explodeX = centerX + explodeOffset * Math.cos(midAngle);
         const explodeY = centerY + explodeOffset * Math.sin(midAngle);
 
-        createRingSegment(svg, explodeX, explodeY, 60, 110, startAngle, siemensAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
-        createRingSegment(svg, centerX, centerY, 60, 110, siemensAngle, startAngle + 2 * Math.PI, '#bfbfbf', `Andere Hersteller: ${andere} (${(100 - siemensPercent).toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, explodeX, explodeY, 70, 115, startAngle, siemensAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, centerX, centerY, 70, 115, siemensAngle, startAngle + 2 * Math.PI, '#bfbfbf', `Andere Hersteller: ${andere} (${(100 - siemensPercent).toFixed(1)}%)`, tooltip);
         
         createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze', total);
         
@@ -237,22 +265,22 @@
         const matchAngle = startAngle + (matchesPercent / 100) * (foundAngle - startAngle);
         
         // Inner Ring: Gefundene/Fehlende
-        createRingSegment(svg, centerX, centerY, 50, 80, startAngle, foundAngle, 'var(--light-green)', `Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)`, tooltip);
-        createRingSegment(svg, centerX, centerY, 50, 80, foundAngle, startAngle + 2 * Math.PI, 'var(--orange)', `Fehlende Web-Werte: ${missing} (${(100 - foundPercent).toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, centerX, centerY, 70, 90, startAngle, foundAngle, 'var(--light-green)', `Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, centerX, centerY, 70, 90, foundAngle, startAngle + 2 * Math.PI, 'var(--orange)', `Fehlende Web-Werte: ${missing} (${(100 - foundPercent).toFixed(1)}%)`, tooltip);
         
         // Outer Ring: Übereinstimmungen/Abweichungen (within found segment)
         if (found > 0) {
-            createRingSegment(svg, centerX, centerY, 80, 110, startAngle, matchAngle, 'var(--green)', `Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)`, tooltip);
-            createRingSegment(svg, centerX, centerY, 80, 110, matchAngle, foundAngle, 'var(--db-red)', `Abweichungen: ${diffs} (${(100 - matchesPercent).toFixed(1)}%)`, tooltip);
+            createRingSegment(svg, centerX, centerY, 95, 115, startAngle, matchAngle, 'var(--green)', `Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)`, tooltip);
+            createRingSegment(svg, centerX, centerY, 95, 115, matchAngle, foundAngle, 'var(--db-red)', `Abweichungen: ${diffs} (${(100 - matchesPercent).toFixed(1)}%)`, tooltip);
         }
         
         createCentralCircle(svg, centerX, centerY, 'Gesuchte Web-Werte*', totalSearched);
         
         document.getElementById('webSucheLegend').innerHTML = `
+            <div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing}</span></div>
             <div class="legend-item"><div class="legend-color" style="background-color: var(--light-green);"></div><span>Gefundene Web-Werte: ${found}</span></div>
             <div class="legend-item indented"><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches}</span></div>
             <div class="legend-item indented"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs}</span></div>
-            <div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing}</span></div>
         `;
     }
 
@@ -266,8 +294,8 @@
       const passtPercent = total > 0 ? (passt / total) * 100 : 0;
       const startAngle = -Math.PI / 2;
       const passtAngle = startAngle + (passtPercent / 100) * 2 * Math.PI;
-      createRingSegment(svg, centerX, centerY, 60, 110, startAngle, passtAngle, 'var(--green)', `Datenaktualität passt: ${passt} (${passtPercent.toFixed(1)}%)`, tooltip);
-      createRingSegment(svg, centerX, centerY, 60, 110, passtAngle, startAngle + 2 * Math.PI, 'var(--db-red)', `Datenaktualität fehlerhaft: ${fehlerhaft} (${(100 - passtPercent).toFixed(1)}%)`, tooltip);
+      createRingSegment(svg, centerX, centerY, 70, 115, startAngle, passtAngle, 'var(--green)', `Datenaktualität passt: ${passt} (${passtPercent.toFixed(1)}%)`, tooltip);
+      createRingSegment(svg, centerX, centerY, 70, 115, passtAngle, startAngle + 2 * Math.PI, 'var(--db-red)', `Datenaktualität fehlerhaft: ${fehlerhaft} (${(100 - passtPercent).toFixed(1)}%)`, tooltip);
       createCentralCircle(svg, centerX, centerY, 'Siemens Produkte', total);
       document.getElementById('datenqualitaetLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--green);"></div><span>Datenaktualität passt: ${passt}</span></div><div class="legend-item"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Datenaktualität fehlerhaft: ${fehlerhaft}</span></div>`;
     }
