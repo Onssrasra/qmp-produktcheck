@@ -101,14 +101,6 @@
     }
    
     /* SVG Icons */
-    .step-icon {
-      width: 20px;
-      height: 20px;
-      color: var(--black);
-      stroke: currentColor;
-      stroke-width: 2;
-    }
-    
     .section-icon {
       width: 20px;
       height: 20px;
@@ -135,26 +127,6 @@
       padding: 30px;
       border: 1px solid var(--grey-2);
       margin-bottom: 20px;
-    }
-    
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    
-    .header h1 {
-      margin: 0;
-      font-weight: 700;
-      font-size: 28px;
-      letter-spacing: -0.5px;
-      color: #911e16;
-      margin-bottom: 8px;
-    }
-
-    .header .subtitle {
-      font-size: 16px;
-      color: var(--grey-4);
-      margin-bottom: 15px;
     }
     
     /* Dropzone */
@@ -185,49 +157,22 @@
       box-shadow: 0 8px 32px rgba(145, 30, 22, 0.15);
     }
     
-    .dropzone strong {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    
-    .hint {
-      font-size: 12px;
-      color: var(--grey-4);
-      margin-top: 4px;
-    }
-    
-    .dropzone-icon {
-      font-size: 24px;
-      color: var(--grey-4);
-      margin-bottom: 4px;
-    }
-
-    .dropzone-text {
-      text-align: center;
-      margin: 0;
-      padding: 20px;
-    }
+    .dropzone strong { font-size: 14px; font-weight: 600; color: var(--text); }
+    .hint { font-size: 12px; color: var(--grey-4); margin-top: 4px; }
+    .dropzone-icon { font-size: 24px; color: var(--grey-4); margin-bottom: 4px; }
+    .dropzone-text { text-align: center; margin: 0; padding: 20px; }
     
     #action-choices {
-      display: none; /* Hidden by default, shown via JS */
+      display: none;
       gap: 30px;
       align-items: flex-start;
-      /* NEW: Added transition for smooth layout changes */
       transition: all 0.4s ease-in-out;
     }
 
-    /* NEW: Style for dynamic stacked layout */
+    /* CHANGED: Simplified stacked layout logic */
     #action-choices.stacked {
       flex-direction: column;
       gap: 25px;
-    }
-    #action-choices.stacked .action-section.active {
-      order: 1; /* Active section comes first */
-    }
-    #action-choices.stacked .action-section:not(.active) {
-      order: 2; /* Inactive section comes second */
-      opacity: 0.6; /* De-emphasize inactive section */
     }
     
     .action-section {
@@ -253,11 +198,6 @@
       display: flex;
       align-items: center;
       gap: 6px;
-    }
-
-    .action-section.disabled {
-      opacity: 0.5;
-      pointer-events: none;
     }
 
     .action-buttons {
@@ -293,44 +233,12 @@
       box-shadow: 0 8px 24px rgba(145, 30, 22, 0.3);
     }
     
-    button.secondary {
-      background: var(--white);
-      color: #911e16;
-      border-color: #911e16;
-    }
-    
-    button.secondary:hover:not(:disabled) {
-      background: #f9f9f9;
-      box-shadow: 0 8px 24px rgba(145, 30, 22, 0.15);
-    }
-
-    button.success {
-      background: var(--green);
-      border-color: var(--green);
-      color: var(--white);
-    }
-
-    button.success:hover:not(:disabled) {
-      background: #16a34a;
-      border-color: #16a34a;
-      box-shadow: 0 8px 24px rgba(22, 163, 74, 0.3);
-    }
-    
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-      background: #911e16;
-      color: var(--white);
-      border-color: #911e16;
-    }
-    
-    button.secondary:disabled {
-      background: var(--white);
-      color: #911e16;
-      border-color: #911e16;
-    }
+    button.secondary { background: var(--white); color: #911e16; border-color: #911e16; }
+    button.secondary:hover:not(:disabled) { background: #f9f9f9; box-shadow: 0 8px 24px rgba(145, 30, 22, 0.15); }
+    button.success { background: var(--green); border-color: var(--green); color: var(--white); }
+    button.success:hover:not(:disabled) { background: #16a34a; border-color: #16a34a; box-shadow: 0 8px 24px rgba(22, 163, 74, 0.3); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; background: #911e16; color: var(--white); border-color: #911e16; }
+    button.secondary:disabled { background: var(--white); color: #911e16; border-color: #911e16; }
 
     /* Charts Container */
     .charts-container {
@@ -341,9 +249,7 @@
       border: 1px solid var(--grey-2);
     }
 
-    .charts-container.hidden {
-      display: none;
-    }
+    .charts-container.hidden { display: none; }
 
     #qualityCharts {
       margin: 20px 0;
@@ -356,31 +262,28 @@
       min-height: auto;
     }
 
-    #qualityCharts:not(.hidden) {
-      display: flex;
-    }
-
-    /* CHANGED: Reduced spacing for chart title */
+    #qualityCharts:not(.hidden) { display: flex; }
+    
     .charts-title {
       font-size: 18px;
       font-weight: 600;
       color: var(--text);
-      margin-bottom: 10px; /* Was 20px */
+      margin-bottom: 10px;
       text-align: center;
     }
 
-    /* CHANGED: Reduced spacing for quality chart */
     .quality-chart {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0; /* Was 20px 0 */
+      margin: 0;
     }
 
+    /* CHANGED: Made quality chart more compact */
     .chart-wrapper {
       position: relative;
-      width: 550px;
-      height: 550px;
+      width: 450px;
+      height: 450px;
       margin: 0 auto;
       display: flex;
       align-items: center;
@@ -414,13 +317,8 @@
       box-sizing: border-box;
     }
 
-    .ring-chart-group:first-child {
-      flex: 2;
-    }
-
-    .ring-chart-group:last-child {
-      flex: 1;
-    }
+    .ring-chart-group:first-child { flex: 2; }
+    .ring-chart-group:last-child { flex: 1; }
 
     .ring-chart-wrapper {
       position: relative;
@@ -432,39 +330,15 @@
       flex-shrink: 0;
     }
 
-    .ring-chart-wrapper svg {
-      display: block;
-      margin: 0 auto;
-    }
-
-    #concentricChart,
-    #ampelRingChart {
-      width: 500px;
-      height: 500px;
-    }
+    .ring-chart-wrapper svg { display: block; margin: 0 auto; }
+    #concentricChart, #ampelRingChart { width: 500px; height: 500px; }
 
     /* SVG Ring Styles */
-    .ring-segment {
-      cursor: pointer;
-      transition: opacity 0.2s ease;
-    }
-    .ring-segment:hover {
-      opacity: 0.8;
-    }
-    .center-text {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      text-anchor: middle;
-      dominant-baseline: middle;
-      fill: var(--text);
-    }
-    .center-text-title {
-      font-size: 10px;
-      font-weight: 600;
-    }
-    .center-text-value {
-      font-size: 14px;
-      font-weight: 700;
-    }
+    .ring-segment { cursor: pointer; transition: opacity 0.2s ease; }
+    .ring-segment:hover { opacity: 0.8; }
+    .center-text { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; text-anchor: middle; dominant-baseline: middle; fill: var(--text); }
+    .center-text-title { font-size: 10px; font-weight: 600; }
+    .center-text-value { font-size: 14px; font-weight: 700; }
 
     /* Tooltip */
     .chart-tooltip {
@@ -480,31 +354,13 @@
       transition: opacity 0.2s ease;
     }
 
-    .chart-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 10px;
-      text-align: center;
-      height: 20px;
-    }
-
-    .chart-subtitle {
-      font-size: 12px;
-      color: var(--grey-4);
-      margin-bottom: 15px;
-      text-align: center;
-      min-height: 40px;
-    }
-
     /* Legend */
-    /* CHANGED: Reduced spacing for chart legend */
     .custom-legend {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 15px;
-      margin-top: 10px; /* Was 15px */
+      margin-top: 10px;
       font-size: 14px;
     }
 
@@ -522,18 +378,8 @@
       box-sizing: border-box;
     }
 
-    .legend-item {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 2px;
-    }
+    .legend-item { display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .legend-color { width: 12px; height: 12px; border-radius: 2px; }
 
     /* Status & Progress */
     .status {
@@ -563,35 +409,21 @@
       border-radius: 999px;
     }
 
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
     
     /* Responsive */
-    @media (max-width: 1400px) {
-      /* ... existing responsive styles ... */
-    }
-
     @media (max-width: 768px) {
       .wrap { padding: 0 15px; }
       .card { padding: 20px; }
-      .header h1 { font-size: 24px; }
-      .dropzone { padding: 15px; min-height: 80px; }
-      .action-buttons { flex-direction: column; align-items: stretch; }
-      button { min-width: auto; }
-      
       #action-choices,
       #action-choices.stacked {
         flex-direction: column;
         gap: 20px;
       }
-
       .chart-wrapper {
         width: 320px;
         height: 320px;
-        margin: 0 auto;
       }
-      /* ... other responsive styles ... */
     }
   </style>
 </head>
@@ -615,7 +447,7 @@
 
       <div class="action-section" id="upload-section">
         <h3>
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-closed-icon lucide-folder-closed section-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon">
             <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
             <path d="M2 10h20"/>
           </svg>
@@ -624,7 +456,7 @@
         <center>
           <div id="dropzone" class="dropzone">
             <div class="dropzone-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-folder-closed-icon lucide-folder-closed">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
                 <path d="M2 10h20"/>
               </svg>
@@ -642,7 +474,7 @@
       <div id="action-choices">
         <div class="action-section" id="quality-section">
           <h3>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-check-icon lucide-clipboard-check section-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon">
               <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
               <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
               <path d="m9 14 2 2 4-4"/>
@@ -651,11 +483,11 @@
           </h3>
           <div class="action-buttons">
             <button id="qualityCheckBtn" disabled>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               Prüfung starten
             </button>
             <button id="downloadQualityBtn" class="secondary" disabled>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
               Bericht herunterladen
             </button>
           </div>
@@ -664,7 +496,7 @@
             <div class="charts-title">Ergebnis der Qualitätsprüfung</div>
             <div class="quality-chart">
               <div class="chart-wrapper">
-                <svg id="qualityChart" width="550" height="550"></svg>
+                <svg id="qualityChart" width="450" height="450"></svg>
               </div>
             </div>
             <div class="custom-legend" id="qualityLegend"></div>
@@ -673,7 +505,7 @@
 
         <div class="action-section" id="web-search-section">
           <h3>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search section-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon">
               <path d="m21 21-4.34-4.34"/>
               <circle cx="11" cy="11" r="8"/>
             </svg>
@@ -681,11 +513,11 @@
           </h3>
           <div class="action-buttons">
             <button id="webSearchBtn" disabled>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               Suche starten
             </button>
             <button id="downloadWebBtn" class="secondary" disabled>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
               Ergebnis herunterladen
             </button>
           </div>
@@ -722,23 +554,19 @@
     const dzText = document.getElementById('dzText');
     const fileInput = document.getElementById('fileInput');
     
-    // Buttons
     const webSearchBtn = document.getElementById('webSearchBtn');
     const downloadWebBtn = document.getElementById('downloadWebBtn');
     const qualityCheckBtn = document.getElementById('qualityCheckBtn');
     const downloadQualityBtn = document.getElementById('downloadQualityBtn');
     
-    // UI Elements
     const statusEl = document.getElementById('status');
     const progressEl = document.getElementById('progress');
     const bar = progressEl.firstElementChild;
     
-    // Sections
     const actionChoices = document.getElementById('action-choices');
     const qualitySection = document.getElementById('quality-section');
     const webSearchSection = document.getElementById('web-search-section');
     
-    // Charts
     const qualityCharts = document.getElementById('qualityCharts');
     const webCharts = document.getElementById('webCharts');
     
@@ -783,10 +611,8 @@
       document.getElementById('concentricLegend').innerHTML = '';
       document.getElementById('ampelRingLegend').innerHTML = '';
       
-      // NEW: Reset layout classes
+      // CHANGED: Reset layout class
       actionChoices.classList.remove('stacked');
-      qualitySection.classList.remove('active');
-      webSearchSection.classList.remove('active');
       
       statusEl.textContent = 'Bereit für neue Datei';
     }
@@ -801,28 +627,10 @@
     }
 
     /* ==================== CHART FUNCTIONS (abbreviated for brevity) ==================== */
-    function createQualityChart(complete, incomplete, total) {
-      const svg = document.getElementById('qualityChart');
-      svg.innerHTML = '';
-      const centerX = 275, centerY = 275;
-      const colors = { complete: '#22c55e', incomplete: '#c20015' };
-      const completePercent = (complete / total) * 100;
-      const startAngle = -Math.PI / 2;
-      const completeAngle = startAngle + (completePercent / 100) * 2 * Math.PI;
-      const tooltip = createTooltip();
-      svg.parentElement.appendChild(tooltip);
-      const centerTexts = ['Gesamtdatensätze*', total.toString()];
-      const centerRadius = calculateCenterCircleRadius(centerTexts, 65);
-      const ringThickness = 50, innerRadius = centerRadius + 15, outerRadius = innerRadius + ringThickness;
-      createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, completeAngle, colors.complete, `Vollständig & richtig: ${complete} (${completePercent.toFixed(1)}%)`, tooltip);
-      createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, completeAngle, startAngle + 2 * Math.PI, colors.incomplete, `Unvollständig/unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)`, tooltip);
-      createCentralCircle(svg, centerX, centerY, centerRadius, total, 'Datensätze');
-      const legendContainer = document.getElementById('qualityLegend');
-      legendContainer.innerHTML = `<div style="position: relative; width: 100%;"><div style="display: flex; justify-content: center; align-items: center; flex-direction: column;"><div class="legend-item" style="margin-bottom: 8px;"><div class="legend-color" style="background-color: #22c55e;"></div><span>Vollständig & plausibel: ${complete} (${completePercent.toFixed(1)}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #c20015;"></div><span>Unvollständig & unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)</span></div></div><div style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--grey-4); font-style: italic; white-space: nowrap;">*Datensatz = Materialnummer</div></div>`;
-    }
+    function createQualityChart(complete, incomplete, total) { const svg = document.getElementById('qualityChart'); svg.innerHTML = ''; const centerX = 225, centerY = 225; const colors = { complete: '#22c55e', incomplete: '#c20015' }; const completePercent = total > 0 ? (complete / total) * 100 : 0; const startAngle = -Math.PI / 2; const completeAngle = startAngle + (completePercent / 100) * 2 * Math.PI; const tooltip = createTooltip(); svg.parentElement.appendChild(tooltip); const centerTexts = ['Gesamtdatensätze*', total.toString()]; const centerRadius = calculateCenterCircleRadius(centerTexts, 65); const ringThickness = 50, innerRadius = centerRadius + 15, outerRadius = innerRadius + ringThickness; createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, completeAngle, colors.complete, `Vollständig & richtig: ${complete} (${completePercent.toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, completeAngle, startAngle + 2 * Math.PI, colors.incomplete, `Unvollständig/unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)`, tooltip); createCentralCircle(svg, centerX, centerY, centerRadius, total, 'Datensätze'); const legendContainer = document.getElementById('qualityLegend'); legendContainer.innerHTML = `<div style="position: relative; width: 100%;"><div style="display: flex; justify-content: center; align-items: center; flex-direction: column;"><div class="legend-item" style="margin-bottom: 8px;"><div class="legend-color" style="background-color: #22c55e;"></div><span>Vollständig & plausibel: ${complete} (${completePercent.toFixed(1)}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #c20015;"></div><span>Unvollständig & unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)</span></div></div><div style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--grey-4); font-style: italic; white-space: nowrap;">*Datensatz = Materialnummer</div></div>`; }
     function createWebCharts(stats) { createConcentricRingChart(stats); createAmpelRingChart(stats.ampelGreen || 0, stats.ampelRed || 0); createConcentricLegend(stats); createAmpelRingLegend(stats.ampelGreen || 0, stats.ampelRed || 0); }
-    function createConcentricRingChart(stats) { const svg = document.getElementById('concentricChart'); svg.innerHTML = ''; const centerX = 250, centerY = 250; const colors = { siemens: '#4A90E2', andere: '#E5E7EB', gefunden: '#27AE60', fehlend: '#E74C3C', uebereinstimmungen: '#2ECC71', abweichungen: '#C0392B' }; const siemensPercent = (stats.totalSiemens / stats.totalDataSets) * 100; const webFoundPercent = (stats.foundWebValues / stats.searchedValues) * 100; const matchesPercent = (stats.green / stats.foundWebValues) * 100; const startAngle = -Math.PI / 2; const siemensAngle = startAngle + (siemensPercent / 100) * 2 * Math.PI; const webFoundAngle = startAngle + (webFoundPercent / 100) * (siemensAngle - startAngle); const matchesAngle = startAngle + (matchesPercent / 100) * (webFoundAngle - startAngle); const tooltip = createTooltip(); svg.parentElement.appendChild(tooltip); const centerTexts = ['Gesamtdatensätze', stats.totalDataSets.toString()]; const centerRadius = calculateCenterCircleRadius(centerTexts, 65); const ringThickness = 35; const ring1Inner = centerRadius + 10, ring1Outer = ring1Inner + ringThickness; const ring2Inner = ring1Outer + 8, ring2Outer = ring2Inner + ringThickness; const ring3Inner = ring2Outer + 8, ring3Outer = ring3Inner + ringThickness; createRingSegment(svg, centerX, centerY, ring1Inner, ring1Outer, startAngle, siemensAngle, colors.siemens, `Siemensprodukte: ${stats.totalSiemens} (${siemensPercent.toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, ring1Inner, ring1Outer, siemensAngle, startAngle + 2 * Math.PI, colors.andere, `Produkte anderer Hersteller: ${stats.totalDataSets - stats.totalSiemens} (${(100 - siemensPercent).toFixed(1)}%)`, tooltip); const webFoundAngleEnd = webFoundAngle; const webMissingAngleEnd = siemensAngle; createRingSegment(svg, centerX, centerY, ring2Inner, ring2Outer, startAngle, webFoundAngleEnd, colors.gefunden, `Gefundene Web-Werte: ${stats.foundWebValues} (${webFoundPercent.toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, ring2Inner, ring2Outer, webFoundAngleEnd, webMissingAngleEnd, colors.fehlend, `Fehlende Web-Werte: ${stats.searchedValues - stats.foundWebValues} (${(100 - webFoundPercent).toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, ring3Inner, ring3Outer, startAngle, matchesAngle, colors.uebereinstimmungen, `Übereinstimmungen: ${stats.green} (${matchesPercent.toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, ring3Inner, ring3Outer, matchesAngle, webFoundAngleEnd, colors.abweichungen, `Abweichungen: ${stats.red} (${(100 - matchesPercent).toFixed(1)}%)`, tooltip); createCentralCircle(svg, centerX, centerY, centerRadius, stats.totalDataSets); }
-    function createAmpelRingChart(greenProducts, redProducts) { const svg = document.getElementById('ampelRingChart'); svg.innerHTML = ''; const centerX = 250, centerY = 250; const colors = { ok: '#27AE60', fehlerhaft: '#E74C3C' }; const totalProducts = greenProducts + redProducts; const greenPercent = (greenProducts / totalProducts) * 100; const startAngle = -Math.PI / 2; const greenAngle = startAngle + (greenPercent / 100) * 2 * Math.PI; const tooltip = createTooltip(); svg.parentElement.appendChild(tooltip); const centerTexts = ['Siemens-', 'Produkte', totalProducts.toString()]; const centerRadius = calculateCenterCircleRadius(centerTexts, 65); const ringThickness = 35; const innerRadius = centerRadius + 10, outerRadius = innerRadius + ringThickness; createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, greenAngle, colors.ok, `Datenaktualität passt: ${greenProducts} (${greenPercent.toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, greenAngle, startAngle + 2 * Math.PI, colors.fehlerhaft, `Datenaktualität fehlerhaft: ${redProducts} (${(100 - greenPercent).toFixed(1)}%)`, tooltip); createCentralCircle(svg, centerX, centerY, centerRadius, totalProducts, 'Produkte'); }
+    function createConcentricRingChart(stats) { const svg = document.getElementById('concentricChart'); svg.innerHTML = ''; const centerX = 250, centerY = 250; const colors = { siemens: '#4A90E2', andere: '#E5E7EB', gefunden: '#27AE60', fehlend: '#E74C3C', uebereinstimmungen: '#2ECC71', abweichungen: '#C0392B' }; const siemensPercent = stats.totalDataSets > 0 ? (stats.totalSiemens / stats.totalDataSets) * 100 : 0; const webFoundPercent = stats.searchedValues > 0 ? (stats.foundWebValues / stats.searchedValues) * 100 : 0; const matchesPercent = stats.foundWebValues > 0 ? (stats.green / stats.foundWebValues) * 100 : 0; const startAngle = -Math.PI / 2; const siemensAngle = startAngle + (siemensPercent / 100) * 2 * Math.PI; const webFoundAngle = startAngle + (webFoundPercent / 100) * (siemensAngle - startAngle); const matchesAngle = startAngle + (matchesPercent / 100) * (webFoundAngle - startAngle); const tooltip = createTooltip(); svg.parentElement.appendChild(tooltip); const centerTexts = ['Gesamtdatensätze', stats.totalDataSets.toString()]; const centerRadius = calculateCenterCircleRadius(centerTexts, 65); const ringThickness = 35; const ring1Inner = centerRadius + 10, ring1Outer = ring1Inner + ringThickness; const ring2Inner = ring1Outer + 8, ring2Outer = ring2Inner + ringThickness; const ring3Inner = ring2Outer + 8, ring3Outer = ring3Inner + ringThickness; createRingSegment(svg, centerX, centerY, ring1Inner, ring1Outer, startAngle, siemensAngle, colors.siemens, `Siemensprodukte: ${stats.totalSiemens} (${siemensPercent.toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, ring1Inner, ring1Outer, siemensAngle, startAngle + 2 * Math.PI, colors.andere, `Produkte anderer Hersteller: ${stats.totalDataSets - stats.totalSiemens} (${(100 - siemensPercent).toFixed(1)}%)`, tooltip); const webFoundAngleEnd = webFoundAngle; const webMissingAngleEnd = siemensAngle; createRingSegment(svg, centerX, centerY, ring2Inner, ring2Outer, startAngle, webFoundAngleEnd, colors.gefunden, `Gefundene Web-Werte: ${stats.foundWebValues} (${webFoundPercent.toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, ring2Inner, ring2Outer, webFoundAngleEnd, webMissingAngleEnd, colors.fehlend, `Fehlende Web-Werte: ${stats.searchedValues - stats.foundWebValues} (${(100 - webFoundPercent).toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, ring3Inner, ring3Outer, startAngle, matchesAngle, colors.uebereinstimmungen, `Übereinstimmungen: ${stats.green} (${matchesPercent.toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, ring3Inner, ring3Outer, matchesAngle, webFoundAngleEnd, colors.abweichungen, `Abweichungen: ${stats.red} (${(100 - matchesPercent).toFixed(1)}%)`, tooltip); createCentralCircle(svg, centerX, centerY, centerRadius, stats.totalDataSets); }
+    function createAmpelRingChart(greenProducts, redProducts) { const svg = document.getElementById('ampelRingChart'); svg.innerHTML = ''; const centerX = 250, centerY = 250; const colors = { ok: '#27AE60', fehlerhaft: '#E74C3C' }; const totalProducts = greenProducts + redProducts; const greenPercent = totalProducts > 0 ? (greenProducts / totalProducts) * 100 : 0; const startAngle = -Math.PI / 2; const greenAngle = startAngle + (greenPercent / 100) * 2 * Math.PI; const tooltip = createTooltip(); svg.parentElement.appendChild(tooltip); const centerTexts = ['Siemens-', 'Produkte', totalProducts.toString()]; const centerRadius = calculateCenterCircleRadius(centerTexts, 65); const ringThickness = 35; const innerRadius = centerRadius + 10, outerRadius = innerRadius + ringThickness; createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, greenAngle, colors.ok, `Datenaktualität passt: ${greenProducts} (${greenPercent.toFixed(1)}%)`, tooltip); createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, greenAngle, startAngle + 2 * Math.PI, colors.fehlerhaft, `Datenaktualität fehlerhaft: ${redProducts} (${(100 - greenPercent).toFixed(1)}%)`, tooltip); createCentralCircle(svg, centerX, centerY, centerRadius, totalProducts, 'Produkte'); }
     function createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, endAngle, color, tooltipText, tooltip) { const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); const x1 = centerX + innerRadius * Math.cos(startAngle), y1 = centerY + innerRadius * Math.sin(startAngle); const x2 = centerX + outerRadius * Math.cos(startAngle), y2 = centerY + outerRadius * Math.sin(startAngle); const x3 = centerX + outerRadius * Math.cos(endAngle), y3 = centerY + outerRadius * Math.sin(endAngle); const x4 = centerX + innerRadius * Math.cos(endAngle), y4 = centerY + innerRadius * Math.sin(endAngle); const largeArcFlag = endAngle - startAngle <= Math.PI ? '0' : '1'; const pathData = [`M ${x1} ${y1}`, `L ${x2} ${y2}`, `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${x3} ${y3}`, `L ${x4} ${y4}`, `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x1} ${y1}`, 'Z'].join(' '); path.setAttribute('d', pathData); path.setAttribute('fill', color); path.setAttribute('class', 'ring-segment'); path.addEventListener('mouseenter', (e) => showTooltip(tooltip, e, tooltipText)); path.addEventListener('mouseleave', () => hideTooltip(tooltip)); path.addEventListener('mousemove', (e) => updateTooltipPosition(tooltip, e)); svg.appendChild(path); }
     function createCentralCircle(svg, centerX, centerY, radius, value, unit = 'Datensätze') { const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', centerX); circle.setAttribute('cy', centerY); circle.setAttribute('r', radius); circle.setAttribute('fill', '#f8f9fa'); circle.setAttribute('stroke', '#dee2e6'); circle.setAttribute('stroke-width', '2'); svg.appendChild(circle); if (unit === 'Produkte') { const line1Text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); line1Text.setAttribute('x', centerX); line1Text.setAttribute('y', centerY - 8); line1Text.setAttribute('class', 'center-text center-text-title'); line1Text.textContent = 'Siemens-'; svg.appendChild(line1Text); const line2Text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); line2Text.setAttribute('x', centerX); line2Text.setAttribute('y', centerY + 8); line2Text.setAttribute('class', 'center-text center-text-title'); line2Text.textContent = 'Produkte'; svg.appendChild(line2Text); const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); valueText.setAttribute('x', centerX); valueText.setAttribute('y', centerY + 25); valueText.setAttribute('class', 'center-text center-text-value'); valueText.textContent = value; svg.appendChild(valueText); } else { const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); titleText.setAttribute('x', centerX); titleText.setAttribute('y', centerY - 5); titleText.setAttribute('class', 'center-text center-text-title'); titleText.textContent = 'Gesamtdatensätze*'; svg.appendChild(titleText); const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text'); valueText.setAttribute('x', centerX); valueText.setAttribute('y', centerY + 20); valueText.setAttribute('class', 'center-text center-text-value'); valueText.textContent = value; svg.appendChild(valueText); } }
     function createTooltip() { const tooltip = document.createElement('div'); tooltip.className = 'chart-tooltip'; return tooltip; }
@@ -830,8 +638,8 @@
     function showTooltip(tooltip, event, text) { tooltip.textContent = text; tooltip.style.opacity = '1'; updateTooltipPosition(tooltip, event); }
     function hideTooltip(tooltip) { tooltip.style.opacity = '0'; }
     function updateTooltipPosition(tooltip, event) { const rect = event.target.closest('svg').getBoundingClientRect(); tooltip.style.left = (event.clientX - rect.left + 10) + 'px'; tooltip.style.top = (event.clientY - rect.top - 10) + 'px'; }
-    function createConcentricLegend(stats) { const legendContainer = document.getElementById('concentricLegend'); const siemensPercent = ((stats.totalSiemens / stats.totalDataSets) * 100).toFixed(1); const webFoundPercent = ((stats.foundWebValues / stats.searchedValues) * 100).toFixed(1); const matchesPercent = (stats.green / stats.foundWebValues) * 100; legendContainer.innerHTML = `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; font-size: 12px;"><div><strong>Ring 1: Hersteller</strong><div class="legend-item"><div class="legend-color" style="background-color: #4A90E2;"></div><span>Siemens: ${stats.totalSiemens} (${siemensPercent}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #E5E7EB;"></div><span>Andere: ${stats.totalDataSets - stats.totalSiemens} (${(100 - siemensPercent).toFixed(1)}%)</span></div></div><div><strong>Ring 2: Web-Suche*</strong><div class="legend-item"><div class="legend-color" style="background-color: #27AE60;"></div><span>Gefunden: ${stats.foundWebValues} (${webFoundPercent}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #E74C3C;"></div><span>Fehlend: ${stats.searchedValues - stats.foundWebValues} (${(100 - webFoundPercent).toFixed(1)}%)</span></div></div><div><strong>Ring 3: Vergleich</strong><div class="legend-item"><div class="legend-color" style="background-color: #2ECC71;"></div><span>Gleich: ${stats.green} (${matchesPercent.toFixed(1)}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #C0392B;"></div><span>Ungleich: ${stats.red} (${(100 - matchesPercent).toFixed(1)}%)</span></div></div></div><div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #6b7280; line-height: 1.4;"><strong>*Hinweis:</strong> Für jedes Siemens-Produkt werden 8 Attribute im Web geprüft (z.B. Materialkurztext, Art.-Nr., Gewicht, etc.).<br>Die Suche bezieht sich auf diese ${stats.searchedValues} Einzelabfragen bei ${stats.totalSiemens} Produkten.</div>`; }
-    function createAmpelRingLegend(greenProducts, redProducts) { const legendContainer = document.getElementById('ampelRingLegend'); const totalProducts = greenProducts + redProducts; const greenPercent = ((greenProducts / totalProducts) * 100).toFixed(1); legendContainer.innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: #27AE60;"></div><span>Daten aktuell: ${greenProducts} (${greenPercent}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #E74C3C;"></div><span>Daten fehlerhaft: ${redProducts} (${(100 - greenPercent).toFixed(1)}%)</span></div>`; }
+    function createConcentricLegend(stats) { const legendContainer = document.getElementById('concentricLegend'); const siemensPercent = stats.totalDataSets > 0 ? ((stats.totalSiemens / stats.totalDataSets) * 100).toFixed(1) : 0; const webFoundPercent = stats.searchedValues > 0 ? ((stats.foundWebValues / stats.searchedValues) * 100).toFixed(1) : 0; const matchesPercent = stats.foundWebValues > 0 ? (stats.green / stats.foundWebValues) * 100 : 0; legendContainer.innerHTML = `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; font-size: 12px;"><div><strong>Ring 1: Hersteller</strong><div class="legend-item"><div class="legend-color" style="background-color: #4A90E2;"></div><span>Siemens: ${stats.totalSiemens} (${siemensPercent}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #E5E7EB;"></div><span>Andere: ${stats.totalDataSets - stats.totalSiemens} (${(100 - siemensPercent).toFixed(1)}%)</span></div></div><div><strong>Ring 2: Web-Suche*</strong><div class="legend-item"><div class="legend-color" style="background-color: #27AE60;"></div><span>Gefunden: ${stats.foundWebValues} (${webFoundPercent}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #E74C3C;"></div><span>Fehlend: ${stats.searchedValues - stats.foundWebValues} (${(100 - webFoundPercent).toFixed(1)}%)</span></div></div><div><strong>Ring 3: Vergleich</strong><div class="legend-item"><div class="legend-color" style="background-color: #2ECC71;"></div><span>Gleich: ${stats.green} (${matchesPercent.toFixed(1)}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #C0392B;"></div><span>Ungleich: ${stats.red} (${(100 - matchesPercent).toFixed(1)}%)</span></div></div></div><div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #6b7280; line-height: 1.4;"><strong>*Hinweis:</strong> Für jedes Siemens-Produkt werden 8 Attribute im Web geprüft (z.B. Materialkurztext, Art.-Nr., Gewicht, etc.).<br>Die Suche bezieht sich auf diese ${stats.searchedValues} Einzelabfragen bei ${stats.totalSiemens} Produkten.</div>`; }
+    function createAmpelRingLegend(greenProducts, redProducts) { const legendContainer = document.getElementById('ampelRingLegend'); const totalProducts = greenProducts + redProducts; const greenPercent = totalProducts > 0 ? ((greenProducts / totalProducts) * 100).toFixed(1) : 0; legendContainer.innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: #27AE60;"></div><span>Daten aktuell: ${greenProducts} (${greenPercent}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #E74C3C;"></div><span>Daten fehlerhaft: ${redProducts} (${(100 - greenPercent).toFixed(1)}%)</span></div>`; }
 
     /* ==================== DROP ZONE ==================== */
     dropzone.addEventListener('click', () => fileInput.click());
@@ -858,10 +666,8 @@
     qualityCheckBtn.addEventListener('click', async () => {
       if (!selectedFile) return;
       
-      // NEW: Set active layout
+      // CHANGED: Simplified layout logic
       actionChoices.classList.add('stacked');
-      qualitySection.classList.add('active');
-      webSearchSection.classList.remove('active');
 
       qualityBlob = null;
       webSearchBtn.disabled = true;
@@ -909,10 +715,8 @@
     webSearchBtn.addEventListener('click', async () => {
       if (!selectedFile) return;
       
-      // NEW: Set active layout
+      // CHANGED: Simplified layout logic
       actionChoices.classList.add('stacked');
-      webSearchSection.classList.add('active');
-      qualitySection.classList.remove('active');
 
       webProcessedBlob = null;
       qualityCheckBtn.disabled = true;
