@@ -169,10 +169,16 @@
       transition: all 0.4s ease-in-out;
     }
 
-    /* CHANGED: Simplified stacked layout logic */
+    /* CHANGED: Simplified stacked layout with fixed order */
     #action-choices.stacked {
       flex-direction: column;
       gap: 25px;
+    }
+    #action-choices.stacked #quality-section {
+      order: 1; /* Always on top */
+    }
+    #action-choices.stacked #web-search-section {
+      order: 2; /* Always at bottom */
     }
     
     .action-section {
@@ -564,8 +570,6 @@
     const bar = progressEl.firstElementChild;
     
     const actionChoices = document.getElementById('action-choices');
-    const qualitySection = document.getElementById('quality-section');
-    const webSearchSection = document.getElementById('web-search-section');
     
     const qualityCharts = document.getElementById('qualityCharts');
     const webCharts = document.getElementById('webCharts');
