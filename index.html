@@ -6,7 +6,6 @@
   <title>DB Produktdaten — Qualitätsmonitor</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
   <style>
@@ -73,20 +72,25 @@
     .charts-container { margin: 25px 0 0 0; padding: 20px; background: var(--grey-1); border-radius: 12px; border: 1px solid var(--grey-2); flex-grow: 1; }
     .charts-container.hidden { display: none; }
     .charts-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 10px; text-align: center; }
-    /* REVERTED: Option A chart wrapper back to original size */
-    .chart-wrapper { position: relative; width: 450px; height: 450px; margin: 0 auto; }
+    .chart-wrapper { position: relative; width: 400px; height: 400px; margin: 0 auto; }
     
     .three-chart-container { display: flex; gap: 20px; align-items: stretch; justify-content: space-between; }
     .chart-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: var(--white); border: 1px solid var(--grey-2); border-radius: 12px; padding: 15px; }
     .chart-group .chart-title { font-size: 16px; margin-bottom: 15px; }
     .chart-wrapper-small { width: 300px; height: 300px; position: relative; }
+    .chart-legend { margin-top: auto; font-size: 12px; display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 15px; align-items: center; }
     .hinweis-note { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--grey-2); font-size: 11px; color: #6b7280; line-height: 1.4; }
-    
-    /* UPDATED: Legend styling for centered block with left-aligned text */
-    .chart-legend { margin-top: auto; font-size: 12px; width: 100%; padding-top: 15px; text-align: center; }
-    .legend-content-wrapper { display: inline-block; text-align: left; }
-    .legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin-bottom: 4px;}
+    .legend-item { display: flex; align-items: center; justify-content: center; gap: 8px; }
     .legend-color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+    .footnote-right { width: 100%; text-align: right; font-size: 11px; color: var(--grey-4); font-style: italic; margin-top: 8px; }
+
+    /* NEW: Style for centered, left-aligned legends */
+    .legend-content-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start; /* Aligns all legend items to the left */
+      gap: 8px; /* Adds consistent spacing between legend items */
+    }
 
     .ring-segment { cursor: pointer; transition: opacity 0.2s ease; }
     .ring-segment:hover { opacity: 0.8; }
@@ -134,8 +138,10 @@
           <div id="qualityCharts" class="charts-container hidden">
             <div class="charts-title">Ergebnis der Qualitätsprüfung</div>
             <div class="chart-wrapper"> 
-              <canvas id="qualityPieChart"></canvas> 
+              <svg id="qualityChart" width="400" height="400"></svg>
             </div>
+            <div id="qualityLegend" class="chart-legend" style="flex-direction: row; justify-content: center; gap: 20px;"></div>
+            <div id="qualityFootnote" class="footnote-right"></div>
           </div>
         </div>
         <div class="action-section" id="web-search-section">
@@ -161,12 +167,11 @@
 
   <script>
     const dropzone = document.getElementById('dropzone'), dzText = document.getElementById('dzText'), fileInput = document.getElementById('fileInput'), webSearchBtn = document.getElementById('webSearchBtn'), downloadWebBtn = document.getElementById('downloadWebBtn'), qualityCheckBtn = document.getElementById('qualityCheckBtn'), downloadQualityBtn = document.getElementById('downloadQualityBtn'), statusEl = document.getElementById('status'), progressEl = document.getElementById('progress'), bar = progressEl.firstElementChild, actionChoices = document.getElementById('action-choices'), qualityCharts = document.getElementById('qualityCharts'), webCharts = document.getElementById('webCharts');
-    let selectedFile = null, webProcessedBlob = null, qualityBlob = null, qualityStats = null, qualityPieChart = null;
+    let selectedFile = null, webProcessedBlob = null, qualityBlob = null, qualityStats = null;
 
     function resetAllStates() {
       qualityBlob = null; webProcessedBlob = null; qualityStats = null;
-      // REVERTED: Back to destroying Chart.js instance for Option A
-      if (qualityPieChart) { qualityPieChart.destroy(); qualityPieChart = null; }
+      document.getElementById('qualityChart').innerHTML = '';
       document.getElementById('herstellerChart').innerHTML = ''; document.getElementById('webSucheChart').innerHTML = ''; document.getElementById('datenqualitaetChart').innerHTML = '';
       downloadQualityBtn.disabled = true; downloadWebBtn.disabled = true;
       downloadQualityBtn.classList.add('secondary'); downloadQualityBtn.classList.remove('success');
@@ -209,31 +214,30 @@
     function hideTooltip(tooltip) { tooltip.style.opacity = '0'; }
     function updateTooltipPosition(tooltip, event) { const rect = event.target.closest('svg').getBoundingClientRect(); tooltip.style.left = (event.clientX - rect.left + 15) + 'px'; tooltip.style.top = (event.clientY - rect.top + 15) + 'px'; }
     
-    // REVERTED: Option A chart is back to its original Chart.js implementation
-    function createQualityPieChart(stats) {
-        const ctx = document.getElementById('qualityPieChart').getContext('2d');
-        if (qualityPieChart) { qualityPieChart.destroy(); }
+    function createQualityDonutChart(stats) {
+        const svg = document.getElementById('qualityChart');
+        svg.innerHTML = '';
+        const centerX = 200, centerY = 200;
+        const tooltip = createTooltip();
+        svg.parentElement.appendChild(tooltip);
+        
         const total = stats.total;
         const complete = stats.complete;
         const incomplete = stats.incomplete;
-        qualityPieChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: [`Vollständig & Plausibel (${total > 0 ? ((complete / total) * 100).toFixed(1) : 0}%)`, `Unvollständig & Unplausibel (${total > 0 ? ((incomplete / total) * 100).toFixed(1) : 0}%)`],
-                datasets: [{ data: [complete, incomplete], backgroundColor: ['var(--green)', 'var(--db-red)'], borderColor: ['#ffffff'], borderWidth: 2 }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw} Datensätze` } }
-                }
-            }
-        });
+        const completePercent = total > 0 ? (complete / total) * 100 : 0;
+
+        const startAngle = -Math.PI / 2;
+        const completeAngle = startAngle + (completePercent / 100) * (2 * Math.PI);
+        
+        createRingSegment(svg, centerX, centerY, 70, 115, startAngle, completeAngle, 'var(--green)', `Vollständig & Plausibel: ${complete} (${completePercent.toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, centerX, centerY, 70, 115, completeAngle, startAngle + 2 * Math.PI, 'var(--db-red)', `Unvollständig & Unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)`, tooltip);
+        
+        createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze*', total);
+
+        document.getElementById('qualityLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--green);"></div><span>Vollständig & Plausibel: ${complete} (${completePercent.toFixed(1)}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Unvollständig & Unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)</span></div>`;
+        document.getElementById('qualityFootnote').innerHTML = `*Datensatz = Artikelnummer`;
     }
 
-    // This function creates the "Hersteller Verteilung" chart.
     function createHerstellerChart(stats) {
         const svg = document.getElementById('herstellerChart');
         svg.innerHTML = '';
@@ -245,12 +249,11 @@
         const siemensPercent = total > 0 ? (siemens / total) * 100 : 0;
         const anderePercent = 100 - siemensPercent;
 
-        // UPDATED: This is the logic for a continuous ring with a step effect
         const startAngle = -Math.PI / 2;
         const siemensEndAngle = startAngle + (siemensPercent / 100) * (2 * Math.PI);
 
         const innerRadius = 70;
-        const siemensOuterRadius = 128; 
+        const siemensOuterRadius = 128;
         const andereOuterRadius = 110;
 
         createRingSegment(svg, centerX, centerY, innerRadius, siemensOuterRadius, startAngle, siemensEndAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
@@ -258,15 +261,19 @@
         
         createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze', total);
         
-        // This generates the centered block with left-aligned legend items.
         document.getElementById('herstellerLegend').innerHTML = `
             <div class="legend-content-wrapper">
-                <div class="legend-item"><div class="legend-color" style="background-color: var(--blue);"></div><span>Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)</span></div>
-                <div class="legend-item"><div class="legend-color" style="background-color: #bfbfbf;"></div><span>Andere Hersteller: ${andere} (${anderePercent.toFixed(1)}%)</span></div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--blue);"></div>
+                    <span>Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #bfbfbf;"></div>
+                    <span>Andere Hersteller: ${andere} (${anderePercent.toFixed(1)}%)</span>
+                </div>
             </div>`;
     }
 
-    // This function creates the "Web-Suche" chart.
     function createWebSucheChart(stats) {
         const svg = document.getElementById('webSucheChart');
         svg.innerHTML = '';
@@ -294,13 +301,26 @@
         
         createCentralCircle(svg, centerX, centerY, 'Gesuchte Web-Werte*', totalSearched);
         
-        // UPDATED: This JS creates the new hierarchical legend with the connector symbol.
         document.getElementById('webSucheLegend').innerHTML = `
             <div class="legend-content-wrapper">
-                <div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing} (${missingPercent.toFixed(1)}%)</span></div>
-                <div class="legend-item"><div class="legend-color" style="background-color: var(--light-green);"></div><span>Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)</span></div>
-                <div class="legend-item" style="padding-left: 15px;"><span style="margin-right: 4px;">└─</span><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)</span></div>
-                <div class="legend-item" style="padding-left: 15px;"><span style="margin-right: 4px;">└─</span><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs} (${diffsPercent.toFixed(1)}%)</span></div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--orange);"></div>
+                    <span>Fehlende Web-Werte: ${missing} (${missingPercent.toFixed(1)}%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--light-green);"></div>
+                    <span>Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)</span>
+                </div>
+                <div class="legend-item" style="padding-left: 20px;">
+                    <span style="margin-right: 4px; color: var(--grey-4);">└─</span>
+                    <div class="legend-color" style="background-color: var(--green);"></div>
+                    <span>Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)</span>
+                </div>
+                <div class="legend-item" style="padding-left: 20px;">
+                    <span style="margin-right: 4px; color: var(--grey-4);">└─</span>
+                    <div class="legend-color" style="background-color: var(--db-red);"></div>
+                    <span>Abweichungen: ${diffs} (${diffsPercent.toFixed(1)}%)</span>
+                </div>
             </div>`;
     }
 
@@ -319,10 +339,16 @@
       createRingSegment(svg, centerX, centerY, 70, 115, passtAngle, startAngle + 2 * Math.PI, 'var(--db-red)', `Datenaktualität fehlerhaft: ${fehlerhaft} (${fehlerhaftPercent.toFixed(1)}%)`, tooltip);
       createCentralCircle(svg, centerX, centerY, 'Siemens Produkte', total);
       document.getElementById('datenqualitaetLegend').innerHTML = `
-        <div class="legend-content-wrapper">
-            <div class="legend-item"><div class="legend-color" style="background-color: var(--green);"></div><span>Datenaktualität passt: ${passt} (${passtPercent.toFixed(1)}%)</span></div>
-            <div class="legend-item"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Datenaktualität fehlerhaft: ${fehlerhaft} (${fehlerhaftPercent.toFixed(1)}%)</span></div>
-        </div>`;
+            <div class="legend-content-wrapper">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--green);"></div>
+                    <span>Datenaktualität passt: ${passt} (${passtPercent.toFixed(1)}%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--db-red);"></div>
+                    <span>Datenaktualität fehlerhaft: ${fehlerhaft} (${fehlerhaftPercent.toFixed(1)}%)</span>
+                </div>
+            </div>`;
     }
 
     function displayWebSearchCharts(stats) {
@@ -361,19 +387,17 @@
         if (!resp.ok) { throw new Error(`HTTP ${resp.status}: ${await resp.text()}`); }
         updateProgress(70);
         const buf = await resp.arrayBuffer();
-        qualityBlob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.sheet' });
+        qualityBlob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         const statsForm = new FormData(); statsForm.append('file', new File([qualityBlob], 'Qualitätsbericht.xlsx'));
         const statsResp = await fetch('/api/quality-stats', { method: 'POST', body: statsForm });
         if (statsResp.ok) {
           const stats = await statsResp.json();
           qualityStats = stats;
-          // Call the original Chart.js function
-          createQualityPieChart(stats); 
-          qualityCharts.classList.remove('hidden');
+          createQualityDonutChart(stats);
         } else {
-          createQualityPieChart({complete: 0, incomplete: 0, total: 0});
-          qualityCharts.classList.remove('hidden');
+          createQualityDonutChart({complete: 0, incomplete: 0, total: 0});
         }
+        qualityCharts.classList.remove('hidden');
         updateProgress(100);
         statusEl.textContent = 'Qualitätsprüfung abgeschlossen.';
         qualityCheckBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg> Prüfung fertig`;
@@ -402,7 +426,7 @@
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         updateProgress(50);
         const buf = await resp.arrayBuffer();
-        webProcessedBlob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.sheet' });
+        webProcessedBlob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         const statsForm = new FormData(); statsForm.append('file', new File([webProcessedBlob], 'Web_Vergleich_Ergebnis.xlsx'));
         if (qualityStats && qualityStats.total) { statsForm.append('totalFromQuality', qualityStats.total); }
         const statsResp = await fetch('/api/web-search-stats', { method: 'POST', body: statsForm });
