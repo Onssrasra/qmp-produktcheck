@@ -6,7 +6,6 @@
   <title>DB Produktdaten — Qualitätsmonitor</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
   <style>
@@ -14,7 +13,6 @@
       --db-red: #c20015;
       --grey-1: #f5f5f5;
       --grey-2: #e6e6e6;
-      --grey-3: #bfbfbf;
       --grey-4: #8c8c8c;
       --text: #222;
       --white: #ffffff;
@@ -84,6 +82,8 @@
     .legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
     .legend-color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
     .legend-item.indented { margin-left: 20px; }
+    .footnote-right { width: 100%; text-align: right; font-size: 11px; color: var(--grey-4); font-style: italic; margin-top: 8px; }
+
 
     .ring-segment { cursor: pointer; transition: opacity 0.2s ease; }
     .ring-segment:hover { opacity: 0.8; }
@@ -130,7 +130,11 @@
           </div>
           <div id="qualityCharts" class="charts-container hidden">
             <div class="charts-title">Ergebnis der Qualitätsprüfung</div>
-            <div class="chart-wrapper"> <canvas id="qualityPieChart"></canvas> </div>
+            <div class="chart-wrapper"> 
+              <svg id="qualityChart" width="450" height="450"></svg>
+            </div>
+            <div id="qualityLegend" class="chart-legend" style="flex-direction: row; justify-content: center; gap: 20px;"></div>
+            <div id="qualityFootnote" class="footnote-right"></div>
           </div>
         </div>
         <div class="action-section" id="web-search-section">
@@ -156,11 +160,11 @@
 
   <script>
     const dropzone = document.getElementById('dropzone'), dzText = document.getElementById('dzText'), fileInput = document.getElementById('fileInput'), webSearchBtn = document.getElementById('webSearchBtn'), downloadWebBtn = document.getElementById('downloadWebBtn'), qualityCheckBtn = document.getElementById('qualityCheckBtn'), downloadQualityBtn = document.getElementById('downloadQualityBtn'), statusEl = document.getElementById('status'), progressEl = document.getElementById('progress'), bar = progressEl.firstElementChild, actionChoices = document.getElementById('action-choices'), qualityCharts = document.getElementById('qualityCharts'), webCharts = document.getElementById('webCharts');
-    let selectedFile = null, webProcessedBlob = null, qualityBlob = null, qualityStats = null, qualityPieChart = null;
+    let selectedFile = null, webProcessedBlob = null, qualityBlob = null, qualityStats = null;
 
     function resetAllStates() {
       qualityBlob = null; webProcessedBlob = null; qualityStats = null;
-      if (qualityPieChart) { qualityPieChart.destroy(); qualityPieChart = null; }
+      document.getElementById('qualityChart').innerHTML = '';
       document.getElementById('herstellerChart').innerHTML = ''; document.getElementById('webSucheChart').innerHTML = ''; document.getElementById('datenqualitaetChart').innerHTML = '';
       downloadQualityBtn.disabled = true; downloadWebBtn.disabled = true;
       downloadQualityBtn.classList.add('secondary'); downloadQualityBtn.classList.remove('success');
@@ -175,23 +179,18 @@
     function updateProgress(percent) { bar.style.width = percent + '%'; }
     function createRingSegment(svg, centerX, centerY, innerRadius, outerRadius, startAngle, endAngle, color, tooltipText, tooltip) { const path = document.createElementNS('http://www.w3.org/2000/svg', 'path'); const x1 = centerX + innerRadius * Math.cos(startAngle), y1 = centerY + innerRadius * Math.sin(startAngle); const x2 = centerX + outerRadius * Math.cos(startAngle), y2 = centerY + outerRadius * Math.sin(startAngle); const x3 = centerX + outerRadius * Math.cos(endAngle), y3 = centerY + outerRadius * Math.sin(endAngle); const x4 = centerX + innerRadius * Math.cos(endAngle), y4 = centerY + innerRadius * Math.sin(endAngle); const largeArcFlag = endAngle - startAngle <= Math.PI ? '0' : '1'; const pathData = [`M ${x1} ${y1}`, `L ${x2} ${y2}`, `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${x3} ${y3}`, `L ${x4} ${y4}`, `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x1} ${y1}`, 'Z'].join(' '); path.setAttribute('d', pathData); path.setAttribute('fill', color); path.setAttribute('class', 'ring-segment'); path.addEventListener('mouseenter', (e) => showTooltip(tooltip, e, tooltipText)); path.addEventListener('mouseleave', () => hideTooltip(tooltip)); path.addEventListener('mousemove', (e) => updateTooltipPosition(tooltip, e)); svg.appendChild(path); }
     function createCentralCircle(svg, centerX, centerY, text, value) {
-        // Background Circle (invisible, just for structure)
         const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         bgCircle.setAttribute('cx', centerX); bgCircle.setAttribute('cy', centerY);
-        bgCircle.setAttribute('r', 65); // Outer radius of the central area
+        bgCircle.setAttribute('r', 65);
         bgCircle.setAttribute('fill', 'var(--white)');
         svg.appendChild(bgCircle);
-
-        // Visible Inner Border Circle
         const borderCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         borderCircle.setAttribute('cx', centerX); borderCircle.setAttribute('cy', centerY);
-        borderCircle.setAttribute('r', 62); // Slightly smaller for border effect
+        borderCircle.setAttribute('r', 62);
         borderCircle.setAttribute('fill', 'none');
         borderCircle.setAttribute('stroke', 'var(--grey-2)');
         borderCircle.setAttribute('stroke-width', '2');
         svg.appendChild(borderCircle);
-
-        // Text Elements
         const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         titleText.setAttribute('x', centerX); titleText.setAttribute('y', centerY - 8);
         titleText.setAttribute('class', 'center-text center-text-title');
@@ -208,18 +207,29 @@
     function hideTooltip(tooltip) { tooltip.style.opacity = '0'; }
     function updateTooltipPosition(tooltip, event) { const rect = event.target.closest('svg').getBoundingClientRect(); tooltip.style.left = (event.clientX - rect.left + 15) + 'px'; tooltip.style.top = (event.clientY - rect.top + 15) + 'px'; }
     
-    function createQualityPieChart(complete, incomplete) {
-      const ctx = document.getElementById('qualityPieChart').getContext('2d');
-      if (qualityPieChart) { qualityPieChart.destroy(); }
-      const total = complete + incomplete;
-      qualityPieChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: [`Vollständig & Plausibel (${total > 0 ? ((complete / total) * 100).toFixed(1) : 0}%)`, `Unvollständig & Unplausibel (${total > 0 ? ((incomplete / total) * 100).toFixed(1) : 0}%)`],
-          datasets: [{ data: [complete, incomplete], backgroundColor: ['var(--green)', 'var(--db-red)'], borderColor: ['#ffffff'], borderWidth: 2 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw} Datensätze` } } } }
-      });
+    // NEW: Function to draw quality chart as a custom SVG donut
+    function createQualityDonutChart(stats) {
+        const svg = document.getElementById('qualityChart');
+        svg.innerHTML = '';
+        const centerX = 225, centerY = 225;
+        const tooltip = createTooltip();
+        svg.parentElement.appendChild(tooltip);
+        
+        const total = stats.total;
+        const complete = stats.complete;
+        const incomplete = stats.incomplete;
+        const completePercent = total > 0 ? (complete / total) * 100 : 0;
+
+        const startAngle = -Math.PI / 2;
+        const completeAngle = startAngle + (completePercent / 100) * 2 * Math.PI;
+
+        createRingSegment(svg, centerX, centerY, 100, 160, startAngle, completeAngle, 'var(--green)', `Vollständig & Plausibel: ${complete} (${completePercent.toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, centerX, centerY, 100, 160, completeAngle, startAngle + 2 * Math.PI, 'var(--db-red)', `Unvollständig & Unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)`, tooltip);
+        
+        createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze*', total);
+
+        document.getElementById('qualityLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--green);"></div><span>Vollständig & Plausibel: ${complete}</span></div><div class="legend-item"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Unvollständig & Unplausibel: ${incomplete}</span></div>`;
+        document.getElementById('qualityFootnote').innerHTML = `*Datensatz = Artikelnummer`;
     }
 
     function createHerstellerChart(stats) {
@@ -228,23 +238,18 @@
         const centerX = 150, centerY = 150;
         const tooltip = createTooltip();
         svg.parentElement.appendChild(tooltip);
-        
         const total = stats.totalDataSets, siemens = stats.totalSiemens, andere = total - siemens;
         const siemensPercent = total > 0 ? (siemens / total) * 100 : 0;
         const startAngle = -Math.PI / 2;
         const siemensAngle = startAngle + (siemensPercent / 100) * 2 * Math.PI;
-
-        // Explode the Siemens slice
         const explodeOffset = 10;
         const midAngle = startAngle + (siemensAngle - startAngle) / 2;
         const explodeX = centerX + explodeOffset * Math.cos(midAngle);
         const explodeY = centerY + explodeOffset * Math.sin(midAngle);
-
-        createRingSegment(svg, explodeX, explodeY, 70, 115, startAngle, siemensAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
-        createRingSegment(svg, centerX, centerY, 70, 115, siemensAngle, startAngle + 2 * Math.PI, '#bfbfbf', `Andere Hersteller: ${andere} (${(100 - siemensPercent).toFixed(1)}%)`, tooltip);
-        
+        const innerRadius = 70, siemensOuterRadius = 115, andereOuterRadius = 105;
+        createRingSegment(svg, explodeX, explodeY, innerRadius, siemensOuterRadius, startAngle, siemensAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, centerX, centerY, innerRadius, andereOuterRadius, siemensAngle, startAngle + 2 * Math.PI, '#bfbfbf', `Andere Hersteller: ${andere} (${(100 - siemensPercent).toFixed(1)}%)`, tooltip);
         createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze', total);
-        
         document.getElementById('herstellerLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--blue);"></div><span>Siemens Produkte: ${siemens}</span></div><div class="legend-item"><div class="legend-color" style="background-color: #bfbfbf;"></div><span>Andere Hersteller: ${andere}</span></div>`;
     }
 
@@ -254,34 +259,21 @@
         const centerX = 150, centerY = 150;
         const tooltip = createTooltip();
         svg.parentElement.appendChild(tooltip);
-        
         const totalSearched = stats.searchedValues, found = stats.foundWebValues, missing = totalSearched - found;
         const foundPercent = totalSearched > 0 ? (found / totalSearched) * 100 : 0;
         const matches = stats.green, diffs = stats.red;
         const matchesPercent = found > 0 ? (matches / found) * 100 : 0;
-        
         const startAngle = -Math.PI / 2;
         const foundAngle = startAngle + (foundPercent / 100) * 2 * Math.PI;
         const matchAngle = startAngle + (matchesPercent / 100) * (foundAngle - startAngle);
-        
-        // Inner Ring: Gefundene/Fehlende
         createRingSegment(svg, centerX, centerY, 70, 90, startAngle, foundAngle, 'var(--light-green)', `Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)`, tooltip);
         createRingSegment(svg, centerX, centerY, 70, 90, foundAngle, startAngle + 2 * Math.PI, 'var(--orange)', `Fehlende Web-Werte: ${missing} (${(100 - foundPercent).toFixed(1)}%)`, tooltip);
-        
-        // Outer Ring: Übereinstimmungen/Abweichungen (within found segment)
         if (found > 0) {
             createRingSegment(svg, centerX, centerY, 95, 115, startAngle, matchAngle, 'var(--green)', `Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)`, tooltip);
             createRingSegment(svg, centerX, centerY, 95, 115, matchAngle, foundAngle, 'var(--db-red)', `Abweichungen: ${diffs} (${(100 - matchesPercent).toFixed(1)}%)`, tooltip);
         }
-        
         createCentralCircle(svg, centerX, centerY, 'Gesuchte Web-Werte*', totalSearched);
-        
-        document.getElementById('webSucheLegend').innerHTML = `
-            <div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing}</span></div>
-            <div class="legend-item"><div class="legend-color" style="background-color: var(--light-green);"></div><span>Gefundene Web-Werte: ${found}</span></div>
-            <div class="legend-item indented"><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches}</span></div>
-            <div class="legend-item indented"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs}</span></div>
-        `;
+        document.getElementById('webSucheLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing}</span></div><div class="legend-item"><div class="legend-color" style="background-color: var(--light-green);"></div><span>Gefundene Web-Werte: ${found}</span></div><div class="legend-item indented"><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches}</span></div><div class="legend-item indented"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs}</span></div>`;
     }
 
     function createDatenqualitaetChart(stats) {
@@ -342,10 +334,10 @@
         if (statsResp.ok) {
           const stats = await statsResp.json();
           qualityStats = stats;
-          createQualityPieChart(stats.complete, stats.incomplete);
+          createQualityDonutChart(stats); // Use the new donut chart function
           qualityCharts.classList.remove('hidden');
         } else {
-          createQualityPieChart(0, 0);
+          createQualityDonutChart({complete: 0, incomplete: 0, total: 0});
           qualityCharts.classList.remove('hidden');
         }
         updateProgress(100);
