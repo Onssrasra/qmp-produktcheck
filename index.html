@@ -13,6 +13,7 @@
       --db-red: #c20015;
       --grey-1: #f5f5f5;
       --grey-2: #e6e6e6;
+      --grey-3: #bfbfbf;
       --grey-4: #8c8c8c;
       --text: #222;
       --white: #ffffff;
@@ -71,25 +72,22 @@
     .charts-container { margin: 25px 0 0 0; padding: 20px; background: var(--grey-1); border-radius: 12px; border: 1px solid var(--grey-2); flex-grow: 1; }
     .charts-container.hidden { display: none; }
     .charts-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 10px; text-align: center; }
-    /* CHANGED: Chart wrapper height reduced */
     .chart-wrapper { position: relative; width: 400px; height: 400px; margin: 0 auto; }
     
     .three-chart-container { display: flex; gap: 20px; align-items: stretch; justify-content: space-between; }
     .chart-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: var(--white); border: 1px solid var(--grey-2); border-radius: 12px; padding: 15px; }
     .chart-group .chart-title { font-size: 16px; margin-bottom: 15px; }
     .chart-wrapper-small { width: 300px; height: 300px; position: relative; }
-    .chart-legend { margin-top: auto; font-size: 12px; display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 15px; }
+    .chart-legend { margin-top: auto; font-size: 12px; display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 15px; align-items: center; }
     .hinweis-note { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--grey-2); font-size: 11px; color: #6b7280; line-height: 1.4; }
     .legend-item { display: flex; align-items: center; justify-content: center; gap: 8px; }
     .legend-color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
-    /* CHANGED: Enhanced indented legend style */
-    .legend-item.indented { 
-      margin-left: 25px; 
-      padding-left: 10px;
-      border-left: 2px solid var(--grey-2);
-      justify-content: flex-start; 
-    }
     .footnote-right { width: 100%; text-align: right; font-size: 11px; color: var(--grey-4); font-style: italic; margin-top: 8px; }
+
+    /* NEW: Styles for hierarchical legend */
+    .legend-group { display: flex; flex-direction: column; align-items: flex-start; }
+    .legend-sub-group { position: relative; padding-left: 25px; margin-left: 6px; }
+    .legend-sub-group::before { content: ''; position: absolute; left: 5px; top: 0; bottom: 8px; width: 2px; background-color: var(--grey-2); }
 
     .ring-segment { cursor: pointer; transition: opacity 0.2s ease; }
     .ring-segment:hover { opacity: 0.8; }
@@ -216,7 +214,7 @@
     function createQualityDonutChart(stats) {
         const svg = document.getElementById('qualityChart');
         svg.innerHTML = '';
-        const centerX = 200, centerY = 200; // Centered in 400x400 wrapper
+        const centerX = 200, centerY = 200;
         const tooltip = createTooltip();
         svg.parentElement.appendChild(tooltip);
         
@@ -225,8 +223,8 @@
         const incomplete = stats.incomplete;
         const completePercent = total > 0 ? (complete / total) * 100 : 0;
 
-        const startAngle = -Math.PI / 2; // Start at 12 o'clock
-        const completeAngle = startAngle + (completePercent / 100) * (2 * Math.PI); // Continuous ring
+        const startAngle = -Math.PI / 2;
+        const completeAngle = startAngle + (completePercent / 100) * (2 * Math.PI);
         
         createRingSegment(svg, centerX, centerY, 70, 115, startAngle, completeAngle, 'var(--green)', `Vollständig & Plausibel: ${complete} (${completePercent.toFixed(1)}%)`, tooltip);
         createRingSegment(svg, centerX, centerY, 70, 115, completeAngle, startAngle + 2 * Math.PI, 'var(--db-red)', `Unvollständig & Unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)`, tooltip);
@@ -248,20 +246,15 @@
         const siemensPercent = total > 0 ? (siemens / total) * 100 : 0;
         const anderePercent = 100 - siemensPercent;
 
-        const gapRad = (3 * Math.PI) / 180;
-        const totalDataAngle = (2 * Math.PI) - gapRad;
-        const siemensDataAngle = (siemensPercent / 100) * totalDataAngle;
-        
-        let currentAngle = -Math.PI / 2;
+        const startAngle = -Math.PI / 2;
+        const siemensEndAngle = startAngle + (siemensPercent / 100) * (2 * Math.PI);
 
         const innerRadius = 70;
         const siemensOuterRadius = 128;
         const andereOuterRadius = 110;
 
-        createRingSegment(svg, centerX, centerY, innerRadius, siemensOuterRadius, currentAngle, currentAngle + siemensDataAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
-        currentAngle += siemensDataAngle;
-
-        createRingSegment(svg, centerX, centerY, innerRadius, andereOuterRadius, currentAngle + gapRad, -Math.PI/2 - 0.0001, '#bfbfbf', `Andere Hersteller: ${andere} (${anderePercent.toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, centerX, centerY, innerRadius, siemensOuterRadius, startAngle, siemensEndAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
+        createRingSegment(svg, centerX, centerY, innerRadius, andereOuterRadius, siemensEndAngle, startAngle + 2 * Math.PI, '#bfbfbf', `Andere Hersteller: ${andere} (${anderePercent.toFixed(1)}%)`, tooltip);
         
         createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze', total);
         
@@ -296,10 +289,16 @@
         createCentralCircle(svg, centerX, centerY, 'Gesuchte Web-Werte*', totalSearched);
         
         document.getElementById('webSucheLegend').innerHTML = `
-            <div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing} (${missingPercent.toFixed(1)}%)</span></div>
-            <div class="legend-item"><div class="legend-color" style="background-color: var(--light-green);"></div><span>Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)</span></div>
-            <div class="legend-item indented"><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)</span></div>
-            <div class="legend-item indented"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs} (${diffsPercent.toFixed(1)}%)</span></div>
+            <div class="legend-group">
+              <div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing} (${missingPercent.toFixed(1)}%)</span></div>
+            </div>
+            <div class="legend-group">
+              <div class="legend-item"><div class="legend-color" style="background-color: var(--light-green);"></div><span>Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)</span></div>
+              <div class="legend-sub-group">
+                <div class="legend-item"><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)</span></div>
+                <div class="legend-item"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs} (${diffsPercent.toFixed(1)}%)</span></div>
+              </div>
+            </div>
         `;
     }
 
@@ -363,11 +362,10 @@
           const stats = await statsResp.json();
           qualityStats = stats;
           createQualityDonutChart(stats);
-          qualityCharts.classList.remove('hidden');
         } else {
           createQualityDonutChart({complete: 0, incomplete: 0, total: 0});
-          qualityCharts.classList.remove('hidden');
         }
+        qualityCharts.classList.remove('hidden');
         updateProgress(100);
         statusEl.textContent = 'Qualitätsprüfung abgeschlossen.';
         qualityCheckBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg> Prüfung fertig`;
