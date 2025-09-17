@@ -6,6 +6,7 @@
   <title>DB Produktdaten — Qualitätsmonitor</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
   <style>
@@ -84,7 +85,6 @@
     .legend-item.indented { margin-left: 20px; }
     .footnote-right { width: 100%; text-align: right; font-size: 11px; color: var(--grey-4); font-style: italic; margin-top: 8px; }
 
-
     .ring-segment { cursor: pointer; transition: opacity 0.2s ease; }
     .ring-segment:hover { opacity: 0.8; }
     .center-text { font-family: system-ui, sans-serif; text-anchor: middle; dominant-baseline: middle; fill: var(--text); }
@@ -160,10 +160,11 @@
 
   <script>
     const dropzone = document.getElementById('dropzone'), dzText = document.getElementById('dzText'), fileInput = document.getElementById('fileInput'), webSearchBtn = document.getElementById('webSearchBtn'), downloadWebBtn = document.getElementById('downloadWebBtn'), qualityCheckBtn = document.getElementById('qualityCheckBtn'), downloadQualityBtn = document.getElementById('downloadQualityBtn'), statusEl = document.getElementById('status'), progressEl = document.getElementById('progress'), bar = progressEl.firstElementChild, actionChoices = document.getElementById('action-choices'), qualityCharts = document.getElementById('qualityCharts'), webCharts = document.getElementById('webCharts');
-    let selectedFile = null, webProcessedBlob = null, qualityBlob = null, qualityStats = null;
+    let selectedFile = null, webProcessedBlob = null, qualityBlob = null, qualityStats = null, qualityPieChart = null;
 
     function resetAllStates() {
       qualityBlob = null; webProcessedBlob = null; qualityStats = null;
+      if (qualityPieChart) { qualityPieChart.destroy(); qualityPieChart = null; }
       document.getElementById('qualityChart').innerHTML = '';
       document.getElementById('herstellerChart').innerHTML = ''; document.getElementById('webSucheChart').innerHTML = ''; document.getElementById('datenqualitaetChart').innerHTML = '';
       downloadQualityBtn.disabled = true; downloadWebBtn.disabled = true;
@@ -207,6 +208,9 @@
     function hideTooltip(tooltip) { tooltip.style.opacity = '0'; }
     function updateTooltipPosition(tooltip, event) { const rect = event.target.closest('svg').getBoundingClientRect(); tooltip.style.left = (event.clientX - rect.left + 15) + 'px'; tooltip.style.top = (event.clientY - rect.top + 15) + 'px'; }
     
+    // This function was replaced by the SVG donut chart below
+    function createQualityPieChart(complete, incomplete) { /* This is no longer used */ }
+
     // NEW: Function to draw quality chart as a custom SVG donut
     function createQualityDonutChart(stats) {
         const svg = document.getElementById('qualityChart');
@@ -220,11 +224,16 @@
         const incomplete = stats.incomplete;
         const completePercent = total > 0 ? (complete / total) * 100 : 0;
 
-        const startAngle = -Math.PI / 2;
-        const completeAngle = startAngle + (completePercent / 100) * 2 * Math.PI;
+        const gapRad = (3 * Math.PI) / 180;
+        const totalDataAngle = 2 * Math.PI - 2 * gapRad;
+        const completeDataAngle = (completePercent / 100) * totalDataAngle;
+        const incompleteDataAngle = totalDataAngle - completeDataAngle;
 
-        createRingSegment(svg, centerX, centerY, 100, 160, startAngle, completeAngle, 'var(--green)', `Vollständig & Plausibel: ${complete} (${completePercent.toFixed(1)}%)`, tooltip);
-        createRingSegment(svg, centerX, centerY, 100, 160, completeAngle, startAngle + 2 * Math.PI, 'var(--db-red)', `Unvollständig & Unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)`, tooltip);
+        let currentAngle = -Math.PI / 2 + gapRad;
+        
+        createRingSegment(svg, centerX, centerY, 100, 160, currentAngle, currentAngle + completeDataAngle, 'var(--green)', `Vollständig & Plausibel: ${complete} (${completePercent.toFixed(1)}%)`, tooltip);
+        currentAngle += completeDataAngle;
+        createRingSegment(svg, centerX, centerY, 100, 160, currentAngle + gapRad, currentAngle + gapRad + incompleteDataAngle, 'var(--db-red)', `Unvollständig & Unplausibel: ${incomplete} (${(100 - completePercent).toFixed(1)}%)`, tooltip);
         
         createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze*', total);
 
@@ -238,18 +247,31 @@
         const centerX = 150, centerY = 150;
         const tooltip = createTooltip();
         svg.parentElement.appendChild(tooltip);
+        
         const total = stats.totalDataSets, siemens = stats.totalSiemens, andere = total - siemens;
         const siemensPercent = total > 0 ? (siemens / total) * 100 : 0;
-        const startAngle = -Math.PI / 2;
-        const siemensAngle = startAngle + (siemensPercent / 100) * 2 * Math.PI;
-        const explodeOffset = 10;
-        const midAngle = startAngle + (siemensAngle - startAngle) / 2;
-        const explodeX = centerX + explodeOffset * Math.cos(midAngle);
-        const explodeY = centerY + explodeOffset * Math.sin(midAngle);
-        const innerRadius = 70, siemensOuterRadius = 115, andereOuterRadius = 105;
-        createRingSegment(svg, explodeX, explodeY, innerRadius, siemensOuterRadius, startAngle, siemensAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
-        createRingSegment(svg, centerX, centerY, innerRadius, andereOuterRadius, siemensAngle, startAngle + 2 * Math.PI, '#bfbfbf', `Andere Hersteller: ${andere} (${(100 - siemensPercent).toFixed(1)}%)`, tooltip);
+        
+        // Logic for gap
+        const gapRad = (3 * Math.PI) / 180; // 3 degrees
+        const totalDataAngle = (2 * Math.PI) - (2 * gapRad);
+        const siemensDataAngle = (siemensPercent / 100) * totalDataAngle;
+        const andereDataAngle = totalDataAngle - siemensDataAngle;
+        
+        let currentAngle = -Math.PI / 2 + gapRad;
+
+        const innerRadius = 70;
+        const siemensOuterRadius = 128; // Thicker slice as requested
+        const andereOuterRadius = 110;  // Thinner slice as requested
+
+        // Draw Siemens Slice
+        createRingSegment(svg, centerX, centerY, innerRadius, siemensOuterRadius, currentAngle, currentAngle + siemensDataAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
+        currentAngle += siemensDataAngle;
+
+        // Draw Andere Slice
+        createRingSegment(svg, centerX, centerY, innerRadius, andereOuterRadius, currentAngle + gapRad, currentAngle + gapRad + andereDataAngle, '#bfbfbf', `Andere Hersteller: ${andere} (${(100 - siemensPercent).toFixed(1)}%)`, tooltip);
+        
         createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze', total);
+        
         document.getElementById('herstellerLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--blue);"></div><span>Siemens Produkte: ${siemens}</span></div><div class="legend-item"><div class="legend-color" style="background-color: #bfbfbf;"></div><span>Andere Hersteller: ${andere}</span></div>`;
     }
 
@@ -334,7 +356,7 @@
         if (statsResp.ok) {
           const stats = await statsResp.json();
           qualityStats = stats;
-          createQualityDonutChart(stats); // Use the new donut chart function
+          createQualityDonutChart(stats);
           qualityCharts.classList.remove('hidden');
         } else {
           createQualityDonutChart({complete: 0, incomplete: 0, total: 0});
