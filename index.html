@@ -73,7 +73,7 @@
     .charts-container { margin: 25px 0 0 0; padding: 20px; background: var(--grey-1); border-radius: 12px; border: 1px solid var(--grey-2); flex-grow: 1; }
     .charts-container.hidden { display: none; }
     .charts-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 10px; text-align: center; }
-    /* REVERTED: Option A Chart Wrapper back to original size */
+    /* REVERTED: Option A chart wrapper back to original size */
     .chart-wrapper { position: relative; width: 450px; height: 450px; margin: 0 auto; }
     
     .three-chart-container { display: flex; gap: 20px; align-items: stretch; justify-content: space-between; }
@@ -87,7 +87,6 @@
     .legend-content-wrapper { display: inline-block; text-align: left; }
     .legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin-bottom: 4px;}
     .legend-color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
-    .footnote-right { width: 100%; text-align: right; font-size: 11px; color: var(--grey-4); font-style: italic; margin-top: 8px; }
 
     .ring-segment { cursor: pointer; transition: opacity 0.2s ease; }
     .ring-segment:hover { opacity: 0.8; }
@@ -212,22 +211,34 @@
     
     // REVERTED: Option A chart is back to its original Chart.js implementation
     function createQualityPieChart(stats) {
-      const ctx = document.getElementById('qualityPieChart').getContext('2d');
-      if (qualityPieChart) { qualityPieChart.destroy(); }
-      const total = stats.total;
-      const complete = stats.complete;
-      const incomplete = stats.incomplete;
-      qualityPieChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: [`Vollständig & Plausibel (${total > 0 ? ((complete / total) * 100).toFixed(1) : 0}%)`, `Unvollständig & Unplausibel (${total > 0 ? ((incomplete / total) * 100).toFixed(1) : 0}%)`],
-          datasets: [{ data: [complete, incomplete], backgroundColor: ['var(--green)', 'var(--db-red)'], borderColor: ['#ffffff'], borderWidth: 2 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw} Datensätze` } } } }
-      });
+        const ctx = document.getElementById('qualityPieChart').getContext('2d');
+        if (qualityPieChart) { qualityPieChart.destroy(); }
+        const total = stats.total;
+        const complete = stats.complete;
+        const incomplete = stats.incomplete;
+        qualityPieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: [`Vollständig & Plausibel (${total > 0 ? ((complete / total) * 100).toFixed(1) : 0}%)`, `Unvollständig & Unplausibel (${total > 0 ? ((incomplete / total) * 100).toFixed(1) : 0}%)`],
+                datasets: [{
+                    data: [complete, incomplete],
+                    backgroundColor: ['var(--green)', 'var(--db-red)'],
+                    borderColor: ['#ffffff'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw} Datensätze` } }
+                }
+            }
+        });
     }
 
-    // UPDATED: This chart is now a continuous ring (no gaps)
+    // This function creates the "Hersteller Verteilung" chart.
     function createHerstellerChart(stats) {
         const svg = document.getElementById('herstellerChart');
         svg.innerHTML = '';
@@ -239,6 +250,7 @@
         const siemensPercent = total > 0 ? (siemens / total) * 100 : 0;
         const anderePercent = 100 - siemensPercent;
 
+        // The chart is now a continuous ring with no gaps.
         const startAngle = -Math.PI / 2;
         const siemensEndAngle = startAngle + (siemensPercent / 100) * (2 * Math.PI);
 
@@ -251,14 +263,15 @@
         
         createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze', total);
         
+        // This generates the centered block with left-aligned legend items.
         document.getElementById('herstellerLegend').innerHTML = `
             <div class="legend-content-wrapper">
                 <div class="legend-item"><div class="legend-color" style="background-color: var(--blue);"></div><span>Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)</span></div>
                 <div class="legend-item"><div class="legend-color" style="background-color: #bfbfbf;"></div><span>Andere Hersteller: ${andere} (${anderePercent.toFixed(1)}%)</span></div>
             </div>`;
     }
-    
-    // UPDATED: This function now generates the hierarchical legend with a connector
+
+    // This function creates the "Web-Suche" chart.
     function createWebSucheChart(stats) {
         const svg = document.getElementById('webSucheChart');
         svg.innerHTML = '';
@@ -286,12 +299,13 @@
         
         createCentralCircle(svg, centerX, centerY, 'Gesuchte Web-Werte*', totalSearched);
         
+        // UPDATED: This JS creates the new hierarchical legend with the connector symbol.
         document.getElementById('webSucheLegend').innerHTML = `
             <div class="legend-content-wrapper">
                 <div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing} (${missingPercent.toFixed(1)}%)</span></div>
                 <div class="legend-item"><div class="legend-color" style="background-color: var(--light-green);"></div><span>Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)</span></div>
-                <div class="legend-item" style="margin-left: 15px;"><span style="margin-right: 5px;">└─</span><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)</span></div>
-                <div class="legend-item" style="margin-left: 15px;"><span style="margin-right: 5px;">└─</span><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs} (${diffsPercent.toFixed(1)}%)</span></div>
+                <div class="legend-item" style="padding-left: 15px;"><span style="margin-right: 4px;">└─</span><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)</span></div>
+                <div class="legend-item" style="padding-left: 15px;"><span style="margin-right: 4px;">└─</span><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs} (${diffsPercent.toFixed(1)}%)</span></div>
             </div>`;
     }
 
