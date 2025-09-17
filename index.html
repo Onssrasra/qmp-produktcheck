@@ -355,7 +355,7 @@
       createHerstellerChart(stats);
       createWebSucheChart(stats);
       createDatenqualitaetChart(stats);
-      document.getElementById('hinweis-note').innerHTML = `<strong>*Hinweis:</strong> Für jedes Siemens-Produkt werden 8 Attribute im Web geprüft: Materialkurztext, Art.-Nr., Fert./Prüfhinweis, Werkstoff, Gewicht, Länge, Breite und Höhe.<br>„*Gesuchte  Web-Werte" beziehen sich auf diese Web-Abfragen (= Suchvorgänge) und werden aus Anzahl Siemensprodukte × 8 berechnet.<br> Bei ${stats.totalSiemens} Produkten sind das ${stats.searchedValues} Suchvorgänge.`;
+      document.getElementById('hinweis-note').innerHTML = `<strong>Hinweis:</strong> Für jedes Siemens-Produkt werden 8 Attribute im Web geprüft: Materialkurztext, Art.-Nr., Fert./Prüfhinweis, Werkstoff, Gewicht, Länge, Breite und Höhe.<br>„*Gesuchte Web-Werte" beziehen sich auf diese Web-Abfragen (= Suchvorgänge) und werden aus Anzahl Siemensprodukte × 8 berechnet.<br> Bei ${stats.totalSiemens} Produkten sind das ${stats.searchedValues} Suchvorgänge.`;
       webCharts.classList.remove('hidden');
     }
     
