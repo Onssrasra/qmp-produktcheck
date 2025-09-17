@@ -82,6 +82,7 @@
     .chart-wrapper-small { width: 300px; height: 300px; position: relative; }
     .hinweis-note { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--grey-2); font-size: 11px; color: #6b7280; line-height: 1.4; }
     
+    /* UPDATED: Legend styling for centered block with left-aligned text */
     .chart-legend { margin-top: auto; font-size: 12px; width: 100%; padding-top: 15px; text-align: center; }
     .legend-content-wrapper { display: inline-block; text-align: left; }
     .legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin-bottom: 4px;}
@@ -164,6 +165,7 @@
 
     function resetAllStates() {
       qualityBlob = null; webProcessedBlob = null; qualityStats = null;
+      // REVERTED: Back to destroying Chart.js instance for Option A
       if (qualityPieChart) { qualityPieChart.destroy(); qualityPieChart = null; }
       document.getElementById('herstellerChart').innerHTML = ''; document.getElementById('webSucheChart').innerHTML = ''; document.getElementById('datenqualitaetChart').innerHTML = '';
       downloadQualityBtn.disabled = true; downloadWebBtn.disabled = true;
@@ -207,7 +209,7 @@
     function hideTooltip(tooltip) { tooltip.style.opacity = '0'; }
     function updateTooltipPosition(tooltip, event) { const rect = event.target.closest('svg').getBoundingClientRect(); tooltip.style.left = (event.clientX - rect.left + 15) + 'px'; tooltip.style.top = (event.clientY - rect.top + 15) + 'px'; }
     
-    // This is the original, working Chart.js function for Option A
+    // REVERTED: Option A chart is back to its original Chart.js implementation
     function createQualityPieChart(stats) {
         const ctx = document.getElementById('qualityPieChart').getContext('2d');
         if (qualityPieChart) { qualityPieChart.destroy(); }
@@ -231,6 +233,7 @@
         });
     }
 
+    // This function creates the "Hersteller Verteilung" chart.
     function createHerstellerChart(stats) {
         const svg = document.getElementById('herstellerChart');
         svg.innerHTML = '';
@@ -263,6 +266,7 @@
             </div>`;
     }
 
+    // This function creates the "Web-Suche" chart.
     function createWebSucheChart(stats) {
         const svg = document.getElementById('webSucheChart');
         svg.innerHTML = '';
