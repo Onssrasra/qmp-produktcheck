@@ -13,7 +13,6 @@
       --db-red: #c20015;
       --grey-1: #f5f5f5;
       --grey-2: #e6e6e6;
-      --grey-3: #bfbfbf;
       --grey-4: #8c8c8c;
       --text: #222;
       --white: #ffffff;
@@ -78,16 +77,14 @@
     .chart-group { flex: 1; display: flex; flex-direction: column; align-items: center; background: var(--white); border: 1px solid var(--grey-2); border-radius: 12px; padding: 15px; }
     .chart-group .chart-title { font-size: 16px; margin-bottom: 15px; }
     .chart-wrapper-small { width: 300px; height: 300px; position: relative; }
-    .chart-legend { margin-top: auto; font-size: 12px; display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 15px; align-items: center; }
     .hinweis-note { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--grey-2); font-size: 11px; color: #6b7280; line-height: 1.4; }
-    .legend-item { display: flex; align-items: center; justify-content: center; gap: 8px; }
+    
+    /* UPDATED: Legend styling for centered block with left-aligned text */
+    .chart-legend { margin-top: auto; font-size: 12px; width: 100%; padding-top: 15px; text-align: center; }
+    .legend-content-wrapper { display: inline-block; text-align: left; }
+    .legend-item { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin-bottom: 4px;}
     .legend-color { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
     .footnote-right { width: 100%; text-align: right; font-size: 11px; color: var(--grey-4); font-style: italic; margin-top: 8px; }
-
-    /* NEW: Styles for hierarchical legend */
-    .legend-group { display: flex; flex-direction: column; align-items: flex-start; }
-    .legend-sub-group { position: relative; padding-left: 25px; margin-left: 6px; }
-    .legend-sub-group::before { content: ''; position: absolute; left: 5px; top: 0; bottom: 8px; width: 2px; background-color: var(--grey-2); }
 
     .ring-segment { cursor: pointer; transition: opacity 0.2s ease; }
     .ring-segment:hover { opacity: 0.8; }
@@ -246,6 +243,7 @@
         const siemensPercent = total > 0 ? (siemens / total) * 100 : 0;
         const anderePercent = 100 - siemensPercent;
 
+        // UPDATED: No gap logic for a continuous ring
         const startAngle = -Math.PI / 2;
         const siemensEndAngle = startAngle + (siemensPercent / 100) * (2 * Math.PI);
 
@@ -253,12 +251,18 @@
         const siemensOuterRadius = 128;
         const andereOuterRadius = 110;
 
+        // UPDATED: Both slices drawn from the same center (no explosion)
         createRingSegment(svg, centerX, centerY, innerRadius, siemensOuterRadius, startAngle, siemensEndAngle, 'var(--blue)', `Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)`, tooltip);
         createRingSegment(svg, centerX, centerY, innerRadius, andereOuterRadius, siemensEndAngle, startAngle + 2 * Math.PI, '#bfbfbf', `Andere Hersteller: ${andere} (${anderePercent.toFixed(1)}%)`, tooltip);
         
         createCentralCircle(svg, centerX, centerY, 'Gesamtdatensätze', total);
         
-        document.getElementById('herstellerLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--blue);"></div><span>Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: #bfbfbf;"></div><span>Andere Hersteller: ${andere} (${anderePercent.toFixed(1)}%)</span></div>`;
+        // UPDATED: Legend includes percentages
+        document.getElementById('herstellerLegend').innerHTML = `
+            <div class="legend-content-wrapper">
+                <div class="legend-item"><div class="legend-color" style="background-color: var(--blue);"></div><span>Siemens Produkte: ${siemens} (${siemensPercent.toFixed(1)}%)</span></div>
+                <div class="legend-item"><div class="legend-color" style="background-color: #bfbfbf;"></div><span>Andere Hersteller: ${andere} (${anderePercent.toFixed(1)}%)</span></div>
+            </div>`;
     }
 
     function createWebSucheChart(stats) {
@@ -288,16 +292,17 @@
         
         createCentralCircle(svg, centerX, centerY, 'Gesuchte Web-Werte*', totalSearched);
         
+        // UPDATED: Legend has new hierarchical structure
         document.getElementById('webSucheLegend').innerHTML = `
-            <div class="legend-group">
-              <div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing} (${missingPercent.toFixed(1)}%)</span></div>
-            </div>
-            <div class="legend-group">
-              <div class="legend-item"><div class="legend-color" style="background-color: var(--light-green);"></div><span>Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)</span></div>
-              <div class="legend-sub-group">
-                <div class="legend-item"><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)</span></div>
-                <div class="legend-item"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs} (${diffsPercent.toFixed(1)}%)</span></div>
-              </div>
+            <div class="legend-content-wrapper">
+                <div class="legend-item"><div class="legend-color" style="background-color: var(--orange);"></div><span>Fehlende Web-Werte: ${missing} (${missingPercent.toFixed(1)}%)</span></div>
+                <div class="legend-group">
+                  <div class="legend-item"><div class="legend-color" style="background-color: var(--light-green);"></div><span>Gefundene Web-Werte: ${found} (${foundPercent.toFixed(1)}%)</span></div>
+                  <div class="legend-sub-group">
+                    <div class="legend-item"><div class="legend-color" style="background-color: var(--green);"></div><span>Übereinstimmungen: ${matches} (${matchesPercent.toFixed(1)}%)</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Abweichungen: ${diffs} (${diffsPercent.toFixed(1)}%)</span></div>
+                  </div>
+                </div>
             </div>
         `;
     }
@@ -316,7 +321,12 @@
       createRingSegment(svg, centerX, centerY, 70, 115, startAngle, passtAngle, 'var(--green)', `Datenaktualität passt: ${passt} (${passtPercent.toFixed(1)}%)`, tooltip);
       createRingSegment(svg, centerX, centerY, 70, 115, passtAngle, startAngle + 2 * Math.PI, 'var(--db-red)', `Datenaktualität fehlerhaft: ${fehlerhaft} (${fehlerhaftPercent.toFixed(1)}%)`, tooltip);
       createCentralCircle(svg, centerX, centerY, 'Siemens Produkte', total);
-      document.getElementById('datenqualitaetLegend').innerHTML = `<div class="legend-item"><div class="legend-color" style="background-color: var(--green);"></div><span>Datenaktualität passt: ${passt} (${passtPercent.toFixed(1)}%)</span></div><div class="legend-item"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Datenaktualität fehlerhaft: ${fehlerhaft} (${fehlerhaftPercent.toFixed(1)}%)</span></div>`;
+      // UPDATED: Legend includes percentages
+      document.getElementById('datenqualitaetLegend').innerHTML = `
+        <div class="legend-content-wrapper">
+            <div class="legend-item"><div class="legend-color" style="background-color: var(--green);"></div><span>Datenaktualität passt: ${passt} (${passtPercent.toFixed(1)}%)</span></div>
+            <div class="legend-item"><div class="legend-color" style="background-color: var(--db-red);"></div><span>Datenaktualität fehlerhaft: ${fehlerhaft} (${fehlerhaftPercent.toFixed(1)}%)</span></div>
+        </div>`;
     }
 
     function displayWebSearchCharts(stats) {
