@@ -133,7 +133,7 @@
           <h3> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon"> <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/> <path d="m9 14 2 2 4-4"/> </svg> Option A: Vollständigkeit prüfen </h3>
           <div class="action-buttons">
             <button id="qualityCheckBtn" disabled> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Prüfung starten </button>
-            <button id="downloadQualityBtn" class="secondary" disabled> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg> Bericht herunterladen </button>
+            <button id="downloadQualityBtn" class="secondary" disabled> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg> Excel herunterladen </button>
           </div>
           <div id="qualityCharts" class="charts-container hidden">
             <div class="charts-title">Ergebnis der Qualitätsprüfung</div>
@@ -145,10 +145,10 @@
           </div>
         </div>
         <div class="action-section" id="web-search-section">
-          <h3> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon"> <path d="m21 21-4.34-4.34"/> <circle cx="11" cy="11" r="8"/> </svg> Option B: Web-Vergleich (Siemens) </h3>
+          <h3> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon"> <path d="m21 21-4.34-4.34"/> <circle cx="11" cy="11" r="8"/> </svg> Option B: Web-Suche (Nur für Siemens-Produkte) </h3>
           <div class="action-buttons">
             <button id="webSearchBtn" disabled> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Suche starten </button>
-            <button id="downloadWebBtn" class="secondary" disabled> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg> Ergebnis herunterladen </button>
+            <button id="downloadWebBtn" class="secondary" disabled> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg> Excel herunterladen </button>
           </div>
           <div id="webCharts" class="charts-container hidden">
             <div class="three-chart-container">
@@ -198,16 +198,16 @@
         borderCircle.setAttribute('stroke', 'var(--grey-2)');
         borderCircle.setAttribute('stroke-width', '2');
         svg.appendChild(borderCircle);
-        const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        titleText.setAttribute('x', centerX); titleText.setAttribute('y', centerY - 8);
-        titleText.setAttribute('class', 'center-text center-text-title');
-        titleText.textContent = text;
-        svg.appendChild(titleText);
         const valueText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        valueText.setAttribute('x', centerX); valueText.setAttribute('y', centerY + 20);
+        valueText.setAttribute('x', centerX); valueText.setAttribute('y', centerY - 8);
         valueText.setAttribute('class', 'center-text center-text-value');
         valueText.textContent = value;
         svg.appendChild(valueText);
+        const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        titleText.setAttribute('x', centerX); titleText.setAttribute('y', centerY + 20);
+        titleText.setAttribute('class', 'center-text center-text-title');
+        titleText.textContent = text;
+        svg.appendChild(titleText);
     }
     function createTooltip() { const tooltip = document.createElement('div'); tooltip.className = 'chart-tooltip'; return tooltip; }
     function showTooltip(tooltip, event, text) { tooltip.textContent = text; tooltip.style.opacity = '1'; updateTooltipPosition(tooltip, event); }
@@ -330,19 +330,19 @@
       const centerX = 150, centerY = 150;
       const tooltip = createTooltip();
       svg.parentElement.appendChild(tooltip);
-      const total = stats.totalSiemens, passt = stats.ampelGreen, fehlerhaft = stats.ampelRed;
-      const passtPercent = total > 0 ? (passt / total) * 100 : 0;
-      const fehlerhaftPercent = 100 - passtPercent;
+      const total = stats.totalSiemens, korrekt = stats.ampelGreen, fehlerhaft = stats.ampelRed;
+      const korrektPercent = total > 0 ? (korrekt / total) * 100 : 0;
+      const fehlerhaftPercent = 100 - korrektPercent;
       const startAngle = -Math.PI / 2;
-      const passtAngle = startAngle + (passtPercent / 100) * 2 * Math.PI;
-      createRingSegment(svg, centerX, centerY, 70, 115, startAngle, passtAngle, 'var(--green)', `Datenaktualität passt: ${passt} (${passtPercent.toFixed(1)}%)`, tooltip);
-      createRingSegment(svg, centerX, centerY, 70, 115, passtAngle, startAngle + 2 * Math.PI, 'var(--db-red)', `Datenaktualität fehlerhaft: ${fehlerhaft} (${fehlerhaftPercent.toFixed(1)}%)`, tooltip);
+      const korrektAngle = startAngle + (korrektPercent / 100) * 2 * Math.PI;
+      createRingSegment(svg, centerX, centerY, 70, 115, startAngle, korrektAngle, 'var(--green)', `Datenaktualität korrekt: ${korrekt} (${korrektPercent.toFixed(1)}%)`, tooltip);
+      createRingSegment(svg, centerX, centerY, 70, 115, korrektAngle, startAngle + 2 * Math.PI, 'var(--db-red)', `Datenaktualität fehlerhaft: ${fehlerhaft} (${fehlerhaftPercent.toFixed(1)}%)`, tooltip);
       createCentralCircle(svg, centerX, centerY, 'Siemens Produkte', total);
       document.getElementById('datenqualitaetLegend').innerHTML = `
             <div class="legend-content-wrapper">
                 <div class="legend-item">
                     <div class="legend-color" style="background-color: var(--green);"></div>
-                    <span>Datenaktualität passt: ${passt} (${passtPercent.toFixed(1)}%)</span>
+                    <span>Datenaktualität korrekt: ${korrekt} (${korrektPercent.toFixed(1)}%)</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-color" style="background-color: var(--db-red);"></div>
@@ -355,7 +355,7 @@
       createHerstellerChart(stats);
       createWebSucheChart(stats);
       createDatenqualitaetChart(stats);
-      document.getElementById('hinweis-note').innerHTML = `<strong>Hinweis:</strong> Für jedes Siemens-Produkt werden 8 Attribute im Web geprüft: Materialkurztext, Art.-Nr., Fert./Prüfhinweis, Werkstoff, Gewicht, Länge, Breite und Höhe.<br>„*Gesuchte Web-Werte" beziehen sich auf diese Web-Abfragen (= Suchvorgänge) und werden aus Anzahl Siemensprodukte × 8 berechnet.<br> Bei ${stats.totalSiemens} Produkten sind das ${stats.searchedValues} Suchvorgänge.`;
+      document.getElementById('hinweis-note').innerHTML = `<strong>Hinweis:</strong> Für jedes Siemens-Produkt werden 8 Attribute im Web geprüft: Materialkurztext, Art.-Nr., Fert./Prüfhinweis, Werkstoff, Gewicht, Länge, Breite und Höhe.<br>„*Gesuchte Web-Werte" beziehen sich auf diese Web-Abfragen (= Suchvorgänge) und werden aus Anzahl Siemens-Produkte × 8 berechnet.<br> Bei ${stats.totalSiemens} Produkten sind das ${stats.searchedValues} Suchvorgänge.`;
       webCharts.classList.remove('hidden');
     }
     
